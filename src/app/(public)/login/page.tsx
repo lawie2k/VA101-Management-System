@@ -1,4 +1,12 @@
+"use client";
+
+import { useState } from "react";
+
+const roles = ["Super Admin", "Manager", "Virtual Assistant", "Client"];
+
 export default function Page() {
+  const [selectedRole, setSelectedRole] = useState("Super Admin");
+
   return (
   <div className="flex">
     <div className="w-[50%] h-screen bg-[#191940] flex flex-col px-10 py-8">
@@ -40,18 +48,20 @@ export default function Page() {
         <div className="border-2  border-gray-200 shadow-md rounded-2xl p-5 mt-6 w-100">
           <h4 className="text-xs font-semibold tracking-widest text-gray-500 mb-4"> ROLES</h4>
           <div className="grid grid-cols-2 gap-3">
-            <button type="button" className="border-2 border-orange-400 bg-orange-50 rounded-xl p-3 text-left">
-              <p className="font-semibold text-sm">Super Admin</p>
-            </button>
-            <button type="button" className="border border-gray-200 bg-white rounded-xl p-3 text-left hover:border-orange-300 transition-colors">
-              <p className="font-semibold text-sm">Manager</p>
-            </button>
-            <button type="button" className="border border-gray-200 bg-white rounded-xl p-3 text-left hover:border-orange-300 transition-colors">
-              <p className="font-semibold text-sm">Virtual Assistant</p>
-            </button>
-            <button type="button" className="border border-gray-200 bg-white rounded-xl p-3 text-left hover:border-orange-300 transition-colors">
-              <p className="font-semibold text-sm">Client</p>
-            </button>
+            {roles.map((role) => (
+              <button
+                key={role}
+                type="button"
+                onClick={() => setSelectedRole(role)}
+                className={`rounded-xl p-3 text-left transition-all ${
+                  selectedRole === role
+                    ? "border-2 border-orange-400 bg-orange-50"
+                    : "border-2 border-gray-200 bg-white hover:border-orange-300"
+                }`}
+              >
+                <p className="font-semibold text-sm">{role}</p>
+              </button>
+            ))}
           </div>
         </div>
       </div>
