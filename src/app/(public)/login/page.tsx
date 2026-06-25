@@ -9,9 +9,9 @@ export default function Page() {
 
   return (
   <div className="flex">
-    <div className="w-[50%] h-screen bg-[#191940] flex flex-col px-10 py-8">
+    <div className="w-[50%] h-screen bg-[#191940] flex flex-col px-10 py-2">
       <div>
-        <header className="text-white text-xl font-bold">VA101</header>
+        <header ><img src="/logo/VA101%20logo1.svg" className="w-50 h-20"/></header>
       </div>
 
       <div className="flex-1 flex flex-col justify-center">
@@ -19,9 +19,7 @@ export default function Page() {
         <p className="text-gray-400 mt-4">One place for VAs, clients, projects, tasks, schedules, attendance, <br></br> time logs, reports, and invoices.</p>
       </div>
 
-      <div>
-        <footer className="text-gray-500 text-sm">© 2026 Virtual Assistant 101</footer>
-      </div>
+
     </div>
 
     <div className="bg-amber-30 w-[50%] h-screen flex items-center justify-center">
