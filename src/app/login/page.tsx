@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 const roles = ["Super Admin", "Manager", "Virtual Assistant", "Client"];
 
@@ -10,8 +11,17 @@ export default function Page() {
   return (
   <div className="flex">
     <div className="w-[50%] h-screen bg-[#191940] flex flex-col px-10 py-2">
-      <div>
-        <header ><img src="/logo/VA101%20logo1.svg" className="w-50 h-20"/></header>
+      <div className="flex items-center justify-between">
+        <header><img src="/logo/VA101%20logo1.svg" className="w-50 h-20" alt="logo" /></header>
+        <Link 
+          href="/" 
+          className="text-gray-400 hover:text-white flex items-center gap-1.5 text-sm font-semibold transition-all mr-4"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to home
+        </Link>
       </div>
 
       <div className="flex-1 flex flex-col justify-center">

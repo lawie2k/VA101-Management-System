@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { popularDialCodes, countryDialCodes } from "../../../lib/countryCodes";
+import FormHeader from "../../../components/layout/FormHeader";
 
 const toolsList = [
   "Slack",
@@ -16,7 +17,9 @@ const toolsList = [
   "Shopify"
 ];
 
-export default function Page() {
+export { default } from "../apply-va/page";
+
+function Page() {
   const [formData, setFormData] = useState({
     fullName: "",
     company: "",
@@ -110,24 +113,14 @@ export default function Page() {
 
   return (
     <div className="bg-[#F5F5F5] min-h-screen flex flex-col items-center pb-12">
-      <div className="w-screen h-60 bg-[#191940] flex flex-col items-center justify-center px-6 md:px-0">
-        <div className="w-full max-w-3xl flex flex-col justify-center">
-          <div className="flex items-center justify-between w-full">
-            <img src="/logo/VA101%20logo1.svg" alt="logo" className="w-50 h-20" />
-            <a 
-              href="https://www.virtualassistant101.com/" 
-              className="text-gray-400 hover:text-white flex items-center gap-2 text-sm font-semibold transition-all"
-            >
-              Back to main site
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </a>
-          </div>
+      <div className="w-screen h-60 bg-[#000312] bg-[linear-gradient(93deg,#000312_55%,#021959_100%)] flex flex-col items-center justify-center px-6 md:px-0">
+        {/*header*/}
+        <div className="w-full max-w-5xl flex flex-col justify-center">
+          <FormHeader />
           <div className="mt-5">
             <h1 className="text-white text-4xl font-semibold py-2">Hire a vetted virtual assistant</h1>
             <p className="text-gray-400">
-              Share what you need help with and we&#39;ll hand-match you with a VA from our talent pool. Most clients <br /> get a shortlist within 48 hours.
+              Share what you need help with and we&#39;ll hand-match you with a VA from our talent pool. Most clients get a shortlist within 48 hours.
             </p>
           </div>
         </div>

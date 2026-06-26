@@ -2,16 +2,16 @@
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0A0A0C] text-[#9B9BA1] font-sans text-xs w-full py-12 md:py-16 px-6 md:px-20 border-t border-[#1C1C1E]">
+    <footer className="bg-[#000312] bg-[linear-gradient(93deg,#000312_55%,#021959_100%)] text-[#9B9BA1] font-sans text-xs w-full pt-12 md:pt-16 px-6 md:px-20 border-t border-[#1C1C1E]">
       <div className="max-w-6xl mx-auto">
         {/* Top Grid Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 pb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8">
           
           {/* Column 1: Logo & Tagline */}
           <div className="flex flex-col gap-3">
             <img 
-              src="/logo/VA101%20logo1.svg" 
-              className="w-36 h-auto" 
+              src="/logo/VA101%20logo2%20bg%20remove.svg"
+              className="w-40 h-auto"
               alt="VA101 Logo" 
             />
 
