@@ -233,3 +233,33 @@ export const countryDialCodes: CountryDialCode[] = [
   { code: "+260", name: "Zambia", flag: "🇿🇲" },
   { code: "+263", name: "Zimbabwe", flag: "🇿🇼" }
 ];
+
+export interface PhoneValidation {
+  min: number;
+  max: number;
+  patternLabel: string;
+}
+
+export function getExpectedPhoneDigits(dialCode: string): PhoneValidation {
+  const code = dialCode.replace(/[-\s]/g, "");
+  if (code === "+1") {
+    return { min: 10, max: 10, patternLabel: "10 digits (e.g. 555-123-4567)" };
+  }
+  if (code === "+63") {
+    return { min: 10, max: 10, patternLabel: "10 digits (e.g. 917 123 4567)" };
+  }
+  if (code === "+65") {
+    return { min: 8, max: 8, patternLabel: "8 digits" };
+  }
+  if (code === "+61") {
+    return { min: 9, max: 9, patternLabel: "9 digits" };
+  }
+  if (code === "+44") {
+    return { min: 9, max: 10, patternLabel: "9-10 digits" };
+  }
+  if (code === "+64") {
+    return { min: 8, max: 10, patternLabel: "8-10 digits" };
+  }
+  return { min: 7, max: 12, patternLabel: "7-12 digits" };
+}
+

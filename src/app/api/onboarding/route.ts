@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "../../../lib/db";
 import { rateLimit } from "../../../lib/rateLimit";
+import { getExpectedPhoneDigits } from "../../../lib/countryCodes";
 import crypto from "crypto";
 import path from "path";
 import { promises as fs } from "fs";
@@ -80,14 +81,39 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Invalid email address format." }, { status: 400 });
     }
 
+    if (password.length < 8) {
+      return NextResponse.json({ success: false, error: "Password must be at least 8 characters long." }, { status: 400 });
+    }
+    if (!/[A-Z]/.test(password)) {
+      return NextResponse.json({ success: false, error: "Password must contain at least one uppercase letter (A-Z)." }, { status: 400 });
+    }
+
+    // Phone format and digit validation
+    const spaceIndex = phone.indexOf(" ");
+    if (spaceIndex === -1) {
+      return NextResponse.json({ success: false, error: "Invalid phone number format." }, { status: 400 });
+    }
+    const dialCode = phone.substring(0, spaceIndex);
+    const localNumber = phone.substring(spaceIndex + 1);
+    const phoneDigits = localNumber.replace(/\D/g, "");
+    
+    const expected = getExpectedPhoneDigits(dialCode);
+    if (phoneDigits.length < expected.min || phoneDigits.length > expected.max) {
+      return NextResponse.json({
+        success: false,
+        error: `Invalid phone number for country code ${dialCode}. Expected format: ${expected.patternLabel}`
+      }, { status: 400 });
+    }
+
     // Step 2 Details
-    const nicheName = data.get("niche") as string;
+    const nichesJson = data.get("niches") as string;
+    const niches = JSON.parse(nichesJson || "[]") as string[];
     const experience = data.get("experience") as string;
     const expectedRate = data.get("expectedRate") as string;
     const toolsJson = data.get("tools") as string;
     const tools = JSON.parse(toolsJson || "[]") as string[];
 
-    if (!nicheName || !experience || !expectedRate) {
+    if (!niches || niches.length === 0 || !experience || !expectedRate) {
       return NextResponse.json({ success: false, error: "Required fields in Step 2 are missing." }, { status: 400 });
     }
 
@@ -104,19 +130,21 @@ export async function POST(request: Request) {
     const resumeFile = data.get("resume") as File | null;
     const idFile = data.get("id") as File | null;
     const nbiFile = data.get("nbi") as File | null;
-    const addressFile = data.get("address") as File | null;
+    const policeFile = data.get("police") as File | null;
+    const speedFile = data.get("speed") as File | null;
 
-    if (!resumeFile || !idFile) {
-      return NextResponse.json({ success: false, error: "Resume and Government ID are required uploads." }, { status: 400 });
+    if (!resumeFile || !idFile || !nbiFile || !policeFile || !speedFile) {
+      return NextResponse.json({ success: false, error: "All five onboarding documents are required uploads." }, { status: 400 });
     }
 
     // Pre-validate all files (buffers & signatures) before doing any DB changes
     const filesToValidate: { label: string; file: File }[] = [
       { label: "Resume / CV", file: resumeFile },
-      { label: "Government-Issued ID", file: idFile }
+      { label: "Government-Issued ID", file: idFile },
+      { label: "NBI Clearance", file: nbiFile },
+      { label: "Police Clearance", file: policeFile },
+      { label: "Internet Speed Screenshot", file: speedFile }
     ];
-    if (nbiFile) filesToValidate.push({ label: "NBI / Police Clearance", file: nbiFile });
-    if (addressFile) filesToValidate.push({ label: "Proof of Address", file: addressFile });
 
     const validatedBuffers: { [key: string]: Buffer } = {};
 
@@ -189,17 +217,27 @@ export async function POST(request: Request) {
         },
       });
 
-      // 3. Find/Create Niche
-      let niche = await tx.niches.findUnique({
-        where: { name: nicheName },
-      });
-      if (!niche) {
-        niche = await tx.niches.create({
-          data: {
-            name: nicheName,
-            description: `Niche specialization for ${nicheName}`,
-          },
+      // 3. Find/Create Niches
+      let primaryNicheId: bigint | null = null;
+      const nicheIds: bigint[] = [];
+
+      for (let i = 0; i < niches.length; i++) {
+        const nName = niches[i];
+        let niche = await tx.niches.findUnique({
+          where: { name: nName },
         });
+        if (!niche) {
+          niche = await tx.niches.create({
+            data: {
+              name: nName,
+              description: `Niche specialization for ${nName}`,
+            },
+          });
+        }
+        nicheIds.push(niche.id);
+        if (i === 0) {
+          primaryNicheId = niche.id;
+        }
       }
 
       // 4. Create VA Profile
@@ -207,11 +245,35 @@ export async function POST(request: Request) {
         data: {
           user_id: user.id,
           experience_level: experience,
-          preferred_niche_id: niche.id,
+          preferred_niche_id: primaryNicheId,
+          preferred_role: niches.join(", "),
           expected_rate: parseFloat(expectedRate),
           onboarding_status: "pending_interview",
         },
       });
+
+      // 4b. Save all selected niches as skills under category "Niche"
+      for (const nicheId of nicheIds) {
+        const nName = niches[nicheIds.indexOf(nicheId)];
+        let skill = await tx.skills.findUnique({
+          where: { name: nName },
+        });
+        if (!skill) {
+          skill = await tx.skills.create({
+            data: {
+              name: nName,
+              category: "Niche",
+            },
+          });
+        }
+        await tx.va_skills.create({
+          data: {
+            va_profile_id: vaProfile.id,
+            skill_id: skill.id,
+            proficiency_level: "Expert",
+          },
+        });
+      }
 
       // 5. Save Skills/Tools
       for (const tool of tools) {
@@ -278,7 +340,7 @@ export async function POST(request: Request) {
           reqType = await tx.requirement_types.create({
             data: {
               name: typeName,
-              is_required: typeName === "Resume / CV" || typeName === "Government-Issued ID",
+              is_required: true,
             },
           });
         }
@@ -307,8 +369,9 @@ export async function POST(request: Request) {
 
       await saveFileAndRecord("Resume / CV", resumeFile);
       await saveFileAndRecord("Government-Issued ID", idFile);
-      await saveFileAndRecord("NBI / Police Clearance", nbiFile);
-      await saveFileAndRecord("Proof of Address", addressFile);
+      await saveFileAndRecord("NBI Clearance", nbiFile);
+      await saveFileAndRecord("Police Clearance", policeFile);
+      await saveFileAndRecord("Internet Speed Screenshot", speedFile);
 
       // 8. Create Payment Method Record
       await tx.payment_methods.create({

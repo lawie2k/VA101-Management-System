@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { popularDialCodes, countryDialCodes } from "../../../lib/countryCodes";
+import PhoneInput from "../../../components/forms/PhoneInput";
 import FormHeader from "../../../components/layout/FormHeader";
+import { getExpectedPhoneDigits } from "../../../lib/countryCodes";
 
 const toolsList = [
   "Slack",
@@ -17,9 +18,7 @@ const toolsList = [
   "Shopify"
 ];
 
-export { default } from "../apply-va/page";
-
-function Page() {
+export default function Page() {
   const [formData, setFormData] = useState({
     fullName: "",
     company: "",
@@ -39,8 +38,6 @@ function Page() {
 
   const [selectedTools, setSelectedTools] = useState<string[]>([]);
   const [selectedCountry, setSelectedCountry] = useState({ code: "+1", name: "United States", flag: "🇺🇸" });
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -67,6 +64,14 @@ function Page() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.phone) {
+      const phoneDigits = formData.phone.replace(/\D/g, "");
+      const expected = getExpectedPhoneDigits(selectedCountry.code);
+      if (phoneDigits.length < expected.min || phoneDigits.length > expected.max) {
+        alert(`Please enter a valid phone number for ${selectedCountry.name}. Expected format: ${expected.patternLabel}`);
+        return;
+      }
+    }
     try {
       const response = await fetch("/api/inquiries", {
         method: "POST",
@@ -175,138 +180,14 @@ function Page() {
                               placeholder="e.g. john@example.com"
                           />
                       </div>
-                      <div>
-                          <label className="text-sm font-semibold text-gray-700 mb-1.5 block">Phone (optional)</label>
-                          <div className="flex gap-2">
-                              <div className="relative shrink-0 w-32">
-                                  {/* Trigger Button */}
-                                  <button
-                                      type="button"
-                                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                      className="w-full flex items-center justify-between border border-gray-200 rounded-xl p-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all shadow-xs text-left cursor-pointer"
-                                  >
-                                      <span className="truncate">
-                                          {selectedCountry.flag} {selectedCountry.code}
-                                      </span>
-                                      <svg
-                                          className={`w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0 ${
-                                              isDropdownOpen ? "rotate-180" : ""
-                                          }`}
-                                          fill="none"
-                                          stroke="currentColor"
-                                          viewBox="0 0 24 24"
-                                      >
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                      </svg>
-                                  </button>
-
-                                  {/* Dropdown Menu */}
-                                  {isDropdownOpen && (
-                                      <>
-                                          {/* Invisible backdrop to close the dropdown */}
-                                          <div
-                                              className="fixed inset-0 z-40 cursor-default"
-                                              onClick={() => setIsDropdownOpen(false)}
-                                          />
-                                          <div className="absolute left-0 mt-1.5 w-64 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden flex flex-col">
-                                              {/* Search Input */}
-                                              <div className="p-2 border-b border-gray-100 bg-gray-50/50">
-                                                  <input
-                                                      type="text"
-                                                      value={searchQuery}
-                                                      onChange={(e) => setSearchQuery(e.target.value)}
-                                                      placeholder="Search country or code..."
-                                                      className="w-full border border-gray-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white text-gray-900"
-                                                  />
-                                              </div>
-
-                                              {/* List of Countries - Fixed Height scrollable box */}
-                                              <div className="overflow-y-auto max-h-48 divide-y divide-gray-50">
-                                                  {/* Popular group (only show when not searching) */}
-                                                  {searchQuery === "" && (
-                                                      <div>
-                                                          <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50/50">
-                                                              Popular
-                                                          </div>
-                                                          {popularDialCodes.map((country, idx) => (
-                                                              <button
-                                                                  key={`pop-${idx}`}
-                                                                  type="button"
-                                                                  onClick={() => {
-                                                                      setSelectedCountry(country);
-                                                                      setIsDropdownOpen(false);
-                                                                  }}
-                                                                  className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm transition-all hover:bg-orange-50/50 ${
-                                                                      selectedCountry.code === country.code && selectedCountry.name === country.name
-                                                                          ? "bg-orange-50 font-semibold text-orange-950"
-                                                                          : "text-gray-700 hover:text-gray-900"
-                                                                  }`}
-                                                              >
-                                                                  <span className="text-base">{country.flag}</span>
-                                                                  <span className="font-medium shrink-0">{country.code}</span>
-                                                                  <span className="text-xs text-gray-400 truncate">{country.name}</span>
-                                                              </button>
-                                                          ))}
-                                                      </div>
-                                                  )}
-
-                                                  {/* All/Filtered list */}
-                                                  <div>
-                                                      {searchQuery === "" && (
-                                                          <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50/50">
-                                                              All Countries
-                                                          </div>
-                                                      )}
-                                                      {(() => {
-                                                          const filtered = countryDialCodes.filter(
-                                                              (c) =>
-                                                                  c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                                                  c.code.includes(searchQuery)
-                                                          );
-                                                          if (filtered.length === 0) {
-                                                              return (
-                                                                  <div className="px-3 py-4 text-center text-xs text-gray-400">
-                                                                      No results found
-                                                                  </div>
-                                                              );
-                                                          }
-                                                          return filtered.map((country, idx) => (
-                                                              <button
-                                                                  key={`all-${idx}`}
-                                                                  type="button"
-                                                                  onClick={() => {
-                                                                      setSelectedCountry(country);
-                                                                      setIsDropdownOpen(false);
-                                                                      setSearchQuery("");
-                                                                  }}
-                                                                  className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm transition-all hover:bg-orange-50/50 ${
-                                                                      selectedCountry.code === country.code && selectedCountry.name === country.name
-                                                                          ? "bg-orange-50 font-semibold text-orange-950"
-                                                                          : "text-gray-700 hover:text-gray-900"
-                                                                  }`}
-                                                              >
-                                                                  <span className="text-base">{country.flag}</span>
-                                                                  <span className="font-medium shrink-0">{country.code}</span>
-                                                                  <span className="text-xs text-gray-400 truncate">{country.name}</span>
-                                                              </button>
-                                                          ));
-                                                      })()}
-                                                  </div>
-                                              </div>
-                                          </div>
-                                      </>
-                                  )}
-                              </div>
-                              <input
-                                  type="tel"
-                                  name="phone"
-                                  value={formData.phone}
-                                  onChange={handleInputChange}
-                                  className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all shadow-xs"
-                                  placeholder="(555) 123-4567"
-                              />
-                          </div>
-                      </div>
+                      <PhoneInput
+                        value={formData.phone}
+                        onChange={(val) => setFormData((prev) => ({ ...prev, phone: val }))}
+                        selectedCountry={selectedCountry}
+                        onCountryChange={setSelectedCountry}
+                        label="Phone (optional)"
+                        placeholder="(555) 123-4567"
+                      />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">

@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import FormHeader from "../../../../components/layout/FormHeader";
-import { popularDialCodes, countryDialCodes } from "../../../../lib/countryCodes";
+import PhoneInput from "../../../../components/forms/PhoneInput";
+import { getExpectedPhoneDigits } from "../../../../lib/countryCodes";
 
 const steps = [
   { num: 1, label: "Sign Up" },
@@ -24,7 +25,7 @@ const nichesList = [
   "Content Writer",
   "Graphic Design",
   "Video Editing",
-  "Bookkeeping",
+  "Book keeping",
   "Real Estate VA",
   "E-commerce / Shopify",
   "Lead Generation",
@@ -54,9 +55,10 @@ export default function OnboardingPage() {
     fullName: "",
     email: "",
     password: "",
+    confirmPassword: "",
     phone: "",
     // Step 2: Niche
-    niche: "",
+    niches: [] as string[],
     experience: "",
     expectedRate: "",
     // Step 3: Assessment
@@ -77,10 +79,8 @@ export default function OnboardingPage() {
     interviewTime: ""
   });
 
-  // Dialog code states
+  // Phone country selection state
   const [selectedCountry, setSelectedCountry] = useState({ code: "+1", name: "United States", flag: "🇺🇸" });
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
   // Skills
   const [selectedTools, setSelectedTools] = useState<string[]>([]);
@@ -88,9 +88,10 @@ export default function OnboardingPage() {
   // Local file loading simulation
   const [files, setFiles] = useState<{ [key: string]: File | null }>({
     resume: null,
-    nbi: null,
     id: null,
-    address: null
+    nbi: null,
+    police: null,
+    speed: null
   });
 
   const [loading, setLoading] = useState(false);
@@ -113,17 +114,89 @@ export default function OnboardingPage() {
     );
   };
 
+  const toggleNiche = (niche: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      niches: prev.niches.includes(niche)
+        ? prev.niches.filter((n) => n !== niche)
+        : [...prev.niches, niche]
+    }));
+  };
+
+  const isCurrentStepComplete = () => {
+    if (currentStep === 1) {
+      return (
+        !!formData.fullName.trim() &&
+        !!formData.email.trim() &&
+        !!formData.password &&
+        !!formData.confirmPassword &&
+        !!formData.phone.trim()
+      );
+    }
+    if (currentStep === 2) {
+      return (
+        formData.niches.length > 0 &&
+        !!formData.experience &&
+        !!formData.expectedRate
+      );
+    }
+    if (currentStep === 3) {
+      return (
+        !!formData.ans1.trim() &&
+        !!formData.ans2.trim() &&
+        !!formData.ans3.trim()
+      );
+    }
+    if (currentStep === 4) {
+      return !!files.resume && !!files.id && !!files.nbi && !!files.police && !!files.speed;
+    }
+    if (currentStep === 5) {
+      return (
+        !!formData.paymentMethod &&
+        !!formData.accountName.trim() &&
+        !!formData.accountDetails.trim()
+      );
+    }
+    if (currentStep === 6) {
+      return !!formData.interviewDate && !!formData.interviewTime;
+    }
+    return true;
+  };
+
   const nextStep = () => {
     setErrorMsg("");
     // Validate current step
     if (currentStep === 1) {
-      if (!formData.fullName || !formData.email || !formData.password || !formData.phone) {
+      if (!formData.fullName || !formData.email || !formData.password || !formData.confirmPassword || !formData.phone) {
         setErrorMsg("Please fill out all registration fields.");
         return;
       }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        setErrorMsg("Please enter a valid email address.");
+        return;
+      }
+      if (formData.password.length < 8) {
+        setErrorMsg("Password must be at least 8 characters long.");
+        return;
+      }
+      if (!/[A-Z]/.test(formData.password)) {
+        setErrorMsg("Password must contain at least one uppercase letter (A-Z).");
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setErrorMsg("Passwords do not match.");
+        return;
+      }
+      const phoneDigits = formData.phone.replace(/\D/g, "");
+      const expected = getExpectedPhoneDigits(selectedCountry.code);
+      if (phoneDigits.length < expected.min || phoneDigits.length > expected.max) {
+        setErrorMsg(`Please enter a valid phone number for ${selectedCountry.name}. Expected format: ${expected.patternLabel}`);
+        return;
+      }
     } else if (currentStep === 2) {
-      if (!formData.niche || !formData.experience || !formData.expectedRate) {
-        setErrorMsg("Please choose your niche, experience, and expected rate.");
+      if (formData.niches.length === 0 || !formData.experience || !formData.expectedRate) {
+        setErrorMsg("Please select at least one niche, and fill out your experience and expected rate.");
         return;
       }
     } else if (currentStep === 3) {
@@ -132,8 +205,8 @@ export default function OnboardingPage() {
         return;
       }
     } else if (currentStep === 4) {
-      if (!files.resume || !files.id) {
-        setErrorMsg("Resume/CV and Government ID are required.");
+      if (!files.resume || !files.id || !files.nbi || !files.police || !files.speed) {
+        setErrorMsg("All five onboarding documents are required uploads.");
         return;
       }
     } else if (currentStep === 5) {
@@ -169,7 +242,7 @@ export default function OnboardingPage() {
       data.append("email", formData.email);
       data.append("password", formData.password);
       data.append("phone", `${selectedCountry.code} ${formData.phone}`);
-      data.append("niche", formData.niche);
+      data.append("niches", JSON.stringify(formData.niches));
       data.append("experience", formData.experience);
       data.append("expectedRate", formData.expectedRate);
       data.append("tools", JSON.stringify(selectedTools));
@@ -184,9 +257,10 @@ export default function OnboardingPage() {
 
       // Append files
       if (files.resume) data.append("resume", files.resume);
-      if (files.nbi) data.append("nbi", files.nbi);
       if (files.id) data.append("id", files.id);
-      if (files.address) data.append("address", files.address);
+      if (files.nbi) data.append("nbi", files.nbi);
+      if (files.police) data.append("police", files.police);
+      if (files.speed) data.append("speed", files.speed);
 
       const response = await fetch("/api/onboarding", {
         method: "POST",
@@ -247,20 +321,21 @@ export default function OnboardingPage() {
               {steps.map((s) => {
                 const isActive = s.num === currentStep;
                 const isCompleted = s.num < currentStep;
+                const isStepDone = isCompleted || (isActive && isCurrentStepComplete());
                 return (
                   <div key={s.num} className="flex flex-col items-center relative z-10">
                     <div
-                      className={`w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-300 bg-white border-2 ${
-                        isActive
-                          ? "border-[#000829] text-[#000829] ring-4 ring-[#000829]/10"
-                          : isCompleted
-                          ? "border-[#000829] bg-[#000829] text-white"
-                          : "border-gray-200 text-gray-400"
+                      className={`w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-300 border-2 ${
+                        isStepDone
+                          ? `border-orange-500 bg-orange-500 text-white ${isActive ? "ring-4 ring-orange-500/25" : ""}`
+                          : isActive
+                          ? "border-[#000829] text-[#000829] bg-white ring-4 ring-[#000829]/10"
+                          : "border-gray-200 bg-white text-gray-400"
                       }`}
                     >
-                      {isCompleted ? (
-                        <svg className="w-5 h-5 fill-current" viewBox="0 0 20 20">
-                          <path d="M0 11l2-2 5 5L18 3l2 2L7 18z" />
+                      {isStepDone ? (
+                        <svg className="w-4.5 h-4.5 stroke-current" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                       ) : (
                         s.num
@@ -342,70 +417,27 @@ export default function OnboardingPage() {
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-semibold text-gray-700 mb-1.5 block">Phone number</label>
-                    <div className="flex gap-2">
-                      <div className="relative shrink-0 w-32">
-                        <button
-                          type="button"
-                          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                          className="w-full flex items-center justify-between border border-gray-200 rounded-xl p-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 transition-all text-left cursor-pointer"
-                        >
-                          <span className="truncate">
-                            {selectedCountry.flag} {selectedCountry.code}
-                          </span>
-                          <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </button>
-
-                        {isDropdownOpen && (
-                          <>
-                            <div className="fixed inset-0 z-40 cursor-default" onClick={() => setIsDropdownOpen(false)} />
-                            <div className="absolute left-0 mt-1.5 w-64 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden flex flex-col">
-                              <div className="p-2 border-b border-gray-100 bg-gray-50/50">
-                                <input
-                                  type="text"
-                                  value={searchQuery}
-                                  onChange={(e) => setSearchQuery(e.target.value)}
-                                  placeholder="Search country..."
-                                  className="w-full border border-gray-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white"
-                                />
-                              </div>
-                              <div className="overflow-y-auto max-h-48">
-                                {countryDialCodes
-                                  .filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.code.includes(searchQuery))
-                                  .map((country, idx) => (
-                                    <button
-                                      key={idx}
-                                      type="button"
-                                      onClick={() => {
-                                        setSelectedCountry(country);
-                                        setIsDropdownOpen(false);
-                                        setSearchQuery("");
-                                      }}
-                                      className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-orange-50/50 text-gray-700"
-                                    >
-                                      <span>{country.flag}</span>
-                                      <span className="font-medium shrink-0">{country.code}</span>
-                                      <span className="text-xs text-gray-400 truncate">{country.name}</span>
-                                    </button>
-                                  ))}
-                              </div>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
-                        placeholder="(555) 123-4567"
-                      />
-                    </div>
+                    <label className="text-sm font-semibold text-gray-700 mb-1.5 block">Confirm Password</label>
+                    <input
+                      type="password"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
+                      placeholder="Re-enter your password"
+                    />
                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                  <PhoneInput
+                    value={formData.phone}
+                    onChange={(val) => setFormData((prev) => ({ ...prev, phone: val }))}
+                    selectedCountry={selectedCountry}
+                    onCountryChange={setSelectedCountry}
+                    required
+                  />
                 </div>
               </div>
             )}
@@ -416,28 +448,7 @@ export default function OnboardingPage() {
                 <h2 className="text-2xl font-bold text-gray-950 mb-1">Select your Niche & Tools</h2>
                 <p className="text-gray-500 text-sm mb-6">Tell us about your background, specializations, and expected hourly rate.</p>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700 mb-1.5 block">Preferred Niche</label>
-                    <div className="relative">
-                      <select
-                        name="niche"
-                        value={formData.niche}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full border border-gray-200 rounded-xl p-3 text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
-                      >
-                        <option value="">Select your niche</option>
-                        {nichesList.map((n) => (
-                          <option key={n} value={n}>{n}</option>
-                        ))}
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-                        <svg className="fill-current h-4 w-4" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                      </div>
-                    </div>
-                  </div>
-
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                   <div>
                     <label className="text-sm font-semibold text-gray-700 mb-1.5 block">Years of Experience</label>
                     <div className="relative">
@@ -473,6 +484,42 @@ export default function OnboardingPage() {
                       className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
                       placeholder="e.g. $8 / hr"
                     />
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <label className="text-sm font-semibold text-gray-700 mb-3 block">
+                    Select your Niches (Select all that apply)
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    {nichesList.map((n) => {
+                      const isSelected = formData.niches.includes(n);
+                      return (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => toggleNiche(n)}
+                          className={`flex items-center text-left rounded-xl border p-3.5 transition-all text-sm font-medium ${
+                            isSelected
+                              ? "border-orange-400 bg-orange-50/50 text-orange-950"
+                              : "border-gray-200 bg-white hover:border-orange-300 text-gray-800"
+                          }`}
+                        >
+                          <div
+                            className={`w-5 h-5 rounded-full mr-3 flex items-center justify-center border-2 transition-all shrink-0 ${
+                              isSelected ? "border-orange-500 bg-orange-500 text-white" : "border-gray-300 bg-white"
+                            }`}
+                          >
+                            {isSelected && (
+                              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                                <path d="M0 11l2-2 5 5L18 3l2 2L7 18z" />
+                              </svg>
+                            )}
+                          </div>
+                          {n}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -569,7 +616,7 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            {/* STEP 4: Requirements Upload */}
+             {/* STEP 4: Requirements Upload */}
             {currentStep === 4 && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-950 mb-1">Upload onboarding documents</h2>
@@ -631,8 +678,8 @@ export default function OnboardingPage() {
                   {/* NBI Clearance */}
                   <div className="border border-dashed border-gray-200 rounded-2xl p-5 flex flex-col bg-gray-50/50 justify-between">
                     <div>
-                      <h4 className="font-semibold text-gray-800 text-sm mb-1">NBI / Police Clearance (Optional)</h4>
-                      <p className="text-xs text-gray-400 mb-4">Background check verification document.</p>
+                      <h4 className="font-semibold text-gray-800 text-sm mb-1">NBI Clearance (Required)</h4>
+                      <p className="text-xs text-gray-400 mb-4">Official background check document from the NBI.</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <input
@@ -654,28 +701,54 @@ export default function OnboardingPage() {
                     </div>
                   </div>
 
-                  {/* Proof of Address */}
+                  {/* Police Clearance */}
                   <div className="border border-dashed border-gray-200 rounded-2xl p-5 flex flex-col bg-gray-50/50 justify-between">
                     <div>
-                      <h4 className="font-semibold text-gray-800 text-sm mb-1">Proof of Address (Optional)</h4>
-                      <p className="text-xs text-gray-400 mb-4">Utility bill or billing statement within the last 3 months.</p>
+                      <h4 className="font-semibold text-gray-800 text-sm mb-1">Police Clearance (Required)</h4>
+                      <p className="text-xs text-gray-400 mb-4">Local police clearance or background check cert.</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <input
                         type="file"
-                        id="file-address"
+                        id="file-police"
                         accept=".pdf,.png,.jpg,.jpeg"
-                        onChange={(e) => handleFileChange(e, "address")}
+                        onChange={(e) => handleFileChange(e, "police")}
                         className="hidden"
                       />
                       <label
-                        htmlFor="file-address"
+                        htmlFor="file-police"
                         className="bg-white border border-gray-200 rounded-xl px-4 py-2 text-xs font-semibold text-gray-700 hover:border-orange-300 hover:text-orange-950 cursor-pointer transition-all shadow-2xs"
                       >
                         Choose file
                       </label>
                       <span className="text-xs text-gray-500 truncate max-w-[150px]">
-                        {files.address ? files.address.name : "No file selected"}
+                        {files.police ? files.police.name : "No file selected"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Internet Speed Screenshot */}
+                  <div className="border border-dashed border-gray-200 rounded-2xl p-5 flex flex-col bg-gray-50/50 justify-between md:col-span-2">
+                    <div>
+                      <h4 className="font-semibold text-gray-800 text-sm mb-1">Internet Speed Screenshot (Required)</h4>
+                      <p className="text-xs text-gray-400 mb-4">Screenshot of your speedtest result showing download/upload speeds and ping.</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="file"
+                        id="file-speed"
+                        accept=".pdf,.png,.jpg,.jpeg"
+                        onChange={(e) => handleFileChange(e, "speed")}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="file-speed"
+                        className="bg-white border border-gray-200 rounded-xl px-4 py-2 text-xs font-semibold text-gray-700 hover:border-orange-300 hover:text-orange-950 cursor-pointer transition-all shadow-2xs"
+                      >
+                        Choose file
+                      </label>
+                      <span className="text-xs text-gray-500 truncate max-w-[150px]">
+                        {files.speed ? files.speed.name : "No file selected"}
                       </span>
                     </div>
                   </div>
@@ -849,8 +922,12 @@ export default function OnboardingPage() {
               <button
                 type="button"
                 onClick={nextStep}
-                disabled={loading}
-                className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl px-6 py-2.5 font-semibold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                disabled={loading || !isCurrentStepComplete()}
+                className={`rounded-xl px-6 py-2.5 font-semibold flex items-center gap-1.5 transition-all ${
+                  loading || !isCurrentStepComplete()
+                    ? "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
+                    : "bg-orange-500 hover:bg-orange-600 text-white shadow-sm cursor-pointer"
+                }`}
               >
                 {loading ? (
                   <>
