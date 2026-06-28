@@ -2,7 +2,7 @@
 
 export default function Footer() {
   return (
-    <footer className="bg-[#000312] bg-[linear-gradient(93deg,#000312_55%,#021959_100%)] text-[#9B9BA1] font-sans text-xs w-full pt-12 md:pt-16 px-6 md:px-20 border-t border-[#1C1C1E]">
+    <footer className="bg-[#000312] text-[#9B9BA1] font-sans text-xs w-full pt-12 pb-5 md:pt-16 px-6 md:px-20 border-t border-[#1C1C1E]">
       <div className="max-w-6xl mx-auto">
         {/* Top Grid Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8">
@@ -128,13 +128,15 @@ export default function Footer() {
         </div>
 
         {/* Separator */}
-        <hr className="border-[#1C1C1E] my-8" />
+        <hr className="border-gray-800 my-8" />
+
+          <p className="text-[#6B6B72] text-[11px] pb-3">
+              © 2026 Virtual Assistants 101. All Rights reserved
+          </p>
 
         {/* Bottom Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <p className="text-[#6B6B72] text-[11px]">
-            © 2026 Virtual Assistants 101. All Rights reserved
-          </p>
+
 
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] text-[#6B6B72]">
             <a href="#" className="hover:text-gray-300 transition-colors">Opt-In/Opt-Out</a>

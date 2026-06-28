@@ -2,14 +2,21 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import FormHeader from "../../../components/layout/FormHeader";
+import { getDashboardRoute } from "../../../lib/roles";
 
 export default function Page() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     rememberMe: false,
   });
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -19,9 +26,35 @@ export default function Page() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login submitted:", formData);
+    setError(null);
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Invalid email or password");
+      }
+
+      // Session established -> route user to dashboard based on primary role
+      const dashboardRoute = getDashboardRoute(data.user.roles || []);
+      router.push(dashboardRoute);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -43,6 +76,12 @@ export default function Page() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {error && (
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 text-xs font-semibold text-red-700 rounded-lg animate-fade-in">
+              {error}
+            </div>
+          )}
+
           {/* Email */}
           <div>
             <label
@@ -71,16 +110,25 @@ export default function Page() {
             >
               Password
             </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              value={formData.password}
-              onChange={handleInputChange}
-              className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-all font-medium text-slate-800 bg-slate-50/30"
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                required
+                value={formData.password}
+                onChange={handleInputChange}
+                className="w-full border border-slate-200 rounded-xl pl-4 pr-10 py-2.5 text-sm focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-all font-medium text-slate-800 bg-slate-50/30"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer text-xs font-bold"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
 
           {/* Remember me & Forgot password */}
@@ -104,7 +152,7 @@ export default function Page() {
 
             <a
               href="#"
-              className="font-bold text-orange-500 hover:text-orange-600 hover:underline"
+              className="font-bold text-[#E84E29] hover:text-[#DA431E] hover:underline"
             >
               Forgot password?
             </a>
@@ -114,9 +162,10 @@ export default function Page() {
           <div>
             <button
               type="submit"
-              className="w-full inline-flex items-center justify-center py-2.5 border border-transparent rounded-full text-xs font-bold text-white bg-[#F97316] hover:bg-orange-600 transition-all shadow-sm cursor-pointer"
+              disabled={loading}
+              className="w-full inline-flex items-center justify-center py-2.5 border border-transparent rounded-full text-xs font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] transition-all shadow-sm cursor-pointer disabled:opacity-50"
             >
-              Sign in
+              {loading ? "Signing in..." : "Sign in"}
             </button>
           </div>
         </form>

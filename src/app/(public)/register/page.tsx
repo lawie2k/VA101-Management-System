@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import FormHeader from "../../../components/layout/FormHeader";
 
 type AccountType = "va" | "client" | "trainer" | "student";
@@ -36,6 +37,7 @@ const typeOptions: TypeOption[] = [
 ];
 
 export default function Page() {
+  const router = useRouter();
   const [accountType, setAccountType] = useState<AccountType>("va");
   const [formData, setFormData] = useState({
     fullName: "",
@@ -44,6 +46,10 @@ export default function Page() {
     confirmPassword: "",
   });
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
   const selectedOption = typeOptions.find((opt) => opt.id === accountType);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,17 +57,62 @@ export default function Page() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validatePassword = (pass: string) => {
+    const hasMinLength = pass.length >= 8;
+    const hasUppercase = /[A-Z]/.test(pass);
+    return hasMinLength && hasUppercase;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    // 1. Password mismatch validation
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
+      setError("Passwords do not match");
       return;
     }
-    console.log("Submit Registration:", { accountType, ...formData });
+
+    // 2. Password complexity validation (8 characters, 1 uppercase letter)
+    if (!validatePassword(formData.password)) {
+      setError("Password must be at least 8 characters long and contain at least one uppercase letter.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+          accountType,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Something went wrong. Please try again.");
+      }
+
+      // Successful registration -> route to role dashboard
+      if (accountType === "va") router.push("/va/dashboard");
+      else if (accountType === "client") router.push("/client/dashboard");
+      else if (accountType === "trainer") router.push("/trainer/dashboard");
+      else if (accountType === "student") router.push("/student/dashboard");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center py-8 px-4 sm:px-6 lg:px-8">
       {/* Top Header Section */}
       <div className="w-full max-w-5xl flex flex-col items-center mb-8">
         <FormHeader />
@@ -112,6 +163,12 @@ export default function Page() {
           className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xs max-w-5xl"
         >
           <div className="space-y-5">
+            {error && (
+              <div className="bg-red-50 border-l-4 border-red-500 p-4 text-xs font-semibold text-red-700 rounded-lg">
+                {error}
+              </div>
+            )}
+
             {/* Full Name & Email Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
@@ -155,58 +212,94 @@ export default function Page() {
 
             {/* Password & Confirm Password Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div>
+              <div className="relative">
                 <label
                   htmlFor="password"
                   className="block text-xs font-bold text-slate-900 mb-2"
                 >
                   Password
                 </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-all font-medium text-slate-800 bg-slate-50/30"
-                  placeholder="••••••••"
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="w-full border border-slate-200 rounded-xl pl-4 pr-10 py-2.5 text-sm focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-all font-medium text-slate-800 bg-slate-50/30"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer text-xs font-bold"
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
               </div>
 
-              <div>
+              <div className="relative">
                 <label
                   htmlFor="confirmPassword"
                   className="block text-xs font-bold text-slate-900 mb-2"
                 >
                   Confirm password
                 </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-all font-medium text-slate-800 bg-slate-50/30"
-                  placeholder="••••••••"
-                />
+                <div className="relative">
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    className="w-full border border-slate-200 rounded-xl pl-4 pr-10 py-2.5 text-sm focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-all font-medium text-slate-800 bg-slate-50/30"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer text-xs font-bold"
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
               </div>
             </div>
 
             {/* Disclaimer terms */}
             <p className="text-[10px] text-slate-400 font-semibold leading-relaxed">
-              By creating an account you agree to our terms. Payments are routed
-              through our platform and verified by Finance.
+              By creating an account you agree to our{" "}
+              <a
+                href="https://www.virtualassistant101.com/p/terms-and-conditions.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-slate-600 transition-colors"
+              >
+                Terms
+              </a>{" "}
+              and{" "}
+              <a
+                href="https://www.virtualassistant101.com/p/privacy-policy.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-slate-600 transition-colors"
+              >
+                Privacy Policy
+              </a>
+              . Payments are routed through our platform and verified by Finance.
             </p>
 
             {/* Action Submit Button */}
             <div>
               <button
                 type="submit"
-                className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent rounded-full text-xs font-bold text-white bg-[#F97316] hover:bg-orange-600 transition-all shadow-sm cursor-pointer"
+                disabled={loading}
+                className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent rounded-full text-xs font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] transition-all shadow-sm cursor-pointer disabled:opacity-50"
               >
-                Create {selectedOption ? selectedOption.title : "account"} account
+                {loading ? "Creating..." : `Create ${selectedOption ? selectedOption.title : "account"} account`}
               </button>
             </div>
           </div>

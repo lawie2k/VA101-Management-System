@@ -1,51 +1,36 @@
-interface RateLimitRecord {
-  timestamps: number[];
-}
+const tracker = new Map<string, { count: number; resetTime: number }>();
 
-const tracker = new Map<string, RateLimitRecord>();
+/**
+ * Basic in-memory rate limiter helper for serverless/development environments.
+ * Prevents brute-force requests by counting requests per IP.
+ */
+export function rateLimit(ip: string, limit = 5, windowMs = 60 * 1000) {
+  const now = Date.now();
+  const record = tracker.get(ip);
 
-// Clean up expired entries every 5 minutes to prevent memory leaks
-if (!(globalThis as any).rateLimitCleanupInterval) {
-  (globalThis as any).rateLimitCleanupInterval = setInterval(() => {
-    const now = Date.now();
-    for (const [ip, record] of tracker.entries()) {
-      const validTimestamps = record.timestamps.filter(
-        (time) => now - time < 15 * 60 * 1000 // 15 minutes window
-      );
-      if (validTimestamps.length === 0) {
-        tracker.delete(ip);
-      } else {
-        record.timestamps = validTimestamps;
-      }
-    }
-  }, 5 * 60 * 1000);
+  // If no record exists or the rate limit window has expired, reset
+  if (!record || now > record.resetTime) {
+    tracker.set(ip, { count: 1, resetTime: now + windowMs });
+    return { success: true, remaining: limit - 1 };
+  }
+
+  // If request count exceeds the limit
+  if (record.count >= limit) {
+    return { success: false, remaining: 0 };
+  }
+
+  // Increment request count
+  record.count += 1;
+  return { success: true, remaining: limit - record.count };
 }
 
 /**
- * Validates request counts for a given client IP within a window of time.
- * Defaults to 5 requests per 15 minutes.
+ * Extracts the client IP address from request headers.
  */
-export function rateLimit(
-  ip: string,
-  limit = 5,
-  durationMs = 15 * 60 * 1000
-): { success: boolean; limit: number; remaining: number } {
-  const now = Date.now();
-  const record = tracker.get(ip) || { timestamps: [] };
-
-  // Filter timestamps within the duration window
-  record.timestamps = record.timestamps.filter((time) => now - time < durationMs);
-
-  if (record.timestamps.length >= limit) {
-    return { success: false, limit, remaining: 0 };
+export function getClientIp(req: Request): string {
+  const forwardedFor = req.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    return forwardedFor.split(",")[0].trim();
   }
-
-  record.timestamps.push(now);
-  tracker.set(ip, record);
-
-  return {
-    success: true,
-    limit,
-    remaining: limit - record.timestamps.length,
-  };
+  return req.headers.get("x-real-ip") || "127.0.0.1";
 }

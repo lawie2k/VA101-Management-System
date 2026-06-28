@@ -86,7 +86,7 @@ export default function PhoneInput({
           <button
             type="button"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="w-full flex items-center justify-between border border-gray-200 rounded-xl p-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all shadow-xs text-left cursor-pointer"
+            className="w-full flex items-center justify-between border border-gray-200 rounded-xl p-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all shadow-xs text-left cursor-pointer"
           >
             <span className="truncate">
               {selectedCountry.flag} {selectedCountry.code}
@@ -119,7 +119,7 @@ export default function PhoneInput({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search country or code..."
-                    className="w-full border border-gray-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white text-gray-900"
+                    className="w-full border border-gray-200 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent bg-white text-gray-900"
                   />
                 </div>
 
@@ -139,9 +139,9 @@ export default function PhoneInput({
                             onCountryChange(country);
                             setIsDropdownOpen(false);
                           }}
-                          className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm transition-all hover:bg-orange-50/50 ${
+                          className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm transition-all hover:bg-[#E84E29]/10 ${
                             selectedCountry.code === country.code && selectedCountry.name === country.name
-                              ? "bg-orange-50 font-semibold text-orange-950"
+                              ? "bg-[#E84E29]/10 font-semibold text-[#E84E29]"
                               : "text-gray-700 hover:text-gray-900"
                           }`}
                         >
@@ -174,9 +174,9 @@ export default function PhoneInput({
                             setIsDropdownOpen(false);
                             setSearchQuery("");
                           }}
-                          className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm transition-all hover:bg-orange-50/50 ${
+                          className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm transition-all hover:bg-[#E84E29]/10 ${
                             selectedCountry.code === country.code && selectedCountry.name === country.name
-                              ? "bg-orange-50 font-semibold text-orange-950"
+                              ? "bg-[#E84E29]/10 font-semibold text-[#E84E29]"
                               : "text-gray-700 hover:text-gray-900"
                           }`}
                         >
@@ -198,7 +198,7 @@ export default function PhoneInput({
           value={value}
           onChange={(e) => handlePhoneChange(e.target.value)}
           required={required}
-          className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all shadow-xs"
+          className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all shadow-xs"
           placeholder={placeholder}
         />
       </div>
