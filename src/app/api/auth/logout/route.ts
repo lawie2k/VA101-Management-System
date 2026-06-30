@@ -1,17 +1,12 @@
 import { NextResponse } from "next/server";
-
-export async function GET() {
-  return NextResponse.json({ message: "GET placeholder for src/app/api/auth/logout/route.ts" });
-}
+import { clearSessionCookie } from "../../../../lib/auth";
 
 export async function POST() {
-  return NextResponse.json({ message: "POST placeholder for src/app/api/auth/logout/route.ts" });
-}
-
-export async function PATCH() {
-  return NextResponse.json({ message: "PATCH placeholder for src/app/api/auth/logout/route.ts" });
-}
-
-export async function DELETE() {
-  return NextResponse.json({ message: "DELETE placeholder for src/app/api/auth/logout/route.ts" });
+  try {
+    await clearSessionCookie();
+    return NextResponse.json({ success: true, message: "Logged out successfully." });
+  } catch (err) {
+    console.error("Logout error:", err);
+    return NextResponse.json({ error: "Failed to log out." }, { status: 500 });
+  }
 }

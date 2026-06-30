@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import FormHeader from "../../../components/layout/FormHeader";
@@ -17,6 +17,24 @@ export default function Page() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.authenticated && data.user) {
+            const dashboardRoute = getDashboardRoute(data.user.roles || []);
+            router.replace(dashboardRoute);
+          }
+        }
+      } catch (err) {
+        console.error("Check session error:", err);
+      }
+    }
+    checkSession();
+  }, [router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -180,6 +198,17 @@ export default function Page() {
             Sign up
           </Link>
         </p>
+
+        {/* Discovery Call booking CTA */}
+        <div className="mt-6 pt-5 border-t border-slate-150 flex flex-col items-center text-center">
+          <p className="text-xs text-slate-500 font-medium">Looking to hire a Virtual Assistant?</p>
+          <Link
+            href="/discovery-calls"
+            className="mt-2.5 w-full inline-flex items-center justify-center py-2.5 px-4 border border-slate-200 hover:border-slate-350 rounded-full text-xs font-extrabold text-slate-755 bg-slate-50 hover:bg-slate-100/70 transition-all cursor-pointer shadow-xs"
+          >
+             Book a free Discovery Call
+          </Link>
+        </div>
       </div>
 
       {/* Spacer helper to push footer down cleanly */}

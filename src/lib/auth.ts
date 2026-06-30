@@ -20,7 +20,7 @@ const TOKEN_EXPIRY = "7d"; // 7 days
 export interface SessionUser {
   id: string; // BigInt serialized as string
   email: string;
-  fullName: string;
+  fullName: string | null;
   profilePhotoUrl: string | null;
   roles: string[];
 }
@@ -50,7 +50,12 @@ export async function verifyPassword(
 // ============================================================
 
 export async function createToken(user: SessionUser): Promise<string> {
-  const token = await new SignJWT({ user })
+  // Avoid encoding large base64 profile pictures in the cookie payload to prevent header overflow crashes
+  const sanitizedUser = {
+    ...user,
+    profilePhotoUrl: null,
+  };
+  const token = await new SignJWT({ user: sanitizedUser })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(TOKEN_EXPIRY)

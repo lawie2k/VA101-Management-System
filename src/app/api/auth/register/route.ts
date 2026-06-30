@@ -21,14 +21,21 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { fullName, email, password, accountType } = body;
+    const { email, password, accountType } = body;
+    let { fullName } = body;
 
     // 1. Basic sanitization & validations
-    if (!fullName || !email || !password || !accountType) {
+    if (!email || !password || !accountType) {
       return NextResponse.json(
-        { error: "All fields are required" },
+        { error: "Email, password, and account type are required" },
         { status: 400 }
       );
+    }
+
+    if (!fullName) {
+      // Fallback: capitalize email prefix and strip any characters incompatible with name patterns
+      const prefix = email.split("@")[0].replace(/[^a-zA-Z0-9\s,.'-]/g, "");
+      fullName = prefix.charAt(0).toUpperCase() + prefix.slice(1) || "User";
     }
 
     if (!NAME_REGEX.test(fullName)) {

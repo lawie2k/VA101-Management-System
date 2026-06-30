@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 interface FormHeaderProps {
   forceSolid?: boolean;
@@ -32,18 +32,97 @@ const servicesItems = [
 
 export default function FormHeader({ forceSolid = false, isDashboard = false }: FormHeaderProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [activeDropdown, setActiveDropdown] = useState<"about" | "services" | "profile" | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSubmenu, setMobileSubmenu] = useState<"about" | "services" | null>(null);
   const [isScrolled, setIsScrolled] = useState(forceSolid);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isSetupPage = mounted && pathname === "/va/profile/setup-profile-form";
+
+  const [profileImage, setProfileImage] = useState("");
+  const [profileName, setProfileName] = useState("");
+  const [profileEmail, setProfileEmail] = useState("");
+
+  const initials = profileName
+    ? profileName.trim().split(" ").filter(Boolean).map(n => n[0]).join("").slice(0, 2).toUpperCase()
+    : "JD";
+
+  useEffect(() => {
+    async function loadProfile() {
+      // 1. Try localStorage first for instant client render
+      const saved = localStorage.getItem("va_profile_data");
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          setProfileImage(data.avatar || "");
+          if (data.fullName) setProfileName(data.fullName);
+          if (data.email) setProfileEmail(data.email);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      // 2. Fetch session from server to ensure accuracy and freshness
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const session = await res.json();
+          if (session.authenticated && session.user) {
+            const user = session.user;
+            if (user.fullName) setProfileName(user.fullName);
+            if (user.email) setProfileEmail(user.email);
+            
+            let avatar = "";
+            if (user.profilePhotoUrl) {
+              if (user.profilePhotoUrl.startsWith("{")) {
+                try {
+                  const parsed = JSON.parse(user.profilePhotoUrl);
+                  avatar = parsed.avatar || "";
+                } catch {
+                  avatar = user.profilePhotoUrl;
+                }
+              } else {
+                avatar = user.profilePhotoUrl;
+              }
+            }
+            setProfileImage(avatar);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load session profile", err);
+      }
+    }
+
+    loadProfile();
+    window.addEventListener("storage", loadProfile);
+    window.addEventListener("profileUpdate", loadProfile);
+    return () => {
+      window.removeEventListener("storage", loadProfile);
+      window.removeEventListener("profileUpdate", loadProfile);
+    };
+  }, []);
 
   useEffect(() => {
     if (forceSolid) return;
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
+    const handleFeedScroll = (e: Event) => {
+      const scrollTop = (e as CustomEvent).detail?.scrollTop || 0;
+      setIsScrolled(scrollTop > 10);
+    };
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("feedScroll", handleFeedScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("feedScroll", handleFeedScroll);
+    };
   }, [forceSolid]);
 
   const toggleDropdown = (menu: "about" | "services" | "profile") => {
@@ -159,32 +238,58 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
                 onBlur={() => setTimeout(() => setActiveDropdown(null), 150)}
                 className="flex items-center gap-2 focus:outline-none cursor-pointer group"
               >
-                <div className="w-9 h-9 rounded-full border border-teal-500 overflow-hidden transition-all group-hover:border-teal-400 shadow-sm">
-                  <img
-                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80"
-                    alt="User profile"
-                    className="w-full h-full object-cover"
-                  />
+                <div className="w-9 h-9 rounded-full border border-[#E84E29] overflow-hidden transition-all group-hover:border-[#DA431E] shadow-sm flex items-center justify-center bg-slate-850">
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt="User profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-[10px] font-black text-white bg-gradient-to-br from-orange-500 to-amber-500 h-full w-full grid place-items-center">
+                      {initials}
+                    </span>
+                  )}
                 </div>
               </button>
               {activeDropdown === "profile" && (
                 <div className="absolute top-full right-0 mt-3 w-56 bg-[#090b16] border border-[#1c1c1e] rounded-xl shadow-xl py-3.5 px-1.5 flex flex-col z-50">
                   <div className="px-3 pb-3 mb-2 border-b border-[#1c1c1e]">
-                    <p className="text-xs font-extrabold text-white">Jane Doe</p>
-                    <p className="text-[10px] text-gray-500 font-semibold mt-0.5 truncate">jane.doe@example.com</p>
+                    <p className="text-xs font-extrabold text-white">{profileName}</p>
+                    <p className="text-[10px] text-gray-500 font-semibold mt-0.5 truncate">
+                      {profileEmail}
+                    </p>
                   </div>
-                  <Link
-                    href="/va/dashboard"
-                    className="px-3 py-2 text-gray-300 hover:text-white hover:bg-slate-900/50 text-[11px] font-bold rounded-lg transition-all"
-                  >
-                    Dashboard
-                  </Link>
-                  <Link
-                    href="/va/profile"
-                    className="px-3 py-2 text-gray-300 hover:text-white hover:bg-slate-900/50 text-[11px] font-bold rounded-lg transition-all"
-                  >
-                    My Profile
-                  </Link>
+                  {isSetupPage ? (
+                    <span
+                      className="px-3 py-2 text-slate-500 cursor-not-allowed text-[11px] font-bold rounded-lg"
+                      title="Please complete your profile setup first"
+                    >
+                      Dashboard
+                    </span>
+                  ) : (
+                    <Link
+                      href="/va/dashboard"
+                      className="px-3 py-2 text-gray-300 hover:text-white hover:bg-slate-900/50 text-[11px] font-bold rounded-lg transition-all"
+                    >
+                      Dashboard
+                    </Link>
+                  )}
+                  {isSetupPage ? (
+                    <span
+                      className="px-3 py-2 text-slate-500 cursor-not-allowed text-[11px] font-bold rounded-lg"
+                      title="Please complete your profile setup first"
+                    >
+                      My Profile
+                    </span>
+                  ) : (
+                    <Link
+                      href="/va/profile"
+                      className="px-3 py-2 text-gray-300 hover:text-white hover:bg-slate-900/50 text-[11px] font-bold rounded-lg transition-all"
+                    >
+                      My Profile
+                    </Link>
+                  )}
                   <a
                     href="#"
                     className="px-3 py-2 text-gray-300 hover:text-white hover:bg-slate-900/50 text-[11px] font-bold rounded-lg transition-all"
@@ -301,20 +406,36 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
             {isDashboard ? (
               /* Mobile dashboard actions */
               <>
-                <Link
-                  href="/va/dashboard"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-center text-gray-300 hover:text-white font-bold text-sm tracking-wider border border-[#1c1c1e] rounded-full py-2.5"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/va/profile"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-center text-gray-300 hover:text-white font-bold text-sm tracking-wider border border-[#1c1c1e] rounded-full py-2.5"
-                >
-                  My Profile
-                </Link>
+                {isSetupPage ? (
+                  <span
+                    className="w-full text-center text-slate-500 font-bold text-sm tracking-wider border border-[#1c1c1e] rounded-full py-2.5 cursor-not-allowed opacity-50 bg-[#1c1c1e]/10"
+                  >
+                    Dashboard
+                  </span>
+                ) : (
+                  <Link
+                    href="/va/dashboard"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full text-center text-gray-300 hover:text-white font-bold text-sm tracking-wider border border-[#1c1c1e] rounded-full py-2.5"
+                  >
+                    Dashboard
+                  </Link>
+                )}
+                {isSetupPage ? (
+                  <span
+                    className="w-full text-center text-slate-500 font-bold text-sm tracking-wider border border-[#1c1c1e] rounded-full py-2.5 cursor-not-allowed opacity-50 bg-[#1c1c1e]/10"
+                  >
+                    My Profile
+                  </span>
+                ) : (
+                  <Link
+                    href="/va/profile"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full text-center text-gray-300 hover:text-white font-bold text-sm tracking-wider border border-[#1c1c1e] rounded-full py-2.5"
+                  >
+                    My Profile
+                  </Link>
+                )}
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);

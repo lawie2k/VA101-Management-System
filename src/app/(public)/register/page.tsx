@@ -40,7 +40,6 @@ export default function Page() {
   const router = useRouter();
   const [accountType, setAccountType] = useState<AccountType>("va");
   const [formData, setFormData] = useState({
-    fullName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -51,6 +50,12 @@ export default function Page() {
   const [loading, setLoading] = useState(false);
 
   const selectedOption = typeOptions.find((opt) => opt.id === accountType);
+
+  const isFormValid = !!(
+    formData.email.trim() &&
+    formData.password.trim() &&
+    formData.confirmPassword.trim()
+  );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -86,7 +91,6 @@ export default function Page() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          fullName: formData.fullName,
           email: formData.email,
           password: formData.password,
           accountType,
@@ -99,8 +103,8 @@ export default function Page() {
         throw new Error(data.error || "Something went wrong. Please try again.");
       }
 
-      // Successful registration -> route to role dashboard
-      if (accountType === "va") router.push("/va/dashboard");
+      // Successful registration -> route to setup profile first for VAs, otherwise dashboard
+      if (accountType === "va") router.push("/va/profile/setup-profile-form");
       else if (accountType === "client") router.push("/client/dashboard");
       else if (accountType === "trainer") router.push("/trainer/dashboard");
       else if (accountType === "student") router.push("/student/dashboard");
@@ -169,45 +173,24 @@ export default function Page() {
               </div>
             )}
 
-            {/* Full Name & Email Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div>
-                <label
-                  htmlFor="fullName"
-                  className="block text-xs font-bold text-slate-900 mb-2"
-                >
-                  {accountType === "client" ? "Full name or Company name" : "Full name"}
-                </label>
-                <input
-                  id="fullName"
-                  name="fullName"
-                  type="text"
-                  required
-                  value={formData.fullName}
-                  onChange={handleInputChange}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-all font-medium text-slate-800 bg-slate-50/30"
-                  placeholder={accountType === "client" ? "Your name or company name" : "Your name"}
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-xs font-bold text-slate-900 mb-2"
-                >
-                  Email
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-all font-medium text-slate-800 bg-slate-50/30"
-                  placeholder="you@example.com"
-                />
-              </div>
+            {/* Email Input */}
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-xs font-bold text-slate-900 mb-2"
+              >
+                Email address
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                value={formData.email}
+                onChange={handleInputChange}
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-all font-medium text-slate-800 bg-slate-50/30"
+                placeholder="you@example.com"
+              />
             </div>
 
             {/* Password & Confirm Password Row */}
@@ -296,8 +279,8 @@ export default function Page() {
             <div>
               <button
                 type="submit"
-                disabled={loading}
-                className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent rounded-full text-xs font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] transition-all shadow-sm cursor-pointer disabled:opacity-50"
+                disabled={loading || !isFormValid}
+                className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent rounded-full text-xs font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] transition-all shadow-sm cursor-pointer disabled:bg-slate-200 disabled:text-slate-450 disabled:cursor-not-allowed disabled:shadow-none"
               >
                 {loading ? "Creating..." : `Create ${selectedOption ? selectedOption.title : "account"} account`}
               </button>

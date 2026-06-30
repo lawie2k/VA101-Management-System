@@ -6,52 +6,48 @@ import { usePathname, useRouter } from "next/navigation";
 import FormHeader from "../../../components/layout/FormHeader";
 
 const navItems = [
-  { label: "Dashboard", href: "/va/dashboard" },
-  { label: "My Profile", href: "/va/profile" },
-  { label: "Jobs", href: "/va/jobs" },
-  { label: "My Applications", href: "/va/applications" },
-  { label: "Interviews", href: "/va/interviews" },
-  { label: "Training", href: "/va/training" },
-  { label: "My Learning", href: "/va/my-learning" },
+  { label: "Dashboard", href: "/client/dashboard" },
+  { label: "Discovery Calls", href: "/discovery-calls" },
+  { label: "Post a Job", href: "/client/post-job" },
+  { label: "Jobs", href: "/client/jobs" },
+  { label: "Candidates", href: "/client/shortlisted-candidates" },
+  { label: "Interviews", href: "/client/interviews" },
+  { label: "Contracts", href: "/client/contracts" },
+  { label: "Payments", href: "/client/payments" },
+  { label: "Profile", href: "/client/profile" },
 ];
 
-export default function VaLayout({ children }: { children: React.ReactNode }) {
+export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Sync scroll detection to match standard FormHeader transparent transition threshold
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
-    const handleFeedScroll = (e: Event) => {
-      const scrollTop = (e as CustomEvent).detail?.scrollTop || 0;
-      setIsScrolled(scrollTop > 10);
-    };
     window.addEventListener("scroll", handleScroll);
-    window.addEventListener("feedScroll", handleFeedScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("feedScroll", handleFeedScroll);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Fetch session on mount/pathname changes
+  // Fetch session on mount
   useEffect(() => {
     async function checkAuth() {
       try {
         const response = await fetch("/api/auth/me");
         const data = await response.json();
         if (data.authenticated) {
-          setLoading(false);
+          setIsAuthenticated(true);
         } else {
-          router.replace("/login");
+          router.push("/login");
         }
       } catch (err) {
         console.error("Layout auth check failed:", err);
-        router.replace("/login");
+      } finally {
+        setLoading(false);
       }
     }
     checkAuth();
@@ -66,7 +62,9 @@ export default function VaLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const isSetupPage = pathname === "/va/profile/setup-profile-form";
+  // Determine if we show navigation tabs. We only show tabs if the user is authenticated.
+  // If they are on discovery-calls and NOT logged in, we render the page as guest (no tabs).
+  const showNav = isAuthenticated;
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
@@ -74,10 +72,10 @@ export default function VaLayout({ children }: { children: React.ReactNode }) {
       <FormHeader isDashboard={true} />
 
       {/* 
-        Secondary role tab navigation bar (positioned directly underneath the header).
+        Secondary client navigation bar (only visible if logged in).
         Height matches FormHeader top offsets.
       */}
-      {!isSetupPage && (
+      {showNav && (
         <div className={`fixed top-[72px] md:top-[80px] left-0 w-screen z-40 py-2.5 transition-all duration-300 ${
           isScrolled 
             ? "border-b border-[#1c1c1e]" 
@@ -99,9 +97,9 @@ export default function VaLayout({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wide transition-all ${
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wide transition-all shrink-0 ${
                     isActive 
-                      ? "bg-[#E84E29] text-white" // Capsule active highlight
+                      ? "bg-[#E84E29] text-white animate-fade-in" // Capsule active highlight (brand orange for client)
                       : isScrolled
                         ? "text-slate-400 hover:text-white" // Solid background text & hover
                         : "text-slate-600 hover:text-black" // Transparent background text & hover
@@ -116,10 +114,11 @@ export default function VaLayout({ children }: { children: React.ReactNode }) {
       )}
 
       {/* 
-        Main content padding-top (pt-36) offset accounts for both headers.
-        Saves content layout elements from overlapping.
+        Main content padding-top:
+        If showing navigation, padding matches double headers offset (pt-36).
+        If guest booking page (no navigation), padding matches single header offset (pt-24).
       */}
-      <div className={`flex-grow ${isSetupPage ? "pt-20 md:pt-24" : "pt-36"}`}>
+      <div className={`flex-grow ${showNav ? "pt-36" : "pt-24"} transition-all duration-300`}>
         {children}
       </div>
     </div>
