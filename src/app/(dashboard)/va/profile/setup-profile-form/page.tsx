@@ -39,14 +39,26 @@ export default function ProfileSetupPage() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    fullName: string;
+    title: string;
+    experienceYears: number | "";
+    expectedRate: number | "";
+    location: string;
+    niche: string;
+    about: string;
+    availabilityHours: string;
+    availabilitySchedule: string;
+  }>({
     fullName: "",
     title: "",
-    experienceYears: 1,
-    expectedRate: 10,
+    experienceYears: "",
+    expectedRate: "",
     location: "",
     niche: "General VA",
     about: "",
+    availabilityHours: "",
+    availabilitySchedule: "",
   });
 
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
@@ -116,36 +128,37 @@ export default function ProfileSetupPage() {
     "General VA",
     "Executive Support",
     "Real Estate",
-    "Digital Marketing",
-    "Social Media",
     "E-commerce",
     "SaaS & Tech",
     "Healthcare",
     "Finance & Insurance",
+    "Professional Services",
+    "Digital Marketing",
+    "Social Media",
+    "E-learning",
     "Graphics & Video Services"
   ];
 
   useEffect(() => {
     async function loadInitialUserData() {
       try {
-        const res = await fetch("/api/auth/me");
+        const res = await fetch("/api/va/profile");
         if (res.ok) {
-          const session = await res.json();
-          if (session.authenticated && session.user) {
-            setFormData((prev) => ({
-              ...prev,
-              fullName: session.user.fullName || "",
-            }));
+          const profileData = await res.json();
+          // If they already completed the profile fields, redirect them immediately
+          if (profileData.title && profileData.location && profileData.about) {
+            router.replace("/va/dashboard");
+            return;
           }
         }
       } catch (err) {
-        console.error("Failed to load user session", err);
+        console.error("Failed to load user profile", err);
       } finally {
         setInitialLoading(false);
       }
     }
     loadInitialUserData();
-  }, []);
+  }, [router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -154,6 +167,10 @@ export default function ProfileSetupPage() {
 
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    if (value === "") {
+      setFormData((prev) => ({ ...prev, [name]: "" }));
+      return;
+    }
     setFormData((prev) => ({ ...prev, [name]: parseInt(value) || 0 }));
   };
 
@@ -174,8 +191,8 @@ export default function ProfileSetupPage() {
         body: JSON.stringify({
           fullName: formData.fullName,
           title: formData.title,
-          experienceYears: formData.experienceYears,
-          expectedRate: formData.expectedRate,
+          experienceYears: formData.experienceYears === "" ? 0 : formData.experienceYears,
+          expectedRate: formData.expectedRate === "" ? 0 : formData.expectedRate,
           location: formData.location,
           niche: formData.niche,
           about: formData.about || `Hello! I am a professional Virtual Assistant specializing in ${formData.niche}.`,
@@ -184,6 +201,10 @@ export default function ProfileSetupPage() {
           avatar: avatar || undefined,
           coverImage: coverImage || undefined,
           openToOpportunities: true,
+          availability: {
+            hours: formData.availabilityHours,
+            schedule: formData.availabilitySchedule
+          }
         }),
       });
 
@@ -201,7 +222,7 @@ export default function ProfileSetupPage() {
         window.dispatchEvent(new Event("profileUpdate"));
       }
 
-      router.push("/va/dashboard");
+      router.replace("/va/dashboard");
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -352,6 +373,41 @@ export default function ProfileSetupPage() {
             </div>
           </div>
 
+          {/* Availability Details */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label htmlFor="availabilityHours" className="block text-xs font-bold text-slate-900 mb-2">
+                Availability Hours (e.g. 30 hrs/week)
+              </label>
+              <input
+                id="availabilityHours"
+                name="availabilityHours"
+                type="text"
+                required
+                value={formData.availabilityHours}
+                onChange={handleInputChange}
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-all font-medium text-slate-800 bg-slate-50/30"
+                placeholder="e.g. 40 hrs/week"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="availabilitySchedule" className="block text-xs font-bold text-slate-900 mb-2">
+                Preferred Schedule (e.g. Mon–Fri, 9am–5pm EST)
+              </label>
+              <input
+                id="availabilitySchedule"
+                name="availabilitySchedule"
+                type="text"
+                required
+                value={formData.availabilitySchedule}
+                onChange={handleInputChange}
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-all font-medium text-slate-800 bg-slate-50/30"
+                placeholder="e.g. Mon–Fri, 9am–5pm PHT"
+              />
+            </div>
+          </div>
+
           {/* Brief Bio */}
           <div>
             <label htmlFor="about" className="block text-xs font-bold text-slate-900 mb-2">
@@ -363,7 +419,7 @@ export default function ProfileSetupPage() {
               rows={3}
               value={formData.about}
               onChange={handleInputChange}
-              className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-all font-medium text-slate-800 bg-slate-50/30"
+              className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-all font-medium text-slate-800 bg-slate-50/30 resize-none"
               placeholder="Tell clients about your skills, tools you use, or past experience..."
             />
           </div>
@@ -497,7 +553,11 @@ export default function ProfileSetupPage() {
                 !formData.title.trim() ||
                 !formData.location.trim() ||
                 !formData.about.trim() ||
+                formData.availabilityHours.trim() === "" ||
+                formData.availabilitySchedule.trim() === "" ||
+                formData.experienceYears === "" ||
                 formData.experienceYears < 0 ||
+                formData.expectedRate === "" ||
                 formData.expectedRate <= 0
               }
               className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent rounded-full text-xs font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] transition-all shadow-sm cursor-pointer disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"

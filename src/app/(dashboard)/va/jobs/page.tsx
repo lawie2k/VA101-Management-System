@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import DashboardLeftSidebar from "../../../../components/va-dashboard-components/DashboardLeftSidebar";
-import JobsMainFeed from "../../../../components/va-dashboard-components/JobsMainFeed";
-import JobsRightSidebar from "../../../../components/va-dashboard-components/JobsRightSidebar";
+import DashboardLeftSidebar from "../../../../components/va-dashboard-components/dashboard/DashboardLeftSidebar";
+import JobsMainFeed from "../../../../components/va-dashboard-components/jobs/JobsMainFeed";
+import JobsRightSidebar from "../../../../components/va-dashboard-components/jobs/JobsRightSidebar";
 
 // ==========================================
 // 1. Inline SVG Icons
@@ -92,58 +92,7 @@ const DEFAULT_DASHBOARD_PROFILE = {
   skills: [],
 };
 
-const MOCK_JOBS = [
-  { 
-    id: "job-1", 
-    title: "Social Media Manager", 
-    company: "AeroMedia Group", 
-    rate: 10.00, 
-    type: "Part-time", 
-    location: "Remote",
-    description: "Manage Instagram, TikTok, and Facebook posts, content scheduling, and community engagement tracking. Collaborating with graphic designers to maintain aesthetic alignment.", 
-    skills: ["Content Creation", "Canva", "Scheduling", "Social Media"] 
-  },
-  { 
-    id: "job-2", 
-    title: "Executive Assistant", 
-    company: "Summit Ventures", 
-    rate: 15.00, 
-    type: "Full-time", 
-    location: "Remote (EST Timezone)",
-    description: "Manage CEO calendar, coordinate discovery calls, draft stakeholder communications, organize emails, and support general administrative functions.", 
-    skills: ["Calendar Management", "Slack", "Email Handling", "Executive Support"] 
-  },
-  { 
-    id: "job-3", 
-    title: "Shopify Store Operations Specialist", 
-    company: "Zoe Boutique", 
-    rate: 12.50, 
-    type: "Contract", 
-    location: "Remote",
-    description: "Inventory updates, order fulfillment tracking, and client support ticketing handling for fashion store orders. Familiarity with HubSpot email is preferred.", 
-    skills: ["Shopify", "Customer Support", "Zendesk"] 
-  },
-  {
-    id: "job-4",
-    title: "Real Estate Appointment Setter",
-    company: "Blue Harbour Properties",
-    rate: 14.00,
-    type: "Part-time",
-    location: "Remote (EST)",
-    description: "Perform cold-calling to property listings, pre-qualify seller leads, schedule discovery appointments inside Realtor CRM systems, and send daily activity sheets.",
-    skills: ["Cold Calling", "Lead Generation", "CRM Management"]
-  },
-  {
-    id: "job-5",
-    title: "Technical Support Coordinator",
-    company: "Stripeify SaaS Labs",
-    rate: 16.50,
-    type: "Full-time",
-    location: "Remote (PST Timezone)",
-    description: "Address customer inquiries via chat/email, log product bug reports in Jira, update technical user documentation, and coordinate with developers.",
-    skills: ["Technical Support", "Intercom", "Jira", "Slack"]
-  }
-];
+
 
 export default function BrowseJobsPage() {
   const [profileState, setProfileState] = useState(DEFAULT_DASHBOARD_PROFILE);
@@ -285,23 +234,39 @@ export default function BrowseJobsPage() {
   };
 
   // Handle application submission flow
-  const handleApplySubmit = (e: React.FormEvent) => {
+  const handleApplySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const updated = [...appliedJobs, activeApplyJob.id];
+    try {
+      const res = await fetch("/api/va/applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobPostId: activeApplyJob.id,
+          coverNote
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to submit application.");
+      }
+
+      const updated = [...appliedJobs, activeApplyJob.id.toString()];
       setAppliedJobs(updated);
       localStorage.setItem("va_applied_jobs", JSON.stringify(updated));
       
-      setIsSubmitting(false);
       setShowSuccessAlert(true);
       
-      // Auto-close modal after confirmation
       setTimeout(() => {
         setActiveApplyJob(null);
       }, 1500);
-    }, 1000);
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Search filter logic
@@ -321,11 +286,7 @@ export default function BrowseJobsPage() {
       
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch h-full overflow-hidden">
         
-        <DashboardLeftSidebar 
-          profileState={profileState}
-          profileViews={profileState.views}
-          defaultCoverImage={DEFAULT_DASHBOARD_PROFILE.coverImage}
-        />
+        <DashboardLeftSidebar />
 
         <JobsMainFeed 
           filteredJobs={filteredJobs}
@@ -417,7 +378,7 @@ export default function BrowseJobsPage() {
                       value={coverNote}
                       onChange={e => setCoverNote(e.target.value)}
                       placeholder={`Tell ${activeApplyJob.company} why you are a great fit for their ${activeApplyJob.title} role...`}
-                      className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-semibold leading-relaxed"
+                      className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-semibold leading-relaxed resize-none"
                     />
                   </div>
 

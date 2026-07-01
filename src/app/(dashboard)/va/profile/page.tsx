@@ -126,6 +126,8 @@ const ALL_TOOLS = [
 ];
 
 const ALL_NICHES = [
+  "General VA",
+  "Executive Support",
   "Real Estate",
   "E-commerce",
   "SaaS & Tech",
@@ -133,39 +135,32 @@ const ALL_NICHES = [
   "Finance & Insurance",
   "Professional Services",
   "Digital Marketing",
-  "E-learning"
+  "Social Media",
+  "E-learning",
+  "Graphics & Video Services"
 ];
 
 const INITIAL_PROFILE = {
   fullName: "",
   avatar: "",
   coverImage: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&h=300&q=80",
-  title: "Real Estate Lead-Gen VA",
-  experienceYears: 4,
-  location: "Manila, Philippines",
-  niche: "Real Estate",
-  expectedRate: 12,
-  openToOpportunities: true,
-  about: "I help real estate teams book seller appointments through outbound email and cold calling. Trained on HubSpot and Google Workspace. Past clients include boutique brokerages in the US east coast.",
-  portfolio: [
-    { id: "p-1", icon: "📎", title: "Harbor Realty — Outbound playbook", sub: "PDF · 18 pages" },
-    { id: "p-2", icon: "🎙️", title: "Cold-call recording sample", sub: "Audio · 3 min" }
-  ],
-  experience: [
-    { id: "e-1", company: "Harbor Realty Group", role: "Lead-Gen VA", period: "2024 – Present" },
-    { id: "e-2", company: "BrewKit Coffee Co.", role: "Customer Support VA", period: "2022 – 2024" }
-  ],
-  skills: ["Lead Generation", "Cold Calling", "Email Management", "Social Media"],
-  tools: ["HubSpot", "Google Workspace", "Slack", "Asana"],
+  title: "",
+  experienceYears: 0,
+  location: "",
+  niche: "",
+  expectedRate: 0,
+  openToOpportunities: false,
+  about: "",
+  portfolio: [] as any[],
+  experience: [] as any[],
+  skills: [] as string[],
+  tools: [] as string[],
   availability: {
-    hours: "30 hrs/week",
-    schedule: "Mon–Fri, 9am–3pm EST",
-    timezone: "EST (UTC-5)"
+    hours: "",
+    schedule: "",
+    timezone: ""
   },
-  certifications: [
-    { id: "c-1", title: "VA Foundations", provider: "Coach Erika R.", progress: 100, completed: true },
-    { id: "c-2", title: "Cold Email Mastery", provider: "Daniel K.", progress: 60, completed: false }
-  ]
+  certifications: [] as any[]
 };
 
 // ==========================================
@@ -1219,7 +1214,7 @@ export function VAProfile() {
                       value={aboutForm} 
                       onChange={e => setAboutForm(e.target.value)}
                       placeholder="Describe what you specialize in, platforms you use, and typical clients you support..."
-                      className="w-full rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-medium text-slate-750 leading-relaxed"
+                      className="w-full rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-medium text-slate-750 leading-relaxed resize-none"
                     />
                   </div>
 

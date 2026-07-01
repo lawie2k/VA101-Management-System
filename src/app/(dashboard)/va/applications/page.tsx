@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import DashboardLeftSidebar from "../../../../components/va-dashboard-components/DashboardLeftSidebar";
-import ApplicationsMainFeed from "../../../../components/va-dashboard-components/ApplicationsMainFeed";
-import ApplicationsRightSidebar from "../../../../components/va-dashboard-components/ApplicationsRightSidebar";
+import DashboardLeftSidebar from "../../../../components/va-dashboard-components/dashboard/DashboardLeftSidebar";
+import ApplicationsMainFeed from "../../../../components/va-dashboard-components/applications/ApplicationsMainFeed";
+import ApplicationsRightSidebar from "../../../../components/va-dashboard-components/applications/ApplicationsRightSidebar";
 
 // ==========================================
 // 1. Inline SVG Icons
@@ -123,7 +123,7 @@ export default function MyApplicationsPage() {
 
     async function fetchApplications() {
       try {
-        const res = await fetch("/api/applications");
+        const res = await fetch("/api/va/applications");
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data)) {
@@ -162,11 +162,7 @@ export default function MyApplicationsPage() {
     <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 h-[calc(100vh-144px)] overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch h-full overflow-hidden">
         
-        <DashboardLeftSidebar 
-          profileState={profileState}
-          profileViews={0}
-          defaultCoverImage={DEFAULT_PROFILE.coverImage}
-        />
+        <DashboardLeftSidebar />
 
         <ApplicationsMainFeed 
           applications={applications}

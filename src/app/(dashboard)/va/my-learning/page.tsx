@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import DashboardLeftSidebar from "../../../../components/va-dashboard-components/DashboardLeftSidebar";
-import LearningMainFeed from "../../../../components/va-dashboard-components/LearningMainFeed";
-import LearningRightSidebar from "../../../../components/va-dashboard-components/LearningRightSidebar";
+import DashboardLeftSidebar from "../../../../components/va-dashboard-components/dashboard/DashboardLeftSidebar";
+import LearningMainFeed from "../../../../components/va-dashboard-components/learning/LearningMainFeed";
+import LearningRightSidebar from "../../../../components/va-dashboard-components/learning/LearningRightSidebar";
 
 // ==========================================
 // 1. Inline SVG Icons
@@ -96,6 +96,12 @@ export default function VAMyLearningPage() {
   const [activeLessonIndex, setActiveLessonIndex] = useState(0);
   const [toastNotification, setToastNotification] = useState<string | null>(null);
 
+  const getCourseInfo = (id: string | null) => {
+    if (!id) return null;
+    const key = !id.startsWith("c-") ? `c-${id}` : id;
+    return COURSE_INFOS[key as keyof typeof COURSE_INFOS] || COURSE_INFOS["c-1"];
+  };
+
   // Sync profile details and bookmarks on mount
   useEffect(() => {
     const savedProfile = localStorage.getItem("va_profile_data");
@@ -131,7 +137,7 @@ export default function VAMyLearningPage() {
 
     async function fetchPurchases() {
       try {
-        const res = await fetch("/api/training/purchases");
+        const res = await fetch("/api/va/training/purchases");
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data)) {
@@ -164,7 +170,8 @@ export default function VAMyLearningPage() {
 
   const handleLessonComplete = () => {
     if (!activeCourseId) return;
-    const course = COURSE_INFOS[activeCourseId as keyof typeof COURSE_INFOS];
+    const course = getCourseInfo(activeCourseId);
+    if (!course) return;
     const totalLessons = course.lessons.length;
     const nextProgress = Math.min(100, Math.round(((activeLessonIndex + 1) / totalLessons) * 100));
 
@@ -202,11 +209,7 @@ export default function VAMyLearningPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch h-full overflow-hidden">
         
-        <DashboardLeftSidebar 
-          profileState={profileState}
-          profileViews={0}
-          defaultCoverImage={DEFAULT_PROFILE.coverImage}
-        />
+        <DashboardLeftSidebar />
 
         <LearningMainFeed 
           enrolledCourses={enrolledCourses}
@@ -223,7 +226,7 @@ export default function VAMyLearningPage() {
       </div>
 
       {/* DYNAMIC LESSON PLAYER MODAL */}
-      {activeCourseId && COURSE_INFOS[activeCourseId as keyof typeof COURSE_INFOS] && (
+      {activeCourseId && getCourseInfo(activeCourseId) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="w-full max-w-lg bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xl animate-in zoom-in-95 duration-250">
             <div className="h-2 bg-[#E84E29]" />
@@ -232,7 +235,7 @@ export default function VAMyLearningPage() {
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div>
                   <span className="text-[10px] font-extrabold text-[#E84E29] uppercase tracking-wider">Course Player</span>
-                  <h3 className="text-lg font-black text-slate-900 leading-tight mt-0.5">{COURSE_INFOS[activeCourseId as keyof typeof COURSE_INFOS].title}</h3>
+                  <h3 className="text-lg font-black text-slate-900 leading-tight mt-0.5">{getCourseInfo(activeCourseId)?.title}</h3>
                 </div>
                 <button onClick={() => setActiveCourseId(null)} className="p-1 rounded-full hover:bg-slate-100 text-slate-400 cursor-pointer">
                   <IconX className="w-5 h-5" />
@@ -245,14 +248,14 @@ export default function VAMyLearningPage() {
                   <IconPlay className="w-5 h-5" />
                 </span>
                 <span className="text-xs font-bold text-slate-200">Playing: Lesson {activeLessonIndex + 1}</span>
-                <h4 className="text-sm font-black text-white mt-1 max-w-[320px]">{COURSE_INFOS[activeCourseId as keyof typeof COURSE_INFOS].lessons[activeLessonIndex]}</h4>
+                <h4 className="text-sm font-black text-white mt-1 max-w-[320px]">{getCourseInfo(activeCourseId)?.lessons[activeLessonIndex]}</h4>
                 <span className="text-[9px] font-extrabold text-slate-500 tracking-wider absolute bottom-4">VirtualAssistant101 Media Server</span>
               </div>
 
               {/* Lesson playlist navigation info */}
               <div className="mt-5 space-y-3">
                 <div className="flex items-center justify-between text-xs font-bold">
-                  <span className="text-slate-400">Lesson {activeLessonIndex + 1} of {COURSE_INFOS[activeCourseId as keyof typeof COURSE_INFOS].lessons.length}</span>
+                  <span className="text-slate-400">Lesson {activeLessonIndex + 1} of {getCourseInfo(activeCourseId)?.lessons.length}</span>
                   <span className="text-emerald-600 font-extrabold">Auto-streaming HD</span>
                 </div>
                 <p className="text-xs text-slate-500 leading-relaxed font-semibold">

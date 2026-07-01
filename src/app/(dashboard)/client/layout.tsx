@@ -7,14 +7,14 @@ import FormHeader from "../../../components/layout/FormHeader";
 
 const navItems = [
   { label: "Dashboard", href: "/client/dashboard" },
-  { label: "Discovery Calls", href: "/discovery-calls" },
+  { label: "Company Profile", href: "/client/profile" },
   { label: "Post a Job", href: "/client/post-job" },
-  { label: "Jobs", href: "/client/jobs" },
+  { label: "My Jobs", href: "/client/jobs" },
   { label: "Candidates", href: "/client/shortlisted-candidates" },
   { label: "Interviews", href: "/client/interviews" },
   { label: "Contracts", href: "/client/contracts" },
   { label: "Payments", href: "/client/payments" },
-  { label: "Profile", href: "/client/profile" },
+  { label: "Settings", href: "/client/settings" },
 ];
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
@@ -65,6 +65,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   // Determine if we show navigation tabs. We only show tabs if the user is authenticated.
   // If they are on discovery-calls and NOT logged in, we render the page as guest (no tabs).
   const showNav = isAuthenticated;
+  const isSetupPage = pathname === "/client/profile/setup-profile-form";
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
@@ -75,7 +76,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         Secondary client navigation bar (only visible if logged in).
         Height matches FormHeader top offsets.
       */}
-      {showNav && (
+      {showNav && !isSetupPage && (
         <div className={`fixed top-[72px] md:top-[80px] left-0 w-screen z-40 py-2.5 transition-all duration-300 ${
           isScrolled 
             ? "border-b border-[#1c1c1e]" 
@@ -116,9 +117,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       {/* 
         Main content padding-top:
         If showing navigation, padding matches double headers offset (pt-36).
-        If guest booking page (no navigation), padding matches single header offset (pt-24).
+        If guest booking page (no navigation) or setup page, padding matches single header offset (pt-24 / pt-20).
       */}
-      <div className={`flex-grow ${showNav ? "pt-36" : "pt-24"} transition-all duration-300`}>
+      <div className={`flex-grow ${isSetupPage ? "pt-20 md:pt-24" : (showNav ? "pt-36" : "pt-24")} transition-all duration-300`}>
         {children}
       </div>
     </div>

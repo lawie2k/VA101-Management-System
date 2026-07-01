@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import DashboardLeftSidebar from "../../../../components/va-dashboard-components/DashboardLeftSidebar";
-import TrainingMainFeed from "../../../../components/va-dashboard-components/TrainingMainFeed";
-import TrainingRightSidebar from "../../../../components/va-dashboard-components/TrainingRightSidebar";
+import DashboardLeftSidebar from "../../../../components/va-dashboard-components/dashboard/DashboardLeftSidebar";
+import TrainingMainFeed from "../../../../components/va-dashboard-components/training/TrainingMainFeed";
+import TrainingRightSidebar from "../../../../components/va-dashboard-components/training/TrainingRightSidebar";
 
 // ==========================================
 // 1. Inline SVG Icons
@@ -139,7 +139,7 @@ export default function VATrainingCatalogPage() {
 
     async function fetchCourses() {
       try {
-        const res = await fetch("/api/training/materials");
+        const res = await fetch("/api/va/training/materials");
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data)) {
@@ -155,7 +155,7 @@ export default function VATrainingCatalogPage() {
 
     async function fetchPurchases() {
       try {
-        const res = await fetch("/api/training/purchases");
+        const res = await fetch("/api/va/training/purchases");
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data)) {
@@ -181,9 +181,20 @@ export default function VATrainingCatalogPage() {
     localStorage.setItem("va_saved_jobs", JSON.stringify(updated));
   };
 
-  const enrollInCourse = (id: string) => {
+  const enrollInCourse = async (id: string) => {
     setLoadingEnrollId(id);
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/va/training/purchases", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ courseId: id })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to enroll in course.");
+      }
+
       const updated = [...enrolledCourses, id];
       setEnrolledCourses(updated);
       localStorage.setItem("va_enrolled_courses", JSON.stringify(updated));
@@ -194,19 +205,19 @@ export default function VATrainingCatalogPage() {
       currentProgress[id] = 0;
       localStorage.setItem("va_course_progress", JSON.stringify(currentProgress));
 
+      window.dispatchEvent(new Event("courseEnrollmentUpdate"));
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
       setLoadingEnrollId(null);
-    }, 1200);
+    }
   };
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 h-[calc(100vh-144px)] overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch h-full overflow-hidden">
         
-        <DashboardLeftSidebar 
-          profileState={profileState}
-          profileViews={0}
-          defaultCoverImage={DEFAULT_PROFILE.coverImage}
-        />
+        <DashboardLeftSidebar />
 
         <TrainingMainFeed 
           courses={courses}

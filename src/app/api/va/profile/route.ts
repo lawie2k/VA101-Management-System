@@ -43,11 +43,11 @@ export async function GET() {
       profile = await db.va_profiles.create({
         data: {
           user_id: BigInt(currentUser.id),
-          headline: "VA Specialist",
-          location: "Manila, Philippines",
-          expected_hourly_rate: 10.00,
-          availability_summary: "Active Availability (30 hrs/week)",
-          bio: "I am a professional Virtual Assistant ready to take on new projects."
+          headline: "",
+          location: "",
+          expected_hourly_rate: 0,
+          availability_summary: "",
+          bio: ""
         },
         include: {
           users: true,
@@ -85,10 +85,10 @@ export async function GET() {
       title: profile.headline || "",
       experienceYears: profile.experience_level ? parseInt(profile.experience_level) || 0 : 0,
       location: profile.location || "",
-      expectedRate: profile.expected_hourly_rate ? parseFloat(profile.expected_hourly_rate.toString()) : 10.00,
+      expectedRate: profile.expected_hourly_rate ? parseFloat(profile.expected_hourly_rate.toString()) : 0,
       openToOpportunities: profile.profile_visibility === "public",
       about: profile.bio || "",
-      niche: profile.niches?.name || "General VA",
+      niche: profile.niches?.name || "",
       skills: profile.va_skills.map((vs: any) => vs.skills.name),
       tools: profile.va_tools.map((vt: any) => vt.tools.name),
       portfolio: profile.va_portfolios.map((vp: any) => ({
@@ -98,18 +98,12 @@ export async function GET() {
         sub: vp.description || ""
       })),
       availability: {
-        hours: profile.availability_summary || "30 hrs/week",
-        schedule: profile.work_shift || "Mon–Fri, 9am–3pm EST",
-        timezone: "EST (UTC-5)"
+        hours: profile.availability_summary || "",
+        schedule: profile.work_shift || "",
+        timezone: ""
       },
-      experience: [
-        { id: "e-1", company: "Harbor Realty Group", role: "Lead-Gen VA", period: "2024 – Present" },
-        { id: "e-2", company: "BrewKit Coffee Co.", role: "Customer Support VA", period: "2022 – 2024" }
-      ],
-      certifications: [
-        { id: "c-1", title: "VA Foundations", provider: "Coach Erika R.", progress: 100, completed: true },
-        { id: "c-2", title: "Cold Email Mastery", provider: "Daniel K.", progress: 60, completed: false }
-      ]
+      experience: [],
+      certifications: []
     };
 
     return NextResponse.json(serializeBigInt(responsePayload));

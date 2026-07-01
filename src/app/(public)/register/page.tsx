@@ -105,7 +105,7 @@ export default function Page() {
 
       // Successful registration -> route to setup profile first for VAs, otherwise dashboard
       if (accountType === "va") router.push("/va/profile/setup-profile-form");
-      else if (accountType === "client") router.push("/client/dashboard");
+      else if (accountType === "client") router.push("/client/profile/setup-profile-form");
       else if (accountType === "trainer") router.push("/trainer/dashboard");
       else if (accountType === "student") router.push("/student/dashboard");
     } catch (err: any) {

@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import DashboardLeftSidebar from "../../../../components/va-dashboard-components/DashboardLeftSidebar";
-import DashboardMainFeed from "../../../../components/va-dashboard-components/DashboardMainFeed";
-import DashboardRightSidebar from "../../../../components/va-dashboard-components/DashboardRightSidebar";
+import DashboardLeftSidebar from "../../../../components/va-dashboard-components/dashboard/DashboardLeftSidebar";
+import DashboardMainFeed from "../../../../components/va-dashboard-components/dashboard/DashboardMainFeed";
+import DashboardRightSidebar from "../../../../components/va-dashboard-components/dashboard/DashboardRightSidebar";
 
 // Inline SVG Icon Components to avoid external package dependencies
 const IconBookmark = ({ className = "w-4 h-4" }) => (
@@ -56,88 +56,23 @@ const IconChevronRight = ({ className = "w-4 h-4" }) => (
 );
 
 // Self-contained Mock Data for immediately viewable frontend structure
-const MOCK_PROFILE = {
-  fullName: "",
-  title: "",
-  location: "",
-  avatar: "",
-  coverImage: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&h=300&q=80",
-  completion: 10,
-  views: 0,
-  availability: "",
-  skills: [],
-};
 
-const MOCK_JOBS = [
-  { 
-    id: "job-1", 
-    title: "Social Media Manager", 
-    company: "AeroMedia Group", 
-    rate: 10.00, 
-    type: "Part-time", 
-    description: "Manage Instagram, TikTok, and Facebook posts, content scheduling, and community engagement tracking.", 
-    skills: ["Content Creation", "Canva", "Scheduling"] 
-  },
-  { 
-    id: "job-2", 
-    title: "Executive Assistant", 
-    company: "Summit Ventures", 
-    rate: 15.00, 
-    type: "Full-time", 
-    description: "Manage CEO calendar, coordinate discovery calls, draft stakeholder communications, and handle administration.", 
-    skills: ["Calendar Management", "Slack", "Email Handling"] 
-  },
-  { 
-    id: "job-3", 
-    title: "Shopify Store Operations Specialist", 
-    company: "Zoe Boutique", 
-    rate: 12.50, 
-    type: "Contract", 
-    description: "Inventory updates, order fulfillment, and client support ticketing handling for fashion store orders.", 
-    skills: ["Shopify", "Customer Support", "Zendesk"] 
-  }
-];
-
-const MOCK_INTERVIEWS = [
-  { 
-    id: "int-1", 
-    jobTitle: "Social Media Manager", 
-    company: "AeroMedia Group",
-    type: "initial_interview", 
-    scheduledAt: "June 29, 2026 at 2:00 PM" 
-  },
-  { 
-    id: "int-2", 
-    jobTitle: "Executive Assistant", 
-    company: "Summit Ventures",
-    type: "client_interview", 
-    scheduledAt: "July 2, 2026 at 10:00 AM" 
-  }
-];
-
-const MOCK_COURSES = [
-  { id: "c-1", title: "VA101 Professional Ethics & Standards", progress: 80, category: "Core Training" },
-  { id: "c-2", title: "Advanced Client Lead Generation Strategies", progress: 35, category: "Marketing & Sales" }
-];
-
-const MOCK_APPLICATION = {
-  jobTitle: "Junior Project Manager",
-  company: "CloudScale Inc.",
-  status: "screening", // applied, screening, initial_interview, client_interview, offered, contracted
-  appliedDate: "June 25, 2026"
-};
 
 export default function Page() {
   const [savedJobs, setSavedJobs] = useState<string[]>([]);
+  const [applications, setApplications] = useState<any[]>([]);
+  const [interviews, setInterviews] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<any[]>([]);
   const [profileState, setProfileState] = useState({
-    fullName: MOCK_PROFILE.fullName,
-    avatar: MOCK_PROFILE.avatar,
-    coverImage: MOCK_PROFILE.coverImage,
-    title: MOCK_PROFILE.title,
-    location: MOCK_PROFILE.location,
-    availability: MOCK_PROFILE.availability,
-    completion: MOCK_PROFILE.completion,
-    skills: MOCK_PROFILE.skills as string[],
+    fullName: "",
+    avatar: "",
+    coverImage: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&h=300&q=80",
+    title: "",
+    location: "",
+    availability: "",
+    completion: 0,
+    skills: [] as string[],
   });
 
   useEffect(() => {
@@ -196,9 +131,40 @@ export default function Page() {
       }
     }
 
+    async function fetchDashboardFeeds() {
+      try {
+        const appRes = await fetch("/api/va/applications");
+        if (appRes.ok) {
+          const appData = await appRes.json();
+          if (Array.isArray(appData)) setApplications(appData);
+        }
+
+        const intRes = await fetch("/api/va/interviews");
+        if (intRes.ok) {
+          const intData = await intRes.json();
+          if (Array.isArray(intData)) setInterviews(intData);
+        }
+
+        const courseRes = await fetch("/api/va/training/materials");
+        if (courseRes.ok) {
+          const courseData = await courseRes.json();
+          if (Array.isArray(courseData)) setCourses(courseData);
+        }
+
+        const jobRes = await fetch("/api/jobs");
+        if (jobRes.ok) {
+          const jobData = await jobRes.json();
+          if (Array.isArray(jobData)) setJobs(jobData);
+        }
+      } catch (err) {
+        console.error("Error loading dashboard live feeds:", err);
+      }
+    }
+
     loadProfile();
     syncDbProfile();
     loadSavedJobs();
+    fetchDashboardFeeds();
     window.addEventListener("storage", loadProfile);
     window.addEventListener("profileUpdate", loadProfile);
     window.addEventListener("storage", loadSavedJobs);
@@ -220,29 +186,74 @@ export default function Page() {
     window.dispatchEvent(new Event("savedJobsUpdate"));
   };
 
+  // Map live application to active status banner
+  const activeApplication = applications.length > 0 ? {
+    appliedDate: applications[0].appliedDate,
+    jobTitle: applications[0].jobTitle,
+    company: applications[0].company,
+    status: applications[0].status || "applied"
+  } : {
+    appliedDate: "Today",
+    jobTitle: "Get Started by Applying to Jobs!",
+    company: "Select the Jobs tab to browse client posts.",
+    status: "none"
+  };
+
+  // Map first 3 database jobs as recommended jobs
+  const recommendedJobs = jobs.map((job: any) => ({
+    id: job.id.toString(),
+    title: job.title || "",
+    company: job.company || "Enterprise Client",
+    type: job.type || "Full-time",
+    description: job.description || "",
+    skills: job.skills || [],
+    rate: job.rate || 0
+  })).slice(0, 3);
+
+  // Map first 2 database courses as recommended courses
+  const recommendedCourses = courses.map((course: any) => ({
+    id: course.id.toString(),
+    title: course.title,
+    category: course.category || "Core Training",
+    progress: 0
+  })).slice(0, 2);
+
+  // Map database interviews for sidebar
+  const upcomingInterviews = interviews.map((item: any) => ({
+    id: item.id.toString(),
+    type: item.type || "initial_interview",
+    jobTitle: item.jobTitle,
+    company: item.company,
+    scheduledAt: item.scheduledAt ? new Date(item.scheduledAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "TBD"
+  }));
+
+  // Map database jobs list for bookmark checks in sidebar
+  const mappedJobs = jobs.map((job: any) => ({
+    id: job.id.toString(),
+    title: job.title || "",
+    company: job.company || "Enterprise Client",
+    rate: job.rate || 0
+  }));
+
   return (
     <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 h-[calc(100vh-144px)] overflow-hidden">
       
       {/* Portal 3-Column LinkedIn-Style Layout Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch h-full overflow-hidden">
         
-        <DashboardLeftSidebar 
-          profileState={profileState}
-          profileViews={MOCK_PROFILE.views}
-          defaultCoverImage={MOCK_PROFILE.coverImage}
-        />
+        <DashboardLeftSidebar />
 
         <DashboardMainFeed 
-          mockApplication={MOCK_APPLICATION}
-          mockJobs={MOCK_JOBS}
-          mockCourses={MOCK_COURSES}
+          mockApplication={activeApplication}
+          mockJobs={recommendedJobs}
+          mockCourses={recommendedCourses}
           savedJobs={savedJobs}
           toggleSaveJob={toggleSaveJob}
         />
 
         <DashboardRightSidebar 
-          mockInterviews={MOCK_INTERVIEWS}
-          mockJobs={MOCK_JOBS}
+          mockInterviews={upcomingInterviews}
+          mockJobs={mappedJobs}
           savedJobs={savedJobs}
         />
 

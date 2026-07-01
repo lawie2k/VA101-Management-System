@@ -290,12 +290,6 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
                       My Profile
                     </Link>
                   )}
-                  <a
-                    href="#"
-                    className="px-3 py-2 text-gray-300 hover:text-white hover:bg-slate-900/50 text-[11px] font-bold rounded-lg transition-all"
-                  >
-                    Settings
-                  </a>
                   <div className="border-t border-[#1c1c1e] my-1.5" />
                   <button
                     onClick={handleSignOut}

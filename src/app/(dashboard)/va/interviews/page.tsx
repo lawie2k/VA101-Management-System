@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import DashboardLeftSidebar from "../../../../components/va-dashboard-components/DashboardLeftSidebar";
-import InterviewsMainFeed from "../../../../components/va-dashboard-components/InterviewsMainFeed";
-import InterviewsRightSidebar from "../../../../components/va-dashboard-components/InterviewsRightSidebar";
+import DashboardLeftSidebar from "../../../../components/va-dashboard-components/dashboard/DashboardLeftSidebar";
+import InterviewsMainFeed from "../../../../components/va-dashboard-components/interviews/InterviewsMainFeed";
+import InterviewsRightSidebar from "../../../../components/va-dashboard-components/interviews/InterviewsRightSidebar";
 
 // ==========================================
 // 1. Inline SVG Icons
@@ -150,7 +150,7 @@ export default function VAInterviewsPage() {
 
     async function fetchInterviews() {
       try {
-        const res = await fetch("/api/interviews");
+        const res = await fetch("/api/va/interviews");
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data)) {
@@ -179,18 +179,43 @@ export default function VAInterviewsPage() {
     setTimeout(() => setMeetingUrlToast(null), 3000);
   };
 
-  const handleRescheduleSubmit = (e: React.FormEvent) => {
+  const handleRescheduleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setRescheduleSuccess(true);
-    setTimeout(() => {
-      // Simulate reschedule update in list
-      setInterviews(prev => prev.map(item => item.id === rescheduleItem.id 
-        ? { ...item, scheduledAt: proposedTime + " (Awaiting Recruiter Confirmation)" } 
-        : item
-      ));
-      setRescheduleItem(null);
+
+    try {
+      const res = await fetch("/api/va/interviews", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          interviewId: rescheduleItem.id,
+          proposedTime,
+          message: rescheduleMessage
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to reschedule interview.");
+      }
+
+      // Re-fetch fresh interviews list from the database
+      const refetch = await fetch("/api/va/interviews");
+      if (refetch.ok) {
+        const refetchData = await refetch.json();
+        if (Array.isArray(refetchData)) {
+          setInterviews(refetchData);
+        }
+      }
+
+      setTimeout(() => {
+        setRescheduleItem(null);
+        setRescheduleSuccess(false);
+      }, 1500);
+    } catch (err: any) {
+      alert(err.message);
       setRescheduleSuccess(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -206,11 +231,7 @@ export default function VAInterviewsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch h-full overflow-hidden">
         
-        <DashboardLeftSidebar 
-          profileState={profileState}
-          profileViews={0}
-          defaultCoverImage={DEFAULT_PROFILE.coverImage}
-        />
+        <DashboardLeftSidebar />
 
         <InterviewsMainFeed 
           interviews={interviews}
@@ -289,7 +310,7 @@ export default function VAInterviewsPage() {
                       value={rescheduleMessage}
                       onChange={e => setRescheduleMessage(e.target.value)}
                       placeholder="Specify conflict details (e.g. internet disruption, power outage scheduling)..."
-                      className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-semibold leading-relaxed"
+                      className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-semibold leading-relaxed resize-none"
                     />
                   </div>
 

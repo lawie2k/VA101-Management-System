@@ -588,7 +588,7 @@ export default function DiscoveryCallsPage() {
                   value={formData.notes} 
                   onChange={handleInputChange}
                   placeholder="Tell us about the roles, schedule, and key skills you need from your Virtual Assistant..."
-                  className="w-full rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-medium text-slate-700 leading-relaxed"
+                  className="w-full rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-medium text-slate-700 leading-relaxed resize-none"
                 />
               </div>
 

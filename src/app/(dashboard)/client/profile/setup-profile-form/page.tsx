@@ -1,0 +1,374 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import PhoneInput from "../../../../../components/forms/PhoneInput";
+
+// Form validation regex patterns
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+const URL_REGEX = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+
+export default function ClientSetupProfileForm() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [formData, setFormData] = useState({
+    companyName: "",
+    industry: "",
+    companySize: "1-10",
+    companyWebsite: "",
+    companyDescription: "",
+    billingContactName: "",
+    billingEmail: "",
+    billingPhone: ""
+  });
+
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  // Country selector state for PhoneInput
+  const [selectedCountry, setSelectedCountry] = useState({
+    code: "+1",
+    name: "United States",
+    flag: "🇺🇸"
+  });
+
+  const isFormIncomplete =
+    !formData.companyName.trim() ||
+    !formData.industry.trim() ||
+    !formData.companyWebsite.trim() ||
+    !formData.companyDescription.trim() ||
+    !formData.billingContactName.trim() ||
+    !formData.billingEmail.trim() ||
+    !formData.billingPhone.trim();
+
+  useEffect(() => {
+    // Check if profile is already configured in LocalStorage to block back navigation
+    const saved = localStorage.getItem("client_profile_data");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.companyName && parsed.industry) {
+          router.replace("/client/dashboard");
+          return;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    setInitialLoading(false);
+  }, [router]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear validation error on change
+    if (validationErrors[name]) {
+      setValidationErrors(prev => {
+        const copy = { ...prev };
+        delete copy[name];
+        return copy;
+      });
+    }
+  };
+
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+
+    if (!formData.companyName.trim()) {
+      errors.companyName = "Company Name is required.";
+    }
+
+    if (!formData.industry.trim()) {
+      errors.industry = "Industry is required.";
+    }
+
+    if (formData.companyWebsite.trim() && !URL_REGEX.test(formData.companyWebsite.trim())) {
+      errors.companyWebsite = "Please enter a valid website URL (e.g. https://example.com).";
+    }
+
+    if (formData.billingEmail.trim() && !EMAIL_REGEX.test(formData.billingEmail.trim())) {
+      errors.billingEmail = "Please enter a valid email format.";
+    }
+
+    if (formData.billingPhone.trim() && !/^[0-9+\s()-]{7,25}$/.test(formData.billingPhone.trim())) {
+      errors.billingPhone = "Please enter a valid contact number.";
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!validateForm()) {
+      setError("Please correct the errors in the form before submitting.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Simulate backend latency delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      // Save profile details to LocalStorage to sync client state
+      localStorage.setItem("client_profile_data", JSON.stringify(formData));
+      
+      // Navigate client to dashboard and replace history state to avoid back navigating loops
+      router.replace("/client/dashboard");
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred.");
+      setLoading(false);
+    }
+  };
+
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-[#E84E29] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-xs font-bold text-slate-500">Preparing your setup...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="space-y-6">
+        
+        {/* Header Title */}
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            Let's Set Up Your Client Profile
+          </h1>
+          <p className="mt-2 text-sm text-slate-500 font-medium">
+            Provide details about your company and billing contact info to start hiring top Virtual Assistants.
+          </p>
+        </div>
+
+        {/* Setup Form Card */}
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6"
+        >
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-xs font-semibold">
+              {error}
+            </div>
+          )}
+
+          {/* Section 1: Company Details */}
+          <div>
+            <h3 className="text-sm font-extrabold text-slate-900 mb-4 border-b border-slate-100 pb-2">
+              Company Information
+            </h3>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label htmlFor="companyName" className="block text-xs font-bold text-slate-900 mb-2">
+                  Company Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="companyName"
+                  name="companyName"
+                  type="text"
+                  required
+                  value={formData.companyName}
+                  onChange={handleInputChange}
+                  className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-all font-medium text-slate-800 bg-slate-50/30 ${
+                    validationErrors.companyName
+                      ? "border-red-300 focus:border-red-400 focus:ring-1 focus:ring-red-400"
+                      : "border-slate-200 focus:border-[#E84E29] focus:ring-1 focus:ring-[#E84E29]"
+                  }`}
+                  placeholder="e.g. Acme Corporation"
+                />
+                {validationErrors.companyName && (
+                  <p className="text-red-600 text-[10px] font-semibold mt-1">
+                    {validationErrors.companyName}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="industry" className="block text-xs font-bold text-slate-900 mb-2">
+                  Industry <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="industry"
+                  name="industry"
+                  type="text"
+                  required
+                  value={formData.industry}
+                  onChange={handleInputChange}
+                  className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-all font-medium text-slate-800 bg-slate-50/30 ${
+                    validationErrors.industry
+                      ? "border-red-300 focus:border-red-400 focus:ring-1 focus:ring-red-400"
+                      : "border-slate-200 focus:border-[#E84E29] focus:ring-1 focus:ring-[#E84E29]"
+                  }`}
+                  placeholder="e.g. SaaS, E-commerce, Real Estate"
+                />
+                {validationErrors.industry && (
+                  <p className="text-red-600 text-[10px] font-semibold mt-1">
+                    {validationErrors.industry}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-5">
+              <div>
+                <label htmlFor="companySize" className="block text-xs font-bold text-slate-900 mb-2">
+                  Company Size
+                </label>
+                <select
+                  id="companySize"
+                  name="companySize"
+                  value={formData.companySize}
+                  onChange={handleInputChange}
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#E84E29] focus:ring-1 focus:ring-[#E84E29] transition-all font-semibold text-slate-800 bg-slate-50/30"
+                >
+                  <option value="1-10">1-10 employees</option>
+                  <option value="11-50">11-50 employees</option>
+                  <option value="51-200">51-200 employees</option>
+                  <option value="200+">200+ employees</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="companyWebsite" className="block text-xs font-bold text-slate-900 mb-2">
+                  Company Website URL
+                </label>
+                <input
+                  id="companyWebsite"
+                  name="companyWebsite"
+                  type="text"
+                  value={formData.companyWebsite}
+                  onChange={handleInputChange}
+                  className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-all font-medium text-slate-800 bg-slate-50/30 ${
+                    validationErrors.companyWebsite
+                      ? "border-red-300 focus:border-red-400 focus:ring-1 focus:ring-red-400"
+                      : "border-slate-200 focus:border-[#E84E29] focus:ring-1 focus:ring-[#E84E29]"
+                  }`}
+                  placeholder="e.g. https://www.acme.com"
+                />
+                {validationErrors.companyWebsite && (
+                  <p className="text-red-600 text-[10px] font-semibold mt-1">
+                    {validationErrors.companyWebsite}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <label htmlFor="companyDescription" className="block text-xs font-bold text-slate-900 mb-2">
+                Company Description
+              </label>
+              <textarea
+                id="companyDescription"
+                name="companyDescription"
+                rows={4}
+                value={formData.companyDescription}
+                onChange={handleInputChange}
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#E84E29] focus:ring-1 focus:ring-[#E84E29] transition-all font-medium text-slate-800 bg-slate-50/30 resize-none"
+                placeholder="Tell VAs about your company culture, core mission, and projects..."
+              />
+            </div>
+          </div>
+
+          {/* Section 2: Billing & Contacts */}
+          <div className="pt-4">
+            <h3 className="text-sm font-extrabold text-slate-900 mb-4 border-b border-slate-100 pb-2">
+              Billing & Contact Information
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label htmlFor="billingContactName" className="block text-xs font-bold text-slate-900 mb-2">
+                  Billing Contact Name
+                </label>
+                <input
+                  id="billingContactName"
+                  name="billingContactName"
+                  type="text"
+                  value={formData.billingContactName}
+                  onChange={handleInputChange}
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#E84E29] focus:ring-1 focus:ring-[#E84E29] transition-all font-medium text-slate-800 bg-slate-50/30"
+                  placeholder="e.g. Jane Doe"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="billingEmail" className="block text-xs font-bold text-slate-900 mb-2">
+                  Billing Email Address
+                </label>
+                <input
+                  id="billingEmail"
+                  name="billingEmail"
+                  type="text"
+                  value={formData.billingEmail}
+                  onChange={handleInputChange}
+                  className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-all font-medium text-slate-800 bg-slate-50/30 ${
+                    validationErrors.billingEmail
+                      ? "border-red-300 focus:border-red-400 focus:ring-1 focus:ring-red-400"
+                      : "border-slate-200 focus:border-[#E84E29] focus:ring-1 focus:ring-[#E84E29]"
+                  }`}
+                  placeholder="e.g. accounting@acme.com"
+                />
+                {validationErrors.billingEmail && (
+                  <p className="text-red-600 text-[10px] font-semibold mt-1">
+                    {validationErrors.billingEmail}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <PhoneInput
+                value={formData.billingPhone}
+                onChange={(val) => setFormData(prev => ({ ...prev, billingPhone: val }))}
+                selectedCountry={selectedCountry}
+                onCountryChange={setSelectedCountry}
+                label="Billing Contact Number"
+                required
+              />
+              {validationErrors.billingPhone && (
+                <p className="text-red-600 text-[10px] font-semibold mt-1">
+                  {validationErrors.billingPhone}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end pt-4 border-t border-slate-100">
+            <button
+              type="submit"
+              disabled={loading || isFormIncomplete}
+              className={`px-8 py-3 rounded-full text-xs font-bold tracking-widest uppercase transition-all duration-300 active:scale-[0.98] ${
+                loading || isFormIncomplete
+                  ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none border border-slate-200"
+                  : "bg-[#E84E29] hover:bg-[#d03d1c] text-white cursor-pointer shadow-md shadow-orange-500/10"
+              } flex items-center justify-center gap-2`}
+            >
+              {loading ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Saving...
+                </>
+              ) : (
+                "Complete Setup"
+              )}
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  );
+}
