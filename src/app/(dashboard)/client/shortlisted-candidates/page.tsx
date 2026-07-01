@@ -1,12 +1,16 @@
 "use client";
 
-export default function Page() {
+import ClientLeftSidebar from "../../../../components/client-dashboard-components/dashboard/ClientLeftSidebar";
+import ShortlistedCandidatesMainFeed from "../../../../components/client-dashboard-components/shortlisted-candidates/ShortlistedCandidatesMainFeed";
+import ShortlistedCandidatesRightSidebar from "../../../../components/client-dashboard-components/shortlisted-candidates/ShortlistedCandidatesRightSidebar";
+
+export default function ShortlistedCandidatesPage() {
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold text-slate-800 mb-4">Client Shortlisted Candidates</h1>
-      <p className="text-slate-600 mb-6">File path: <code>src/app/(dashboard)/client/shortlisted-candidates/page.tsx</code></p>
-      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs max-w-lg">
-        <p className="text-sm text-slate-500 font-medium">Ready for your frontend development flow.</p>
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 h-[calc(100vh-144px)] overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch h-full overflow-hidden">
+        <ClientLeftSidebar />
+        <ShortlistedCandidatesMainFeed />
+        <ShortlistedCandidatesRightSidebar />
       </div>
     </div>
   );

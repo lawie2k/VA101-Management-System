@@ -68,6 +68,19 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
         }
       }
 
+      // Also try client_profile_data for client users
+      const clientSaved = localStorage.getItem("client_profile_data");
+      if (clientSaved) {
+        try {
+          const data = JSON.parse(clientSaved);
+          if (data.avatar) setProfileImage(data.avatar);
+          if (data.companyName) setProfileName(data.companyName);
+          if (data.billingEmail) setProfileEmail(data.billingEmail);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
       // 2. Fetch session from server to ensure accuracy and freshness
       try {
         const res = await fetch("/api/auth/me");
@@ -91,7 +104,9 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
                 avatar = user.profilePhotoUrl;
               }
             }
-            setProfileImage(avatar);
+            // Only override avatar from server if it actually has a value
+            // This prevents the API call from wiping a locally-set client avatar
+            if (avatar) setProfileImage(avatar);
           }
         }
       } catch (err) {
@@ -102,9 +117,11 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
     loadProfile();
     window.addEventListener("storage", loadProfile);
     window.addEventListener("profileUpdate", loadProfile);
+    window.addEventListener("clientProfileUpdate", loadProfile);
     return () => {
       window.removeEventListener("storage", loadProfile);
       window.removeEventListener("profileUpdate", loadProfile);
+      window.removeEventListener("clientProfileUpdate", loadProfile);
     };
   }, []);
 

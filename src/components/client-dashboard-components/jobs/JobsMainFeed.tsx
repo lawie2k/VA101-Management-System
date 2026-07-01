@@ -74,33 +74,6 @@ function JobStatusBadge({ status }: { status: string }) {
 }
 
 // ==========================================
-// Default seed jobs
-// ==========================================
-
-const DEFAULT_JOBS: Job[] = [
-  {
-    id: "job-1",
-    title: "Executive Virtual Assistant",
-    type: "EA / General Support",
-    rate: 15.00,
-    status: "active",
-    applicants: 4,
-    postedDate: "Jun 24, 2026",
-    schedule: "Mon–Fri, 9am–5pm EST",
-  },
-  {
-    id: "job-2",
-    title: "SaaS Cold Caller & Lead Gen Specialist",
-    type: "Lead Generation VA",
-    rate: 12.50,
-    status: "active",
-    applicants: 2,
-    postedDate: "Jun 28, 2026",
-    schedule: "Mon–Fri, 1pm–5pm EST",
-  },
-];
-
-// ==========================================
 // JobsMainFeed Component
 // ==========================================
 
@@ -110,23 +83,28 @@ export default function JobsMainFeed() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("client_mock_jobs");
-    if (saved) {
-      try { setJobs(JSON.parse(saved)); } catch (e) { console.error("Failed to parse client_mock_jobs:", e); }
-    } else {
-      setJobs(DEFAULT_JOBS);
-      localStorage.setItem("client_mock_jobs", JSON.stringify(DEFAULT_JOBS));
+    async function loadJobs() {
+      try {
+        const res = await fetch("/api/client/jobs");
+        if (res.ok) {
+          const data = await res.json();
+          setJobs(data);
+        }
+      } catch (e) {
+        console.error("Failed to load jobs", e);
+      } finally {
+        setIsLoaded(true);
+      }
     }
-    setIsLoaded(true);
+    loadJobs();
   }, []);
 
   const handleToggleStatus = (id: string, next: "active" | "closed") => {
-    const updated = jobs.map(j => j.id === id ? { ...j, status: next } : j);
-    setJobs(updated);
-    localStorage.setItem("client_mock_jobs", JSON.stringify(updated));
+    // API endpoint for toggling status not yet implemented
+    alert("Status toggling will be connected to the backend soon!");
   };
 
-  const filtered = jobs.filter(j => activeTab === "all" || j.status === activeTab);
+  const filtered = jobs.filter(j => activeTab === "all" || j.status.toLowerCase() === activeTab);
 
   if (!isLoaded) {
     return (

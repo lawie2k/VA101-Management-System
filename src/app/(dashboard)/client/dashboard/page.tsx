@@ -20,27 +20,27 @@ export default function ClientDashboardPage() {
     }
   }, []);
 
-  // Mock data — will be replaced with live API data in backend phase
-  const mockJobPosts: {
-    id: string;
-    title: string;
-    type: string;
-    rate: number;
-    status: "active" | "draft" | "closed";
-    applicants: number;
-    postedDate: string;
-  }[] = [];
+  const [jobPosts, setJobPosts] = useState<any[]>([]);
+  const [shortlistedCandidates, setShortlistedCandidates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const mockShortlisted: {
-    id: string;
-    name: string;
-    title: string;
-    location: string;
-    rating: number;
-    skills: string[];
-    hourlyRate: number;
-    avatar: string | null;
-  }[] = [];
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const res = await fetch("/api/client/dashboard-stats");
+        if (res.ok) {
+          const data = await res.json();
+          setJobPosts(data.jobPosts || []);
+          setShortlistedCandidates(data.shortlistedCandidates || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch dashboard stats", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchStats();
+  }, []);
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 h-[calc(100vh-144px)] overflow-hidden">
@@ -52,8 +52,8 @@ export default function ClientDashboardPage() {
 
         <ClientMainFeed
           companyName={companyName}
-          jobPosts={mockJobPosts}
-          shortlistedCandidates={mockShortlisted}
+          jobPosts={jobPosts}
+          shortlistedCandidates={shortlistedCandidates}
         />
 
         <ClientRightSidebar />

@@ -40,11 +40,15 @@ interface ClientProfile {
   billingContactName: string;
   billingEmail: string;
   billingPhone: string;
+  avatar?: string | null;
+  coverImage?: string | null;
 }
 
 export default function ClientLeftSidebar() {
   const [profile, setProfile] = useState<ClientProfile | null>(null);
   const [completion, setCompletion] = useState(0);
+  const [stats, setStats] = useState({ jobsPosted: 0, vasHired: 0, interviews: 0, contracts: 0 });
+  const [loadingStats, setLoadingStats] = useState(true);
 
   const computeCompletion = (data: ClientProfile) => {
     let score = 20; // Base score for completing setup
@@ -84,6 +88,23 @@ export default function ClientLeftSidebar() {
     return () => window.removeEventListener("clientProfileUpdate", handleUpdate);
   }, []);
 
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const res = await fetch("/api/client/hiring-overview-stats");
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data);
+        }
+      } catch (e) {
+        console.error("Failed to load hiring overview stats:", e);
+      } finally {
+        setLoadingStats(false);
+      }
+    }
+    loadStats();
+  }, []);
+
   const initials = profile?.companyName
     ? profile.companyName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()
     : "CO";
@@ -95,15 +116,19 @@ export default function ClientLeftSidebar() {
         {/* Cover Banner */}
         <div
           className="h-20 bg-cover bg-center border-b border-slate-200 bg-slate-900"
-          style={{ backgroundImage: `url(${DEFAULT_COVER})` }}
+          style={{ backgroundImage: `url(${profile?.coverImage || DEFAULT_COVER})` }}
         />
 
         {/* Company Avatar */}
         <div className="px-6 pb-6 relative">
           <div className="w-16 h-16 rounded-full border-2 border-white overflow-hidden shadow-sm absolute -top-8 left-6 bg-slate-50">
-            <span className="grid h-full w-full place-items-center bg-gradient-to-br from-[#E84E29] to-amber-500 text-white font-extrabold text-sm">
-              {initials}
-            </span>
+            {profile?.avatar ? (
+              <img src={profile.avatar} alt="Company logo" className="w-full h-full object-cover" />
+            ) : (
+              <span className="grid h-full w-full place-items-center bg-gradient-to-br from-[#E84E29] to-amber-500 text-white font-extrabold text-sm">
+                {initials}
+              </span>
+            )}
           </div>
 
           {/* Spacer */}
@@ -170,19 +195,35 @@ export default function ClientLeftSidebar() {
         </h4>
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-slate-50 rounded-2xl p-3.5 text-center">
-            <p className="text-lg font-black text-slate-800">0</p>
+            {loadingStats ? (
+              <div className="h-7 w-8 bg-slate-200 animate-pulse rounded mx-auto mb-1"></div>
+            ) : (
+              <p className="text-lg font-black text-slate-800">{stats.jobsPosted}</p>
+            )}
             <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">Jobs Posted</p>
           </div>
           <div className="bg-slate-50 rounded-2xl p-3.5 text-center">
-            <p className="text-lg font-black text-slate-800">0</p>
+            {loadingStats ? (
+              <div className="h-7 w-8 bg-slate-200 animate-pulse rounded mx-auto mb-1"></div>
+            ) : (
+              <p className="text-lg font-black text-slate-800">{stats.vasHired}</p>
+            )}
             <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">VAs Hired</p>
           </div>
           <div className="bg-slate-50 rounded-2xl p-3.5 text-center">
-            <p className="text-lg font-black text-slate-800">0</p>
+            {loadingStats ? (
+              <div className="h-7 w-8 bg-slate-200 animate-pulse rounded mx-auto mb-1"></div>
+            ) : (
+              <p className="text-lg font-black text-slate-800">{stats.interviews}</p>
+            )}
             <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">Interviews</p>
           </div>
           <div className="bg-slate-50 rounded-2xl p-3.5 text-center">
-            <p className="text-lg font-black text-slate-800">0</p>
+            {loadingStats ? (
+              <div className="h-7 w-8 bg-slate-200 animate-pulse rounded mx-auto mb-1"></div>
+            ) : (
+              <p className="text-lg font-black text-slate-800">{stats.contracts}</p>
+            )}
             <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">Contracts</p>
           </div>
         </div>

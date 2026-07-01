@@ -266,15 +266,30 @@ export default function SettingsMainFeed() {
     }, 1200);
   };
 
-  const handlePasswordUpdate = (e: React.FormEvent) => {
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!passwordFormReady) return;
     setPasswordLoading(true);
-    setTimeout(() => {
+    
+    try {
+      const res = await fetch("/api/client/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+      
+      if (res.ok) {
+        setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
+        showToastMsg("Password changed successfully.", "success");
+      } else {
+        const err = await res.json();
+        showToastMsg(`Failed: ${err.error}`, "error");
+      }
+    } catch (e) {
+      showToastMsg("An unexpected error occurred.", "error");
+    } finally {
       setPasswordLoading(false);
-      setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
-      showToastMsg("Password changed successfully.", "success");
-    }, 1200);
+    }
   };
 
   const strength = newPassword.length >= 12 && /[A-Z]/.test(newPassword) && /[0-9]/.test(newPassword) && /[^a-zA-Z0-9]/.test(newPassword)
@@ -286,7 +301,22 @@ export default function SettingsMainFeed() {
       {showDeleteModal && (
         <DeleteModal
           onClose={() => setShowDeleteModal(false)}
-          onConfirm={() => { setShowDeleteModal(false); showToastMsg("Account scheduled for deletion. You will receive a confirmation email.", "error"); }}
+          onConfirm={async () => { 
+            setShowDeleteModal(false);
+            try {
+              const res = await fetch("/api/client/settings", {
+                method: "DELETE"
+              });
+              if (res.ok) {
+                showToastMsg("Account deleted. You will be redirected...", "success");
+                setTimeout(() => window.location.href = "/", 2000);
+              } else {
+                showToastMsg("Failed to delete account", "error");
+              }
+            } catch (e) {
+              showToastMsg("Error deleting account", "error");
+            }
+          }}
         />
       )}
 

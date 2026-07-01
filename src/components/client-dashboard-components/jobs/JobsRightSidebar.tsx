@@ -14,17 +14,28 @@ interface Job {
 
 export default function JobsRightSidebar() {
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const saved = localStorage.getItem("client_mock_jobs");
-    if (saved) {
-      try { setJobs(JSON.parse(saved)); } catch { /* ignore */ }
+    async function loadJobs() {
+      try {
+        const res = await fetch("/api/client/jobs");
+        if (res.ok) {
+          const data = await res.json();
+          setJobs(data);
+        }
+      } catch (e) {
+        console.error("Failed to load jobs", e);
+      } finally {
+        setLoading(false);
+      }
     }
+    loadJobs();
   }, []);
 
   const active  = jobs.filter(j => j.status === "active").length;
   const draft   = jobs.filter(j => j.status === "draft").length;
-  const total   = jobs.reduce((acc, j) => acc + j.applicants, 0);
+  const total   = jobs.reduce((acc, j) => acc + (j.applicants || 0), 0);
 
   return (
     <aside className="lg:col-span-3 h-full overflow-y-auto scrollbar-none space-y-5 pb-12">
@@ -35,15 +46,27 @@ export default function JobsRightSidebar() {
         <div className="space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <span className="text-xs font-semibold text-slate-500">Active Positions</span>
-            <span className="text-sm font-black text-slate-800">{active}</span>
+            {loading ? (
+              <span className="w-4 h-4 rounded-full bg-slate-200 animate-pulse"></span>
+            ) : (
+              <span className="text-sm font-black text-slate-800">{active}</span>
+            )}
           </div>
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <span className="text-xs font-semibold text-slate-500">Draft / Pending</span>
-            <span className="text-sm font-black text-slate-800">{draft}</span>
+            {loading ? (
+              <span className="w-4 h-4 rounded-full bg-slate-200 animate-pulse"></span>
+            ) : (
+              <span className="text-sm font-black text-slate-800">{draft}</span>
+            )}
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500">Total Applicants</span>
-            <span className="text-sm font-black text-[#E84E29]">{total}</span>
+            {loading ? (
+              <span className="w-4 h-4 rounded-full bg-slate-200 animate-pulse"></span>
+            ) : (
+              <span className="text-sm font-black text-[#E84E29]">{total}</span>
+            )}
           </div>
         </div>
       </div>
@@ -68,19 +91,6 @@ export default function JobsRightSidebar() {
             <h5 className="text-xs font-bold text-slate-900">Editing listings</h5>
             <p className="text-[11px] text-slate-400 leading-normal">
               You can edit any listing at any time. Changes propagate immediately to active posts.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Tip Box */}
-      <div className="bg-gradient-to-br from-amber-50 to-orange-50/40 border border-amber-200/30 rounded-3xl p-5 shadow-xs">
-        <div className="flex items-start gap-2.5">
-          <span className="text-base leading-none">💡</span>
-          <div>
-            <p className="text-xs font-bold text-slate-900">Quick Tip</p>
-            <p className="text-[11px] text-slate-500 font-semibold mt-1 leading-normal">
-              Listings with specific tools (Slack, HubSpot, Notion) attract 3× more qualified applicants.
             </p>
           </div>
         </div>

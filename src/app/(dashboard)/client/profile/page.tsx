@@ -261,10 +261,22 @@ export default function Page() {
   })();
 
   // Save changes
-  const saveToStorage = (updated: typeof profile) => {
+  const saveToStorage = async (updated: typeof profile) => {
+    // 1. Save to local state and trigger re-render
     setProfile(updated);
     localStorage.setItem("client_profile_data", JSON.stringify(updated));
     window.dispatchEvent(new Event("clientProfileUpdate"));
+    
+    // 2. Persist to backend
+    try {
+      await fetch("/api/client/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updated),
+      });
+    } catch (e) {
+      console.error("Failed to save profile to backend:", e);
+    }
   };
 
   // Open edit modals
@@ -425,9 +437,6 @@ export default function Page() {
             </div>
             
             <div className="flex flex-wrap gap-2 sm:pt-5">
-              <Button variant="outline" className="rounded-full flex items-center gap-1.5 text-xs py-2 px-4 shadow-sm" onClick={() => window.open("/client/dashboard", "_self")}>
-                <IconEye className="h-4 w-4" /> Go to Dashboard
-              </Button>
               <Button variant="primary" className="rounded-full flex items-center gap-1.5 text-xs py-2 px-5 shadow-md text-white" onClick={openEditProfile}>
                 <IconPencil className="h-4 w-4" /> Edit company
               </Button>

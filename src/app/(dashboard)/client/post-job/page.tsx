@@ -83,11 +83,13 @@ export default function PostJobPage() {
     workDays: "",
     workHours: "",
     description: "",
+    timezone: "",
   });
 
   const [rate, setRate] = useState<number | "">(12);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedTools, setSelectedTools] = useState<string[]>([]);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   // Split Calculations
   const vaRate = (Number(rate || 0) * 0.7).toFixed(2);
@@ -114,40 +116,45 @@ export default function PostJobPage() {
   // Submit Handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-
-    if (!formData.title.trim() || !formData.roleNeeded.trim() || !formData.description.trim()) {
-      setError("Please fill in the Job Title, Role Needed, and Job Description fields.");
-      return;
-    }
-
     setLoading(true);
+    
+    // Convert states into the payload format expected by the API
+    const payload = {
+      jobTitle: formData.title,
+      roleNeeded: formData.roleNeeded,
+      jobDescription: formData.description,
+      workSchedule: `${formData.workDays}${formData.workHours ? ", " + formData.workHours : ""}`,
+      workShift: "flexible", // Hardcoded or omitted as this is mock
+      timezone: formData.timezone,
+      clientHourlyRate: rate,
+      vaHourlyRate: Number(rate || 0) * 0.7, // Assuming 30% cut
+      niche: formData.niche,
+      skills: selectedSkills,
+      tools: selectedTools,
+    };
 
     try {
-      // Simulate backend call latency
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Append mock job item to localStorage for immediately visible client state
-      const savedJobs = localStorage.getItem("client_mock_jobs");
-      const currentJobs = savedJobs ? JSON.parse(savedJobs) : [];
+      const res = await fetch("/api/client/jobs", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
       
-      const newJob = {
-        id: Math.random().toString(36).substr(2, 9),
-        title: formData.title,
-        type: formData.roleNeeded,
-        rate: Number(rate) || 0,
-        status: "draft", // Pending approval from Admin
-        applicants: 0,
-        postedDate: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-        schedule: `${formData.workDays}${formData.workHours ? ", " + formData.workHours : ""}`,
-      };
-
-      localStorage.setItem("client_mock_jobs", JSON.stringify([newJob, ...currentJobs]));
-
-      // Navigate to Jobs listing dashboard view
-      router.push("/client/jobs");
+      if (res.ok) {
+        setIsSuccess(true);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        setTimeout(() => {
+          router.push("/client/jobs");
+        }, 2500);
+      } else {
+        const err = await res.json();
+        alert(`Failed to post job: ${err.error}`);
+        setLoading(false);
+      }
     } catch (err: any) {
-      setError(err.message || "An unexpected error occurred.");
+      alert(err.message || "An unexpected error occurred.");
       setLoading(false);
     }
   };
