@@ -320,7 +320,10 @@ export default function Page() {
 
   const handleSaveBilling = (e: React.FormEvent) => {
     e.preventDefault();
-    const updated = { ...profile, ...billingForm };
+    const formattedPhone = billingForm.billingPhone.startsWith("+")
+      ? billingForm.billingPhone
+      : `${selectedCountry.code} ${billingForm.billingPhone}`;
+    const updated = { ...profile, ...billingForm, billingPhone: formattedPhone };
     saveToStorage(updated);
     setActiveModal(null);
   };
@@ -545,7 +548,7 @@ export default function Page() {
                 {profile.industry ? "✅" : "⚠️"} Industry details
               </li>
               <li className="flex items-center gap-1.5">
-                {profile.companyDescription.length > 20 ? "✅" : "⚠️"} Business description
+                {profile.companyDescription.length > 20 ? "✅" : "⚠️"} Company desc
               </li>
               <li className="flex items-center gap-1.5">
                 {profile.companyWebsite ? "✅" : "⚠️"} Website url
@@ -604,11 +607,11 @@ export default function Page() {
           ========================================== */}
       
       {activeModal && (
-        <div className="fixed inset-0 bg-[#000312]/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 transition-all duration-300">
-          <div className="bg-white rounded-3xl max-w-lg w-full border border-slate-200 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-[#000312]/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 transition-all duration-300 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-lg w-full border border-slate-200 shadow-xl animate-in fade-in zoom-in-95 duration-200 my-8">
             
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 rounded-t-3xl">
               <h3 className="font-extrabold text-slate-900 text-base">
                 {activeModal === "company" && "Edit Company Details"}
                 {activeModal === "billing" && "Edit Billing & Contact Info"}
@@ -624,7 +627,7 @@ export default function Page() {
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 max-h-[80vh] overflow-y-auto">
+            <div className="p-6">
               
               {/* 1. Edit Company Details */}
               {activeModal === "company" && (
@@ -686,6 +689,9 @@ export default function Page() {
                       className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all shadow-xs resize-none"
                       placeholder="Tell VAs about your company culture, mission, and work style..."
                     />
+                    <p className="text-[10px] font-semibold text-slate-500 mt-1.5 ml-1">
+                      * Minimum 20 characters required for profile completion score.
+                    </p>
                   </div>
 
                   <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">

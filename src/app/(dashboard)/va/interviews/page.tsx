@@ -75,11 +75,6 @@ const DEFAULT_PROFILE = {
   skills: [],
 };
 
-const MOCK_JOBS = [
-  { id: "job-1", title: "Social Media Manager", company: "AeroMedia Group", rate: 10.00, type: "Part-time" },
-  { id: "job-2", title: "Executive Assistant", company: "Summit Ventures", rate: 15.00, type: "Full-time" },
-  { id: "job-3", title: "Shopify Store Operations Specialist", company: "Zoe Boutique", rate: 12.50, type: "Contract" }
-];
 
 const INITIAL_INTERVIEWS = [
   { 

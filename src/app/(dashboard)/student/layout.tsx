@@ -6,17 +6,15 @@ import { usePathname, useRouter } from "next/navigation";
 import FormHeader from "../../../components/layout/FormHeader";
 
 const navItems = [
-  { label: "Dashboard", href: "/va/dashboard" },
-  { label: "My Profile", href: "/va/profile" },
-  { label: "Jobs", href: "/va/jobs" },
-  { label: "My Applications", href: "/va/applications" },
-  { label: "Interviews", href: "/va/interviews" },
-  { label: "Training", href: "/va/training" },
-  { label: "My Learning", href: "/va/my-learning" },
-  { label: "Settings", href: "/va/settings" },
+  { label: "Dashboard", href: "/student/dashboard" },
+  { label: "My Profile", href: "/student/profile" },
+  { label: "My Learning", href: "/student/my-learning" },
+  { label: "Browse Training", href: "/student/training" },
+  { label: "Payments", href: "/student/payments" },
+  { label: "Settings", href: "/student/settings" },
 ];
 
-export default function VaLayout({ children }: { children: React.ReactNode }) {
+export default function StudentLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -27,16 +25,8 @@ export default function VaLayout({ children }: { children: React.ReactNode }) {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
-    const handleFeedScroll = (e: Event) => {
-      const scrollTop = (e as CustomEvent).detail?.scrollTop || 0;
-      setIsScrolled(scrollTop > 10);
-    };
     window.addEventListener("scroll", handleScroll);
-    window.addEventListener("feedScroll", handleFeedScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("feedScroll", handleFeedScroll);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Fetch session on mount/pathname changes
@@ -67,7 +57,7 @@ export default function VaLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const isSetupPage = pathname === "/va/profile/setup-profile-form";
+  const isSetupPage = pathname === "/student/profile/setup-profile-form";
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between">

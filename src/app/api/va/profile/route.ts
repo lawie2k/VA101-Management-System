@@ -99,8 +99,8 @@ export async function GET() {
       })),
       availability: {
         hours: profile.availability_summary || "",
-        schedule: profile.work_shift || "",
-        timezone: ""
+        schedule: profile.work_shift ? profile.work_shift.split(" | ")[0] : "",
+        timezone: profile.work_shift && profile.work_shift.includes(" | ") ? profile.work_shift.split(" | ")[1] : ""
       },
       experience: [],
       certifications: []
@@ -188,7 +188,7 @@ export async function PATCH(req: Request) {
         profile_visibility: body.openToOpportunities !== undefined ? (body.openToOpportunities ? "public" : "private") : undefined,
         preferred_niche_id: preferredNicheId,
         availability_summary: body.availability?.hours !== undefined ? body.availability.hours : undefined,
-        work_shift: body.availability?.schedule !== undefined ? body.availability.schedule : undefined
+        work_shift: body.availability?.schedule !== undefined ? `${body.availability.schedule} | ${body.availability.timezone || ""}` : undefined
       }
     });
 

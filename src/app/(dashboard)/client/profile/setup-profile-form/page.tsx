@@ -34,6 +34,55 @@ export default function ClientSetupProfileForm() {
     flag: "🇺🇸"
   });
 
+  const [avatar, setAvatar] = useState<string>("");
+  const [coverImage, setCoverImage] = useState<string>("");
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [coverError, setCoverError] = useState<string | null>(null);
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAvatarError(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 1.5 * 1024 * 1024) {
+      setAvatarError("Image is too large. Choose under 1.5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setAvatar(event.target.result as string);
+      }
+    };
+    reader.onerror = () => {
+      setAvatarError("Failed to read image.");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCoverError(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 1.5 * 1024 * 1024) {
+      setCoverError("Image is too large. Choose under 1.5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setCoverImage(event.target.result as string);
+      }
+    };
+    reader.onerror = () => {
+      setCoverError("Failed to read image.");
+    };
+    reader.readAsDataURL(file);
+  };
+
   const isFormIncomplete =
     !formData.companyName.trim() ||
     !formData.industry.trim() ||
@@ -116,8 +165,18 @@ export default function ClientSetupProfileForm() {
       // Simulate backend latency delay
       await new Promise(resolve => setTimeout(resolve, 800));
 
+      // Build profile data matching API schema
+      const profileDataToSave = {
+        ...formData,
+        billingPhone: formData.billingPhone.startsWith("+") 
+          ? formData.billingPhone 
+          : `${selectedCountry.code} ${formData.billingPhone}`,
+        avatar: avatar || undefined,
+        coverImage: coverImage || undefined
+      };
+
       // Save profile details to LocalStorage to sync client state
-      localStorage.setItem("client_profile_data", JSON.stringify(formData));
+      localStorage.setItem("client_profile_data", JSON.stringify(profileDataToSave));
       
       // Navigate client to dashboard and replace history state to avoid back navigating loops
       router.replace("/client/dashboard");
@@ -162,6 +221,56 @@ export default function ClientSetupProfileForm() {
               {error}
             </div>
           )}
+
+          {/* Section 0: Brand Images */}
+          <div>
+            <h3 className="text-sm font-extrabold text-slate-900 mb-4 border-b border-slate-100 pb-2">
+              Brand Assets
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Avatar / Logo Upload */}
+              <div>
+                <label className="block text-xs font-bold text-slate-900 mb-2">Company Logo (Profile)</label>
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
+                    {avatar ? (
+                      <img src={avatar} alt="Logo preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-2xl">🏢</span>
+                    )}
+                  </div>
+                  <div>
+                    <label htmlFor="avatar-upload" className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 cursor-pointer transition-colors shadow-xs">
+                      Choose Logo
+                    </label>
+                    <input id="avatar-upload" type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                    {avatarError && <p className="text-red-500 text-[10px] mt-1 font-semibold">{avatarError}</p>}
+                  </div>
+                </div>
+              </div>
+
+              {/* Cover Image Upload */}
+              <div>
+                <label className="block text-xs font-bold text-slate-900 mb-2">Cover Header Image</label>
+                <div className="flex items-center gap-4">
+                  <div className="w-24 h-16 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
+                    {coverImage ? (
+                      <img src={coverImage} alt="Cover preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-slate-400 text-xs">No Cover</span>
+                    )}
+                  </div>
+                  <div>
+                    <label htmlFor="cover-upload" className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 cursor-pointer transition-colors shadow-xs">
+                      Choose Cover
+                    </label>
+                    <input id="cover-upload" type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" />
+                    {coverError && <p className="text-red-500 text-[10px] mt-1 font-semibold">{coverError}</p>}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Section 1: Company Details */}
           <div>
@@ -278,6 +387,9 @@ export default function ClientSetupProfileForm() {
                 className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#E84E29] focus:ring-1 focus:ring-[#E84E29] transition-all font-medium text-slate-800 bg-slate-50/30 resize-none"
                 placeholder="Tell VAs about your company culture, core mission, and projects..."
               />
+              <p className="text-[10px] font-semibold text-slate-500 mt-1.5 ml-1">
+                * Minimum 20 characters required for profile completion score.
+              </p>
             </div>
           </div>
 

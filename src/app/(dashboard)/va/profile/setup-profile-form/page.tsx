@@ -49,6 +49,7 @@ export default function ProfileSetupPage() {
     about: string;
     availabilityHours: string;
     availabilitySchedule: string;
+    availabilityTimezone: string;
   }>({
     fullName: "",
     title: "",
@@ -59,6 +60,7 @@ export default function ProfileSetupPage() {
     about: "",
     availabilityHours: "",
     availabilitySchedule: "",
+    availabilityTimezone: "",
   });
 
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
@@ -203,7 +205,8 @@ export default function ProfileSetupPage() {
           openToOpportunities: true,
           availability: {
             hours: formData.availabilityHours,
-            schedule: formData.availabilitySchedule
+            schedule: formData.availabilitySchedule,
+            timezone: formData.availabilityTimezone
           }
         }),
       });
@@ -377,34 +380,65 @@ export default function ProfileSetupPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label htmlFor="availabilityHours" className="block text-xs font-bold text-slate-900 mb-2">
-                Availability Hours (e.g. 30 hrs/week)
+                Weekly Commitment (Hours)
               </label>
-              <input
+              <select
                 id="availabilityHours"
                 name="availabilityHours"
-                type="text"
                 required
                 value={formData.availabilityHours}
                 onChange={handleInputChange}
-                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-all font-medium text-slate-800 bg-slate-50/30"
-                placeholder="e.g. 40 hrs/week"
-              />
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-all font-medium text-slate-800 bg-slate-50/30 appearance-none"
+              >
+                <option value="" disabled>Select weekly commitment</option>
+                <option value="Full-time (40+ hrs/week)">Full-time (40+ hrs/week)</option>
+                <option value="Part-time (20-30 hrs/week)">Part-time (20-30 hrs/week)</option>
+                <option value="Project-based (Flexible)">Project-based (Flexible)</option>
+                <option value="Less than 20 hrs/week">Less than 20 hrs/week</option>
+              </select>
             </div>
 
             <div>
               <label htmlFor="availabilitySchedule" className="block text-xs font-bold text-slate-900 mb-2">
-                Preferred Schedule (e.g. Mon–Fri, 9am–5pm EST)
+                Work Schedule
               </label>
-              <input
+              <select
                 id="availabilitySchedule"
                 name="availabilitySchedule"
-                type="text"
                 required
                 value={formData.availabilitySchedule}
                 onChange={handleInputChange}
-                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-all font-medium text-slate-800 bg-slate-50/30"
-                placeholder="e.g. Mon–Fri, 9am–5pm PHT"
-              />
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-all font-medium text-slate-800 bg-slate-50/30 appearance-none"
+              >
+                <option value="" disabled>Select work schedule</option>
+                <option value="Day Shift (8AM - 5PM)">Day Shift (8AM - 5PM)</option>
+                <option value="Mid Shift (4PM - 1AM)">Mid Shift (4PM - 1AM)</option>
+                <option value="Night Shift (12AM - 9AM)">Night Shift (12AM - 9AM)</option>
+                <option value="Flexible Schedule">Flexible Schedule</option>
+              </select>
+            </div>
+            
+            <div className="sm:col-span-2">
+              <label htmlFor="availabilityTimezone" className="block text-xs font-bold text-slate-900 mb-2">
+                Standard Time Zone
+              </label>
+              <select
+                id="availabilityTimezone"
+                name="availabilityTimezone"
+                required
+                value={formData.availabilityTimezone}
+                onChange={handleInputChange}
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-all font-medium text-slate-800 bg-slate-50/30 appearance-none"
+              >
+                <option value="" disabled>Select timezone</option>
+                <option value="PHT (UTC+8) Philippine Time">PHT (UTC+8) Philippine Time</option>
+                <option value="EST (UTC-5) Eastern Time">EST (UTC-5) Eastern Time</option>
+                <option value="CST (UTC-6) Central Time">CST (UTC-6) Central Time</option>
+                <option value="PST (UTC-8) Pacific Time">PST (UTC-8) Pacific Time</option>
+                <option value="AEST (UTC+10) Australian Eastern Time">AEST (UTC+10) Australian Eastern Time</option>
+                <option value="GMT (UTC+0) Greenwich Mean Time">GMT (UTC+0) Greenwich Mean Time</option>
+                <option value="CET (UTC+1) Central European Time">CET (UTC+1) Central European Time</option>
+              </select>
             </div>
           </div>
 
@@ -555,10 +589,13 @@ export default function ProfileSetupPage() {
                 !formData.about.trim() ||
                 formData.availabilityHours.trim() === "" ||
                 formData.availabilitySchedule.trim() === "" ||
+                formData.availabilityTimezone.trim() === "" ||
                 formData.experienceYears === "" ||
                 formData.experienceYears < 0 ||
                 formData.expectedRate === "" ||
-                formData.expectedRate <= 0
+                formData.expectedRate <= 0 ||
+                selectedSkills.length === 0 ||
+                selectedTools.length === 0
               }
               className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent rounded-full text-xs font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] transition-all shadow-sm cursor-pointer disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
             >

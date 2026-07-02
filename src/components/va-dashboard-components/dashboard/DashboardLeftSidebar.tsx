@@ -38,8 +38,8 @@ export default function DashboardLeftSidebar() {
         if (data.portfolio?.length > 0) score += 20;
         if (data.portfolio?.length > 1) score += 10;
         if (data.experience?.length > 0) score += 20;
-        if (data.skills?.length >= 3) score += 10;
-        if (data.tools?.length >= 2) score += 10;
+        if (data.skills?.length >= 1) score += 10;
+        if (data.tools?.length >= 1) score += 10;
         return Math.min(score, 100);
       })(),
       skills: data.skills || []

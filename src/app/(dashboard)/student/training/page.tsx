@@ -1,12 +1,33 @@
 "use client";
 
-export default function Page() {
+import StudentLeftSidebar from "../../../../components/student-dashboard-components/dashboard/StudentLeftSidebar";
+import { BrowseTrainingFeed } from "../../../../components/student-dashboard-components/training/BrowseTrainingFeed";
+import { BrowseTrainingRightSidebar } from "../../../../components/student-dashboard-components/training/BrowseTrainingRightSidebar";
+
+export default function BrowseTrainingPage() {
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold text-slate-800 mb-4">Student Browse Training</h1>
-      <p className="text-slate-600 mb-6">File path: <code>src/app/(dashboard)/student/training/page.tsx</code></p>
-      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs max-w-lg">
-        <p className="text-sm text-slate-500 font-medium">Ready for your frontend development flow.</p>
+    <div className="w-full max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+        
+        {/* Left Sidebar (3 cols) */}
+        <div className="md:col-span-3">
+          <div className="sticky top-8">
+            <StudentLeftSidebar />
+          </div>
+        </div>
+
+        {/* Main Feed (6 cols) */}
+        <div className="md:col-span-6 flex flex-col gap-6">
+          <BrowseTrainingFeed />
+        </div>
+
+        {/* Right Sidebar (3 cols) */}
+        <div className="md:col-span-3">
+          <div className="sticky top-8">
+            <BrowseTrainingRightSidebar />
+          </div>
+        </div>
+
       </div>
     </div>
   );

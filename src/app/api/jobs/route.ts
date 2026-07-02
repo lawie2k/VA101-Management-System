@@ -23,6 +23,9 @@ function serializeBigInt(obj: any): any {
 export async function GET() {
   try {
     const dbJobs = await db.job_posts.findMany({
+      where: {
+        status: "active"
+      },
       include: {
         client_profiles: true,
         job_post_skills: { include: { skills: true } },

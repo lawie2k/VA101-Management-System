@@ -81,6 +81,18 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
         }
       }
 
+      // Also try student_profile_data for student users
+      const studentSaved = localStorage.getItem("student_profile_data");
+      if (studentSaved) {
+        try {
+          const data = JSON.parse(studentSaved);
+          if (data.avatarUrl) setProfileImage(data.avatarUrl);
+          if (data.fullName) setProfileName(data.fullName);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
       // 2. Fetch session from server to ensure accuracy and freshness
       try {
         const res = await fetch("/api/auth/me");
@@ -118,10 +130,12 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
     window.addEventListener("storage", loadProfile);
     window.addEventListener("profileUpdate", loadProfile);
     window.addEventListener("clientProfileUpdate", loadProfile);
+    window.addEventListener("studentProfileUpdate", loadProfile);
     return () => {
       window.removeEventListener("storage", loadProfile);
       window.removeEventListener("profileUpdate", loadProfile);
       window.removeEventListener("clientProfileUpdate", loadProfile);
+      window.removeEventListener("studentProfileUpdate", loadProfile);
     };
   }, []);
 
