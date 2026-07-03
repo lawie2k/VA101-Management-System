@@ -35,7 +35,9 @@ export async function GET() {
     const applications = await db.job_applications.findMany({
       where: { va_profile_id: profile.id },
       include: {
-        job_posts: true
+        job_posts: {
+          include: { client_profiles: true }
+        }
       },
       orderBy: { applied_at: "desc" }
     });
@@ -43,8 +45,8 @@ export async function GET() {
     const payload = applications.map((app: any) => ({
       id: app.id.toString(),
       jobId: app.job_post_id.toString(),
-      jobTitle: app.job_posts.title,
-      company: app.job_posts.company_name || "Enterprise Client",
+      jobTitle: app.job_posts.job_title,
+      company: app.job_posts.client_profiles?.company_name || "Enterprise Client",
       status: app.status || "applied",
       appliedDate: app.applied_at ? app.applied_at.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "N/A",
       coverMessage: app.cover_message || ""

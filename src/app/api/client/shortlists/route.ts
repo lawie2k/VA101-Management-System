@@ -51,7 +51,7 @@ export async function GET(req: Request) {
         id: s.id.toString(),
         candidateName: vaProfile?.users?.full_name || "Unknown Candidate",
         role: jobPost?.role_needed || jobPost?.job_title,
-        experience: vaProfile?.experience_level ? `${vaProfile.experience_level}` : "N/A",
+        experience: vaProfile?.experience_level ? `${vaProfile.experience_level} yrs exp` : "N/A",
         status: s.status,
         appliedDate: s.created_at ? s.created_at.toISOString().split('T')[0] : "N/A",
         skills: vaProfile?.va_skills.map(skillLink => skillLink.skills.name).slice(0, 3) || []

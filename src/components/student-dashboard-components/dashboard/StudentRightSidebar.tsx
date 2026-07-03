@@ -31,27 +31,6 @@ export default function StudentRightSidebar() {
         </div>
       </div>
 
-      {/* Suggested Trainings */}
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl border border-slate-700 p-6 shadow-lg relative overflow-hidden">
-        {/* Abstract background blobs */}
-        <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#E84E29] rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
-        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-orange-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
-        
-        <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-4">
-            <IconRocket className="text-[#E84E29] w-5 h-5" stroke={2} />
-            <h3 className="font-extrabold text-white text-sm">Level Up!</h3>
-          </div>
-          <p className="text-xs font-medium text-slate-300 leading-relaxed mb-5">
-            Browse premium training materials posted by top trainers to fast-track your VA career.
-          </p>
-          
-          <button className="w-full bg-[#E84E29] hover:bg-[#d03d1c] text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-md transition-all duration-300 active:scale-95">
-            Explore Catalog
-          </button>
-        </div>
-      </div>
-
     </div>
   );
 }

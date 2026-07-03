@@ -66,25 +66,6 @@ export function VAProfileRightSidebar({ profile, strength, openEditAvailability 
             </div>
           </PCard>
 
-          {/* SUGGESTED IMPROVEMENTS */}
-          <PCard className="bg-amber-50/40 border border-amber-100 p-5">
-            <PCardHeader 
-              title="Suggested improvements" 
-              action={<IconSparkles className="h-4.5 w-4.5 text-amber-500" />} 
-            />
-            <ul className="space-y-3 text-xs leading-relaxed font-semibold text-slate-650">
-              <li className="flex items-start gap-2 bg-white/70 border border-amber-100/70 p-2.5 rounded-xl">
-                <span>🎥</span>
-                <p>Add a 30-sec intro video — boosts shortlists by 2.4×.</p>
-              </li>
-              <li className="flex items-start gap-2 bg-white/70 border border-amber-100/70 p-2.5 rounded-xl">
-                <span>📂</span>
-                <p>Add {profile.portfolio.length < 2 ? "another" : "a third"} portfolio work sample to showcase your range.</p>
-              </li>
-            </ul>
-          </PCard>
-
-
         </div>
     </div>
   );
