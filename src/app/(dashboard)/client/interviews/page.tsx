@@ -1,6 +1,6 @@
 "use client";
 
-import ClientLeftSidebar from "../../../../components/client-dashboard-components/dashboard/ClientLeftSidebar";
+import ClientLeftSidebar from "../../../../components/client-dashboard-components/ClientLeftSidebar";
 import InterviewsMainFeed from "../../../../components/client-dashboard-components/interviews/InterviewsMainFeed";
 import InterviewsRightSidebar from "../../../../components/client-dashboard-components/interviews/InterviewsRightSidebar";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import StudentLeftSidebar from "../../../../components/student-dashboard-components/dashboard/StudentLeftSidebar";
+import StudentLeftSidebar from "../../../../components/student-dashboard-components/StudentLeftSidebar";
 import { MyLearningFeed } from "../../../../components/student-dashboard-components/my-learning/MyLearningFeed";
 import { MyLearningRightSidebar } from "../../../../components/student-dashboard-components/my-learning/MyLearningRightSidebar";
 

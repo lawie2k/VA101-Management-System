@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import StudentLeftSidebar from "../../../../components/student-dashboard-components/dashboard/StudentLeftSidebar";
+import StudentLeftSidebar from "../../../../components/student-dashboard-components/StudentLeftSidebar";
 import StudentMainFeed from "../../../../components/student-dashboard-components/dashboard/StudentMainFeed";
 import StudentRightSidebar from "../../../../components/student-dashboard-components/dashboard/StudentRightSidebar";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import StudentLeftSidebar from "../../../../components/student-dashboard-components/dashboard/StudentLeftSidebar";
+import StudentLeftSidebar from "../../../../components/student-dashboard-components/StudentLeftSidebar";
 import { PaymentsHistory } from "../../../../components/student-dashboard-components/payments/PaymentsHistory";
 import { PaymentsRightSidebar } from "../../../../components/student-dashboard-components/payments/PaymentsRightSidebar";
 

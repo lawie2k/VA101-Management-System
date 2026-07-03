@@ -1,6 +1,6 @@
 "use client";
 
-import ClientLeftSidebar from "../../../../components/client-dashboard-components/dashboard/ClientLeftSidebar";
+import ClientLeftSidebar from "../../../../components/client-dashboard-components/ClientLeftSidebar";
 import ContractsMainFeed from "../../../../components/client-dashboard-components/contracts/ContractsMainFeed";
 import ContractsRightSidebar from "../../../../components/client-dashboard-components/contracts/ContractsRightSidebar";
 

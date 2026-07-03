@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import FormHeader from "../../../../components/layout/FormHeader";
-import DashboardLeftSidebar from "../../../../components/va-dashboard-components/dashboard/DashboardLeftSidebar";
+import VALeftSidebar from "../../../../components/va-dashboard-components/VALeftSidebar";
 
 import { VAProfileHeader } from "../../../../components/va-dashboard-components/profile/VAProfileHeader";
 import { VAProfileMainFeed } from "../../../../components/va-dashboard-components/profile/VAProfileMainFeed";

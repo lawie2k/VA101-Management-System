@@ -139,14 +139,14 @@ export async function POST(req: Request) {
         await tx.trainer_profiles.create({
           data: {
             user_id: createdUser.id,
-            status: "active",
+            status: "draft",
           },
         });
       } else if (accountType === "student") {
         await tx.student_profiles.create({
           data: {
             user_id: createdUser.id,
-            status: "active",
+            status: "draft",
           },
         });
       }

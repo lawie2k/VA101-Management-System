@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import DashboardLeftSidebar from "../../../../components/va-dashboard-components/dashboard/DashboardLeftSidebar";
+import VALeftSidebar from "../../../../components/va-dashboard-components/VALeftSidebar";
 import JobsMainFeed from "../../../../components/va-dashboard-components/jobs/JobsMainFeed";
 import JobsRightSidebar from "../../../../components/va-dashboard-components/jobs/JobsRightSidebar";
 
@@ -286,7 +286,7 @@ export default function BrowseJobsPage() {
       
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch h-full overflow-hidden">
         
-        <DashboardLeftSidebar />
+        <VALeftSidebar />
 
         <JobsMainFeed 
           filteredJobs={filteredJobs}

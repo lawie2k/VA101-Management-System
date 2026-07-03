@@ -103,10 +103,16 @@ export default function Page() {
         throw new Error(data.error || "Something went wrong. Please try again.");
       }
 
+      // Clear previous session data to prevent cross-account pollution
+      localStorage.removeItem("va_profile_data");
+      localStorage.removeItem("client_profile_data");
+      localStorage.removeItem("trainer_profile_data");
+      localStorage.removeItem("student_profile_data");
+
       // Successful registration -> route to setup profile first for VAs, otherwise dashboard
       if (accountType === "va") router.push("/va/profile/setup-profile-form");
       else if (accountType === "client") router.push("/client/profile/setup-profile-form");
-      else if (accountType === "trainer") router.push("/trainer/dashboard");
+      else if (accountType === "trainer") router.push("/trainer/profile/setup-profile-form");
       else if (accountType === "student") router.push("/student/dashboard");
     } catch (err: any) {
       setError(err.message);

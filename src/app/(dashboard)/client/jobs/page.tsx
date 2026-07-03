@@ -1,6 +1,6 @@
 "use client";
 
-import ClientLeftSidebar from "../../../../components/client-dashboard-components/dashboard/ClientLeftSidebar";
+import ClientLeftSidebar from "../../../../components/client-dashboard-components/ClientLeftSidebar";
 import JobsMainFeed from "../../../../components/client-dashboard-components/jobs/JobsMainFeed";
 import JobsRightSidebar from "../../../../components/client-dashboard-components/jobs/JobsRightSidebar";
 

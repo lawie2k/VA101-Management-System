@@ -78,6 +78,10 @@
   scrollbar-color: var(--color-slate-300) transparent;
 }
 
+textarea {
+  resize: none;
+}
+
 *::-webkit-scrollbar {
   width: 6px;
   height: 6px;

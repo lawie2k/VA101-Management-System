@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import FormHeader from "../../../components/layout/FormHeader";
+import Footer from "../../../components/layout/Footer";
 
 const navItems = [
   { label: "Dashboard", href: "/client/dashboard" },
@@ -121,6 +122,11 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       */}
       <div className={`flex-grow ${isSetupPage ? "pt-20 md:pt-24" : (showNav ? "pt-36" : "pt-24")} transition-all duration-300`}>
         {children}
+      </div>
+      
+      {/* Footer added to all pages */}
+      <div className="mt-auto pt-10">
+        <Footer />
       </div>
     </div>
   );

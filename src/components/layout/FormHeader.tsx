@@ -43,7 +43,12 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
     setMounted(true);
   }, []);
 
-  const isSetupPage = mounted && pathname === "/va/profile/setup-profile-form";
+  const isSetupPage = mounted && pathname.includes("/setup-profile-form");
+  
+  let basePath = "/va";
+  if (pathname.startsWith("/trainer")) basePath = "/trainer";
+  if (pathname.startsWith("/client")) basePath = "/client";
+  if (pathname.startsWith("/student")) basePath = "/student";
 
   const [profileImage, setProfileImage] = useState("");
   const [profileName, setProfileName] = useState("");
@@ -93,6 +98,19 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
         }
       }
 
+      // Also try trainer_profile_data for trainer users
+      const trainerSaved = localStorage.getItem("trainer_profile_data");
+      if (trainerSaved) {
+        try {
+          const data = JSON.parse(trainerSaved);
+          if (data.avatar) setProfileImage(data.avatar);
+          if (data.fullName) setProfileName(data.fullName);
+          if (data.email) setProfileEmail(data.email);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
       // 2. Fetch session from server to ensure accuracy and freshness
       try {
         const res = await fetch("/api/auth/me");
@@ -131,11 +149,13 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
     window.addEventListener("profileUpdate", loadProfile);
     window.addEventListener("clientProfileUpdate", loadProfile);
     window.addEventListener("studentProfileUpdate", loadProfile);
+    window.addEventListener("trainerProfileUpdate", loadProfile);
     return () => {
       window.removeEventListener("storage", loadProfile);
       window.removeEventListener("profileUpdate", loadProfile);
       window.removeEventListener("clientProfileUpdate", loadProfile);
       window.removeEventListener("studentProfileUpdate", loadProfile);
+      window.removeEventListener("trainerProfileUpdate", loadProfile);
     };
   }, []);
 
@@ -300,7 +320,7 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
                     </span>
                   ) : (
                     <Link
-                      href="/va/dashboard"
+                      href={`${basePath}/dashboard`}
                       className="px-3 py-2 text-gray-300 hover:text-white hover:bg-slate-900/50 text-[11px] font-bold rounded-lg transition-all"
                     >
                       Dashboard
@@ -315,7 +335,7 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
                     </span>
                   ) : (
                     <Link
-                      href="/va/profile"
+                      href={`${basePath}/profile`}
                       className="px-3 py-2 text-gray-300 hover:text-white hover:bg-slate-900/50 text-[11px] font-bold rounded-lg transition-all"
                     >
                       My Profile
@@ -439,7 +459,7 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
                   </span>
                 ) : (
                   <Link
-                    href="/va/dashboard"
+                    href={`${basePath}/dashboard`}
                     onClick={() => setMobileMenuOpen(false)}
                     className="w-full text-center text-gray-300 hover:text-white font-bold text-sm tracking-wider border border-[#1c1c1e] rounded-full py-2.5"
                   >
@@ -454,7 +474,7 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
                   </span>
                 ) : (
                   <Link
-                    href="/va/profile"
+                    href={`${basePath}/profile`}
                     onClick={() => setMobileMenuOpen(false)}
                     className="w-full text-center text-gray-300 hover:text-white font-bold text-sm tracking-wider border border-[#1c1c1e] rounded-full py-2.5"
                   >

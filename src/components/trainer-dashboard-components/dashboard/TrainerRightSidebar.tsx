@@ -2,55 +2,129 @@
 
 import Link from "next/link";
 
-const IconDollarSign = ({ className = "w-4 h-4" }) => (
+// --- Icons ---
+const IconClock = ({ className = "w-4 h-4" }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="12" y1="1" x2="12" y2="23" />
-    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+    <circle cx="12" cy="12" r="10"></circle>
+    <polyline points="12 6 12 12 16 14"></polyline>
   </svg>
 );
 
-const IconTrendingUp = ({ className = "w-4 h-4" }) => (
+const IconCheckCircle = ({ className = "w-4 h-4" }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-    <polyline points="17 6 23 6 23 12" />
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+    <polyline points="22 4 12 14.01 9 11.01"></polyline>
   </svg>
 );
+
+const IconRefresh = ({ className = "w-4 h-4" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-10.45l5.36 5.36"></path>
+  </svg>
+);
+
+import React from "react";
+
+// --- Mock Data Removed ---
+// Payouts will be fetched when payout API is ready
+const PAYOUTS: any[] = [];
+
+// --- Subcomponents ---
+function StatusBadge({ status }: { status: string }) {
+  if (status === "pending_review" || status === "processing") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-orange-700 bg-orange-100 border border-orange-200">
+        <IconClock className="w-3 h-3" /> Pending
+      </span>
+    );
+  }
+  if (status === "needs_revision") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-red-700 bg-red-100 border border-red-200">
+        <IconRefresh className="w-3 h-3" /> Revision
+      </span>
+    );
+  }
+  if (status === "paid") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-emerald-700 bg-emerald-100 border border-emerald-200">
+        <IconCheckCircle className="w-3 h-3" /> Paid
+      </span>
+    );
+  }
+  return null;
+}
+
+function Tip({ icon, text }: { icon: string; text: string }) {
+  return (
+    <div className="flex items-start gap-2 rounded-xl bg-slate-50 p-3 border border-slate-100">
+      <span className="text-base leading-none">{icon}</span>
+      <span className="text-xs font-semibold text-slate-700">{text}</span>
+    </div>
+  );
+}
 
 export default function TrainerRightSidebar() {
+  const [materials, setMaterials] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    async function loadMaterials() {
+      try {
+        const res = await fetch("/api/trainer/materials");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.materials) setMaterials(data.materials);
+        }
+      } catch (err) {
+        console.error("Failed to load materials", err);
+      }
+    }
+    loadMaterials();
+  }, []);
+
+  const pendingMaterials = materials.filter(m => m.status === "pending_review" || m.status === "needs_revision");
+
   return (
     <aside className="lg:col-span-3 h-full overflow-y-auto scrollbar-none space-y-6 pb-6">
       
-      {/* Earnings Summary */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs relative overflow-hidden group">
-        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-          <IconDollarSign className="w-16 h-16 text-[#E84E29]" />
-        </div>
-        
-        <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2 relative z-10">Available Balance</h3>
-        <p className="text-3xl font-black text-slate-900 tracking-tight relative z-10">$0.00</p>
-        
-        <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between relative z-10">
-          <span className="text-xs text-slate-500 font-medium flex items-center gap-1">
-            <IconTrendingUp className="w-3 h-3 text-emerald-500" /> Lifetime: $0.00
-          </span>
-          <Link href="/trainer/payouts" className="text-xs font-bold text-[#E84E29] hover:text-[#DA431E]">
-            Withdraw
-          </Link>
-        </div>
+      {/* Pending Review */}
+      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs">
+        <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-4">Pending Review</h3>
+        {pendingMaterials.length === 0 ? (
+          <p className="text-xs font-semibold text-slate-500">Nothing waiting.</p>
+        ) : (
+          <ul className="space-y-3">
+            {pendingMaterials.map((m) => (
+              <li key={m.id} className="rounded-xl bg-slate-50 border border-slate-100 p-3 hover:bg-slate-100 transition-colors cursor-pointer">
+                <p className="truncate text-sm font-bold text-slate-900">{m.title}</p>
+                <div className="mt-2 flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-slate-500">{m.category}</span>
+                  <StatusBadge status={m.status} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
-      {/* Recent Payouts */}
+      {/* Payout Status */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Recent Payouts</h3>
-          <Link href="/trainer/payouts" className="text-xs font-bold text-[#E84E29] hover:text-[#DA431E]">
-            All
-          </Link>
-        </div>
-        
-        <div className="text-center py-6 border-2 border-dashed border-slate-100 rounded-2xl">
-          <p className="text-xs font-semibold text-slate-400">No payout history yet.</p>
-        </div>
+        <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-4">Payout Status</h3>
+        {PAYOUTS.length === 0 ? (
+          <p className="text-xs font-semibold text-slate-500">No payouts yet.</p>
+        ) : (
+          <ul className="space-y-3">
+            {PAYOUTS.map((p) => (
+              <li key={p.id} className="flex items-center justify-between rounded-xl bg-slate-50 border border-slate-100 p-3">
+                <div>
+                  <p className="text-sm font-black text-slate-900">${p.amount}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-0.5">{p.method}</p>
+                </div>
+                <StatusBadge status={p.status} />
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
     </aside>

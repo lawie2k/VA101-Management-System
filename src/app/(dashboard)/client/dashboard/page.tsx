@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import ClientLeftSidebar from "../../../../components/client-dashboard-components/dashboard/ClientLeftSidebar";
+import ClientLeftSidebar from "../../../../components/client-dashboard-components/ClientLeftSidebar";
 import ClientMainFeed from "../../../../components/client-dashboard-components/dashboard/ClientMainFeed";
 import ClientRightSidebar from "../../../../components/client-dashboard-components/dashboard/ClientRightSidebar";
 

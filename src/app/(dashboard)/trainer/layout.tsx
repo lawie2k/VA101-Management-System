@@ -4,12 +4,13 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import FormHeader from "../../../components/layout/FormHeader";
+import Footer from "../../../components/layout/Footer";
 
 const navItems = [
   { label: "Dashboard", href: "/trainer/dashboard" },
-  { label: "Trainer Profile", href: "/trainer/profile" },
-  { label: "My Materials", href: "/trainer/materials" },
-  { label: "Upload Material", href: "/trainer/materials/create" },
+  { label: "My Profile", href: "/trainer/profile" },
+  { label: "My Materials", href: "/trainer/materials/my-materials" },
+  { label: "Upload Material", href: "/trainer/materials/upload-material" },
   { label: "Earnings", href: "/trainer/earnings" },
   { label: "Payouts", href: "/trainer/payouts" },
   { label: "Settings", href: "/trainer/settings" },
@@ -84,7 +85,7 @@ export default function TrainerLayout({ children }: { children: React.ReactNode 
           
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-start gap-1 overflow-x-auto scrollbar-none">
             {navItems.map((item) => {
-              const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/trainer/dashboard" && item.href !== "/trainer/profile");
+              const isActive = pathname === item.href;
               return (
                 <Link
                   key={item.href}
@@ -108,6 +109,11 @@ export default function TrainerLayout({ children }: { children: React.ReactNode 
       {/* Main content padding-top */}
       <div className={`flex-grow ${isSetupPage ? "pt-20 md:pt-24" : (showNav ? "pt-36" : "pt-24")} transition-all duration-300`}>
         {children}
+      </div>
+      
+      {/* Footer added to all pages */}
+      <div className="mt-auto pt-10">
+        <Footer />
       </div>
     </div>
   );

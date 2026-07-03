@@ -1,6 +1,6 @@
 "use client";
 
-import StudentLeftSidebar from "../../../../components/student-dashboard-components/dashboard/StudentLeftSidebar";
+import StudentLeftSidebar from "../../../../components/student-dashboard-components/StudentLeftSidebar";
 import { SettingsPanel } from "../../../../components/student-dashboard-components/settings/SettingsPanel";
 
 export default function StudentSettingsPage() {

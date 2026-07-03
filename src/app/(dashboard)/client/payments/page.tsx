@@ -1,6 +1,6 @@
 "use client";
 
-import ClientLeftSidebar from "../../../../components/client-dashboard-components/dashboard/ClientLeftSidebar";
+import ClientLeftSidebar from "../../../../components/client-dashboard-components/ClientLeftSidebar";
 import PaymentsMainFeed from "../../../../components/client-dashboard-components/payments/PaymentsMainFeed";
 import PaymentsRightSidebar from "../../../../components/client-dashboard-components/payments/PaymentsRightSidebar";
 

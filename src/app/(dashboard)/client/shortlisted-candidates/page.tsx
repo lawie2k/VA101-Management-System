@@ -1,6 +1,6 @@
 "use client";
 
-import ClientLeftSidebar from "../../../../components/client-dashboard-components/dashboard/ClientLeftSidebar";
+import ClientLeftSidebar from "../../../../components/client-dashboard-components/ClientLeftSidebar";
 import ShortlistedCandidatesMainFeed from "../../../../components/client-dashboard-components/shortlisted-candidates/ShortlistedCandidatesMainFeed";
 import ShortlistedCandidatesRightSidebar from "../../../../components/client-dashboard-components/shortlisted-candidates/ShortlistedCandidatesRightSidebar";
 

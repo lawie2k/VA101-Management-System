@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import DashboardLeftSidebar from "../../../../components/va-dashboard-components/dashboard/DashboardLeftSidebar";
+import VALeftSidebar from "../../../../components/va-dashboard-components/VALeftSidebar";
 import DashboardMainFeed from "../../../../components/va-dashboard-components/dashboard/DashboardMainFeed";
 import DashboardRightSidebar from "../../../../components/va-dashboard-components/dashboard/DashboardRightSidebar";
 
@@ -241,7 +241,7 @@ export default function Page() {
       {/* Portal 3-Column LinkedIn-Style Layout Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch h-full overflow-hidden">
         
-        <DashboardLeftSidebar />
+        <VALeftSidebar />
 
         <DashboardMainFeed 
           mockApplication={activeApplication}

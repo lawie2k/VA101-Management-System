@@ -65,6 +65,12 @@ export default function Page() {
         throw new Error(data.error || "Invalid email or password");
       }
 
+      // Clear previous session data to prevent cross-account pollution
+      localStorage.removeItem("va_profile_data");
+      localStorage.removeItem("client_profile_data");
+      localStorage.removeItem("trainer_profile_data");
+      localStorage.removeItem("student_profile_data");
+
       // Session established -> route user to dashboard based on primary role
       const dashboardRoute = getDashboardRoute(data.user.roles || []);
       router.push(dashboardRoute);

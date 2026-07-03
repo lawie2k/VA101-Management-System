@@ -1,6 +1,6 @@
 "use client";
 
-import DashboardLeftSidebar from "../../../../components/va-dashboard-components/dashboard/DashboardLeftSidebar";
+import VALeftSidebar from "../../../../components/va-dashboard-components/VALeftSidebar";
 import { SettingsPanel } from "../../../../components/va-dashboard-components/settings/SettingsPanel";
 
 export default function VASettingsPage() {
@@ -11,7 +11,7 @@ export default function VASettingsPage() {
         {/* Left Sidebar (3 cols) */}
         <div className="md:col-span-3">
           <div className="sticky top-8">
-            <DashboardLeftSidebar />
+            <VALeftSidebar />
           </div>
         </div>
 

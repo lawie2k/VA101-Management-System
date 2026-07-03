@@ -30,12 +30,31 @@ export async function GET(req: Request) {
       });
     }
 
+    // Parse combined avatar/cover image JSON inside profile_photo_url field
+    let avatar = "";
+    let coverImage = "";
+    if (trainerProfile.users?.profile_photo_url) {
+      const photoUrl = trainerProfile.users.profile_photo_url;
+      if (photoUrl.startsWith("{")) {
+        try {
+          const parsed = JSON.parse(photoUrl);
+          avatar = parsed.avatar || "";
+          coverImage = parsed.coverImage || "";
+        } catch {
+          avatar = photoUrl;
+        }
+      } else {
+        avatar = photoUrl;
+      }
+    }
+
     return NextResponse.json({
       id: trainerProfile.id.toString(),
       status: trainerProfile.status,
       fullName: trainerProfile.users?.full_name || "",
       email: trainerProfile.users?.email || "",
-      avatar: trainerProfile.users?.profile_photo_url || "",
+      avatar,
+      coverImage,
       bio: trainerProfile.bio || "",
       expertise: trainerProfile.expertise || "",
     });
@@ -52,13 +71,40 @@ export async function PATCH(req: Request) {
     const userId = currentUser.id;
 
     const body = await req.json();
-    const { fullName, bio, expertise } = body;
+    const { fullName, bio, expertise, avatar, coverImage } = body;
 
-    // Update user's full name
-    if (fullName) {
+    // Fetch existing photo state
+    const currentPhotoUrl = (await prisma.users.findUnique({
+      where: { id: BigInt(userId) }
+    }))?.profile_photo_url;
+
+    let existingAvatar = "";
+    let existingCover = "";
+    if (currentPhotoUrl && currentPhotoUrl.startsWith("{")) {
+      try {
+        const parsed = JSON.parse(currentPhotoUrl);
+        existingAvatar = parsed.avatar || "";
+        existingCover = parsed.coverImage || "";
+      } catch {}
+    } else if (currentPhotoUrl) {
+      existingAvatar = currentPhotoUrl;
+    }
+
+    // Merge photo payload
+    const photoPayload = JSON.stringify({
+      avatar: avatar !== undefined ? avatar : existingAvatar,
+      coverImage: coverImage !== undefined ? coverImage : existingCover
+    });
+
+    // Update user's full name and/or photos
+    if (fullName !== undefined || avatar !== undefined || coverImage !== undefined) {
+      const updateData: any = {};
+      if (fullName !== undefined) updateData.full_name = fullName;
+      if (avatar !== undefined || coverImage !== undefined) updateData.profile_photo_url = photoPayload;
+
       await prisma.users.update({
         where: { id: BigInt(userId) },
-        data: { full_name: fullName }
+        data: updateData
       });
     }
 
@@ -87,6 +133,24 @@ export async function PATCH(req: Request) {
       }
     });
 
+    // Extract new avatar/cover from updated user object
+    let updatedAvatar = "";
+    let updatedCover = "";
+    if (profile.users?.profile_photo_url) {
+      const url = profile.users.profile_photo_url;
+      if (url.startsWith("{")) {
+        try {
+          const parsed = JSON.parse(url);
+          updatedAvatar = parsed.avatar || "";
+          updatedCover = parsed.coverImage || "";
+        } catch {
+          updatedAvatar = url;
+        }
+      } else {
+        updatedAvatar = url;
+      }
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -94,7 +158,8 @@ export async function PATCH(req: Request) {
         status: profile.status,
         fullName: profile.users?.full_name || "",
         email: profile.users?.email || "",
-        avatar: profile.users?.profile_photo_url || "",
+        avatar: updatedAvatar,
+        coverImage: updatedCover,
         bio: profile.bio || "",
         expertise: profile.expertise || "",
       }
