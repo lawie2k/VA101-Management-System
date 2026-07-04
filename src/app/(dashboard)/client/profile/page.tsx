@@ -186,15 +186,12 @@ export default function Page() {
     companySize: "1-10",
     companyWebsite: "",
     companyDescription: "",
-    billingContactName: "",
-    billingEmail: "",
-    billingPhone: "",
     avatar: null as string | null,
     coverImage: null as string | null,
   });
 
   const [isLoaded, setIsLoaded] = useState(false);
-  const [activeModal, setActiveModal] = useState<"company" | "billing" | "avatar" | "cover" | null>(null);
+  const [activeModal, setActiveModal] = useState<"company" | "avatar" | "cover" | null>(null);
 
   // Edit Forms state
   const [companyForm, setCompanyForm] = useState({
@@ -206,19 +203,6 @@ export default function Page() {
   });
 
   const [aboutForm, setAboutForm] = useState("");
-
-  const [billingForm, setBillingForm] = useState({
-    billingContactName: "",
-    billingEmail: "",
-    billingPhone: "",
-  });
-
-  const [selectedCountry, setSelectedCountry] = useState({
-    code: "+1",
-    name: "United States",
-    flag: "🇺🇸"
-  });
-
   const [avatarForm, setAvatarForm] = useState<string | null>(null);
   const [coverForm, setCoverForm] = useState<string | null>(null);
 
@@ -234,9 +218,6 @@ export default function Page() {
           companySize: parsed.companySize || "1-10",
           companyWebsite: parsed.companyWebsite || "",
           companyDescription: parsed.companyDescription || "",
-          billingContactName: parsed.billingContactName || "",
-          billingEmail: parsed.billingEmail || "",
-          billingPhone: parsed.billingPhone || "",
           avatar: parsed.avatar || null,
           coverImage: parsed.coverImage || null,
         });
@@ -250,13 +231,10 @@ export default function Page() {
   // Compute profile strength %
   const strength = (() => {
     let score = 20;
-    if (profile.companyName.trim()) score += 10;
-    if (profile.industry.trim()) score += 10;
-    if (profile.companyWebsite.trim()) score += 15;
-    if (profile.companyDescription.trim().length > 20) score += 15;
-    if (profile.billingContactName.trim()) score += 10;
-    if (profile.billingEmail.trim()) score += 10;
-    if (profile.billingPhone.trim()) score += 10;
+    if (profile.companyName?.trim()) score += 20;
+    if (profile.industry?.trim()) score += 20;
+    if (profile.companyWebsite?.trim()) score += 20;
+    if (profile.companyDescription?.trim().length > 20) score += 20;
     return Math.min(score, 100);
   })();
 
@@ -301,29 +279,10 @@ export default function Page() {
     setActiveModal("company");
   };
 
-  const openEditBilling = () => {
-    setBillingForm({
-      billingContactName: profile.billingContactName,
-      billingEmail: profile.billingEmail,
-      billingPhone: profile.billingPhone,
-    });
-    setActiveModal("billing");
-  };
-
   // Submit Handlers
   const handleSaveCompany = (e: React.FormEvent) => {
     e.preventDefault();
     const updated = { ...profile, ...companyForm };
-    saveToStorage(updated);
-    setActiveModal(null);
-  };
-
-  const handleSaveBilling = (e: React.FormEvent) => {
-    e.preventDefault();
-    const formattedPhone = billingForm.billingPhone.startsWith("+")
-      ? billingForm.billingPhone
-      : `${selectedCountry.code} ${billingForm.billingPhone}`;
-    const updated = { ...profile, ...billingForm, billingPhone: formattedPhone };
     saveToStorage(updated);
     setActiveModal(null);
   };
@@ -368,7 +327,7 @@ export default function Page() {
     );
   }
 
-  const initials = profile.companyName
+  const initials = profile.companyName?.trim()
     ? profile.companyName.trim().split(" ").filter(Boolean).map(n => n[0]).join("").slice(0, 2).toUpperCase()
     : "CO";
 
@@ -473,55 +432,6 @@ export default function Page() {
             </p>
           </PCard>
 
-          {/* BILLING & CONTACT DETAILS */}
-          <PCard className="hover:border-slate-350">
-            <PCardHeader 
-              title="Billing & Contact Info" 
-              action={
-                <Button variant="ghost" size="sm" className="rounded-full p-2" onClick={openEditBilling}>
-                  <IconPencil className="h-4 w-4 text-slate-500" />
-                </Button>
-              } 
-            />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              <div className="flex flex-col justify-between p-5 bg-slate-50/50 border border-slate-200/80 rounded-2xl min-h-[120px] transition-all hover:bg-white hover:border-slate-300">
-                <div className="flex items-center gap-2.5">
-                  <span className="grid h-8 w-8 place-items-center rounded-xl bg-orange-50 border border-orange-100 text-[#E84E29]">
-                    <IconUser className="h-4.5 w-4.5" />
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Billing Contact</span>
-                </div>
-                <div className="mt-3.5">
-                  <span className="text-sm font-extrabold text-slate-800 break-words">{profile.billingContactName || "Not configured"}</span>
-                </div>
-              </div>
-              
-              <div className="flex flex-col justify-between p-5 bg-slate-50/50 border border-slate-200/80 rounded-2xl min-h-[120px] transition-all hover:bg-white hover:border-slate-300">
-                <div className="flex items-center gap-2.5">
-                  <span className="grid h-8 w-8 place-items-center rounded-xl bg-orange-50 border border-orange-100 text-[#E84E29]">
-                    <IconMail className="h-4.5 w-4.5" />
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Billing Email</span>
-                </div>
-                <div className="mt-3.5">
-                  <span className="text-sm font-extrabold text-slate-800 break-all">{profile.billingEmail || "Not configured"}</span>
-                </div>
-              </div>
-
-              <div className="flex flex-col justify-between p-5 bg-slate-50/50 border border-slate-200/80 rounded-2xl min-h-[120px] transition-all hover:bg-white hover:border-slate-300">
-                <div className="flex items-center gap-2.5">
-                  <span className="grid h-8 w-8 place-items-center rounded-xl bg-orange-50 border border-orange-100 text-[#E84E29]">
-                    <IconPhone className="h-4.5 w-4.5" />
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Billing Phone</span>
-                </div>
-                <div className="mt-3.5">
-                  <span className="text-sm font-extrabold text-slate-800 break-words">{profile.billingPhone || "Not configured"}</span>
-                </div>
-              </div>
-            </div>
-          </PCard>
-
         </div>
 
         {/* RIGHT COLUMN: ANALYTICS + COMPLETENESS */}
@@ -553,50 +463,10 @@ export default function Page() {
               <li className="flex items-center gap-1.5">
                 {profile.companyWebsite ? "✅" : "⚠️"} Website url
               </li>
-              <li className="flex items-center gap-1.5">
-                {profile.billingContactName ? "✅" : "⚠️"} Billing details
-              </li>
             </ul>
           </PCard>
 
-          {/* PROFILE ANALYTICS STATS */}
-          <PCard className="hover:border-slate-350">
-            <PCardHeader title="Company analytics" />
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <span className="grid h-8 w-8 place-items-center rounded-xl bg-slate-100 text-[#E84E29]"><IconEye className="h-4.5 w-4.5" /></span>
-                <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Logo clicks</p>
-                  <p className="text-xs font-black text-slate-800">12 visitors</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="grid h-8 w-8 place-items-center rounded-xl bg-slate-100 text-[#E84E29]"><IconGlobe className="h-4.5 w-4.5" /></span>
-                <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Website redirects</p>
-                  <p className="text-xs font-black text-slate-800">5 links clicked</p>
-                </div>
-              </div>
-            </div>
-          </PCard>
 
-          {/* SUGGESTED IMPROVEMENTS */}
-          <PCard className="bg-amber-50/40 border border-amber-100 p-5">
-            <PCardHeader 
-              title="Suggested improvements" 
-              action={<IconSparkles className="h-4.5 w-4.5 text-amber-500" />} 
-            />
-            <ul className="space-y-3 text-xs leading-relaxed font-semibold text-slate-650">
-              <li className="flex items-start gap-2 bg-white/70 border border-amber-100/70 p-2.5 rounded-xl">
-                <span>📂</span>
-                <p>Complete your description to attract 2.4× more qualified VAs.</p>
-              </li>
-              <li className="flex items-start gap-2 bg-white/70 border border-amber-100/70 p-2.5 rounded-xl">
-                <span>💳</span>
-                <p>Ensure billing email is configured to speed up payment verification processes.</p>
-              </li>
-            </ul>
-          </PCard>
 
         </div>
 
@@ -614,7 +484,6 @@ export default function Page() {
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 rounded-t-3xl">
               <h3 className="font-extrabold text-slate-900 text-base">
                 {activeModal === "company" && "Edit Company Details"}
-                {activeModal === "billing" && "Edit Billing & Contact Info"}
                 {activeModal === "avatar" && "Change Profile Logo"}
                 {activeModal === "cover" && "Change Cover Banner"}
               </h3>
@@ -702,48 +571,6 @@ export default function Page() {
               )}
 
 
-              {/* 3. Edit Billing Details */}
-              {activeModal === "billing" && (
-                <form onSubmit={handleSaveBilling} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-900 mb-1.5">Billing Contact Name</label>
-                    <input 
-                      type="text"
-                      required
-                      value={billingForm.billingContactName}
-                      onChange={(e) => setBillingForm({ ...billingForm, billingContactName: e.target.value })}
-                      className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all shadow-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-900 mb-1.5">Billing Email</label>
-                    <input 
-                      type="email"
-                      required
-                      value={billingForm.billingEmail}
-                      onChange={(e) => setBillingForm({ ...billingForm, billingEmail: e.target.value })}
-                      className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all shadow-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <PhoneInput 
-                      value={billingForm.billingPhone}
-                      onChange={(val) => setBillingForm({ ...billingForm, billingPhone: val })}
-                      selectedCountry={selectedCountry}
-                      onCountryChange={setSelectedCountry}
-                      label="Billing Phone Number"
-                      required
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-                    <Button variant="outline" size="sm" onClick={() => setActiveModal(null)}>Cancel</Button>
-                    <Button type="submit" variant="primary" size="sm" className="text-white">Save Changes</Button>
-                  </div>
-                </form>
-              )}
 
               {/* 4. Upload Logo / Avatar */}
               {activeModal === "avatar" && (

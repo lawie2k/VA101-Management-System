@@ -132,7 +132,7 @@ export default function TrainerProfileForm() {
     fullName: "",
     bio: "",
     expertise: "",
-    stripeConnected: true, // Assuming true for now since they had to connect during setup
+    veemConnected: true, // Assuming true for now since they had to connect during setup
     avatar: null as string | null,
     coverImage: null as string | null,
   });
@@ -164,7 +164,7 @@ export default function TrainerProfileForm() {
             fullName: parsed.fullName || "",
             bio: parsed.bio || "",
             expertise: parsed.expertise || "",
-            stripeConnected: parsed.stripeConnected !== undefined ? parsed.stripeConnected : true,
+            veemConnected: parsed.veemConnected !== undefined ? parsed.veemConnected : true,
             avatar: parsed.avatar || null,
             coverImage: parsed.coverImage || null,
           });

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { LocationAutocomplete } from "@/src/components/ui/LocationAutocomplete";
 import { useRouter } from "next/navigation";
 
 const ALL_SKILLS = [
@@ -328,13 +329,12 @@ export default function ProfileSetupPage() {
               <label htmlFor="location" className="block text-xs font-bold text-slate-900 mb-2">
                 Location
               </label>
-              <input
+              <LocationAutocomplete
                 id="location"
                 name="location"
-                type="text"
                 required
                 value={formData.location}
-                onChange={handleInputChange}
+                onChange={(val) => setFormData(prev => ({...prev, location: val}))}
                 className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300 transition-all font-medium text-slate-800 bg-slate-50/30"
                 placeholder="e.g. Manila, Philippines"
               />

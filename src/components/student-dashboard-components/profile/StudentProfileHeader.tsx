@@ -5,6 +5,7 @@ import { IconPencil } from "./ProfileIcons";
 interface StudentProfileHeaderProps {
   profile: {
     fullName: string;
+    email: string;
     avatarUrl: string;
     coverImage: string;
   };
@@ -59,7 +60,11 @@ export function StudentProfileHeader({ profile, openModal }: StudentProfileHeade
             </div>
             <div className="pt-5 sm:pt-0">
               <h1 className="text-2xl font-black tracking-tight text-slate-900">{profile.fullName || "Student User"}</h1>
-              <p className="text-sm font-semibold text-slate-500">Student</p>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1">
+                <p className="text-sm font-semibold text-slate-500">Student</p>
+                <span className="hidden sm:inline text-slate-300">•</span>
+                <p className="text-sm font-medium text-slate-600">{profile.email || "No email"}</p>
+              </div>
             </div>
           </div>
 

@@ -37,9 +37,6 @@ interface ClientProfile {
   companySize: string;
   companyWebsite: string;
   companyDescription: string;
-  billingContactName: string;
-  billingEmail: string;
-  billingPhone: string;
   avatar?: string | null;
   coverImage?: string | null;
 }
@@ -52,13 +49,10 @@ export default function ClientLeftSidebar() {
 
   const computeCompletion = (data: ClientProfile) => {
     let score = 20; // Base score for completing setup
-    if (data.companyName.trim()) score += 10;
-    if (data.industry.trim()) score += 10;
-    if (data.companyWebsite.trim()) score += 15;
-    if (data.companyDescription.trim().length > 20) score += 15;
-    if (data.billingContactName.trim()) score += 10;
-    if (data.billingEmail.trim()) score += 10;
-    if (data.billingPhone.trim()) score += 10;
+    if (data.companyName?.trim()) score += 20;
+    if (data.industry?.trim()) score += 20;
+    if (data.companyWebsite?.trim()) score += 20;
+    if (data.companyDescription?.trim().length > 20) score += 20;
     return Math.min(score, 100);
   };
 

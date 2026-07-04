@@ -13,12 +13,32 @@ export default function TrainerSetupProfileForm() {
     fullName: "",
     bio: "",
     expertise: "",
-    stripeConnected: false,
     avatar: null as string | null,
     coverImage: null as string | null,
   });
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    // Restore form data if returning from the legacy Veem flow
+    const saved = localStorage.getItem("temp_trainer_setup");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setFormData(prev => ({
+          ...prev,
+          fullName: parsed.fullName || prev.fullName,
+          bio: parsed.bio || prev.bio,
+          expertise: parsed.expertise || prev.expertise,
+          avatar: parsed.avatar || prev.avatar,
+          coverImage: parsed.coverImage || prev.coverImage
+        }));
+        localStorage.removeItem("temp_trainer_setup");
+      } catch (e) {
+        console.error("Failed to restore temp setup data", e);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     async function checkExistingProfile() {
@@ -57,18 +77,19 @@ export default function TrainerSetupProfileForm() {
     }
   };
 
+
+
   const validateForm = () => {
     const errors: Record<string, string> = {};
     if (!formData.fullName.trim()) errors.fullName = "Full Name is required";
     if (!formData.bio.trim()) errors.bio = "Bio is required";
     if (!formData.expertise.trim()) errors.expertise = "Expertise is required";
-    if (!formData.stripeConnected) errors.stripe = "Please connect your Stripe account to receive payouts.";
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const isFormValid = formData.fullName.trim() !== "" && formData.bio.trim() !== "" && formData.expertise.trim() !== "" && formData.stripeConnected;
+  const isFormValid = formData.fullName.trim() !== "" && formData.bio.trim() !== "" && formData.expertise.trim() !== "";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,8 +103,6 @@ export default function TrainerSetupProfileForm() {
         fullName: formData.fullName,
         bio: formData.bio,
         expertise: formData.expertise,
-        payoutMethod: "Stripe Connect",
-        payoutEmail: "connected@stripe.com", // Mock email for now
       };
 
       const res = await fetch("/api/trainer/profile", {
@@ -210,21 +229,40 @@ export default function TrainerSetupProfileForm() {
           </div>
 
           <div className="space-y-6">
-            <div>
-              <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">
-                Full Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                placeholder="e.g. Jane Doe"
-                className={`w-full px-4 py-3 bg-slate-50 border ${
-                  validationErrors.fullName ? "border-red-300 focus:border-red-500" : "border-slate-200 focus:border-[#E84E29]"
-                } rounded-xl text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-[#E84E29]/10 transition-all`}
-              />
-              {validationErrors.fullName && <p className="text-red-500 text-xs mt-1 font-semibold">{validationErrors.fullName}</p>}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">
+                  Full Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  placeholder="e.g. Jane Doe"
+                  className={`w-full px-4 py-3 bg-slate-50 border ${
+                    validationErrors.fullName ? "border-red-300 focus:border-red-500" : "border-slate-200 focus:border-[#E84E29]"
+                  } rounded-xl text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-[#E84E29]/10 transition-all`}
+                />
+                {validationErrors.fullName && <p className="text-red-500 text-xs mt-1 font-semibold">{validationErrors.fullName}</p>}
+              </div>
+
+              <div>
+                <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">
+                  Expertise <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="expertise"
+                  value={formData.expertise}
+                  onChange={handleChange}
+                  placeholder="e.g. Advanced Meta Ads, SEO Optimization"
+                  className={`w-full px-4 py-3 bg-slate-50 border ${
+                    validationErrors.expertise ? "border-red-300 focus:border-red-500" : "border-slate-200 focus:border-[#E84E29]"
+                  } rounded-xl text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-[#E84E29]/10 transition-all`}
+                />
+                {validationErrors.expertise && <p className="text-red-500 text-xs mt-1 font-semibold">{validationErrors.expertise}</p>}
+              </div>
             </div>
 
             <div>
@@ -244,80 +282,7 @@ export default function TrainerSetupProfileForm() {
               {validationErrors.bio && <p className="text-red-500 text-xs mt-1 font-semibold">{validationErrors.bio}</p>}
             </div>
 
-            <div>
-              <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">
-                Expertise <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="expertise"
-                value={formData.expertise}
-                onChange={handleChange}
-                placeholder="e.g. Advanced Meta Ads, SEO Optimization"
-                className={`w-full px-4 py-3 bg-slate-50 border ${
-                  validationErrors.expertise ? "border-red-300 focus:border-red-500" : "border-slate-200 focus:border-[#E84E29]"
-                } rounded-xl text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-[#E84E29]/10 transition-all`}
-              />
-              {validationErrors.expertise && <p className="text-red-500 text-xs mt-1 font-semibold">{validationErrors.expertise}</p>}
             </div>
-
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
-              <h3 className="text-sm font-extrabold text-slate-900 mb-2">Payout Method</h3>
-              <p className="text-xs font-semibold text-slate-500 mb-6">
-                We use Stripe to make sure you get paid securely and on time. Connect your account below.
-              </p>
-              
-              <div className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[#635BFF]/10 flex items-center justify-center shrink-0">
-                    <svg className="w-5 h-5 text-[#635BFF]" viewBox="0 0 40 40" fill="none">
-                      <path d="M20 0C8.954 0 0 8.954 0 20s8.954 20 20 20 20-8.954 20-20S31.046 0 20 0zm6.92 14.625c-.244-2.617-2.314-4.524-5.467-4.524-3.69 0-6.19 2.222-6.19 5.642 0 6.643 9.077 5.438 9.077 8.358 0 1.25-.976 1.933-2.42 1.933-1.802 0-2.825-.87-3.21-2.26l-3.327.535c.58 2.617 2.802 4.6 6.37 4.6 4.015 0 6.45-2.235 6.45-5.748 0-6.84-9.077-5.542-9.077-8.373 0-1.07.915-1.764 2.225-1.764 1.512 0 2.457.755 2.72 1.986l3.327-.552-.477-4.832v4.999z" fill="currentColor"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-900">Stripe Connect</p>
-                    <p className="text-[10px] font-semibold text-slate-500">
-                      {formData.stripeConnected ? "Connected and ready for payouts" : "Not connected"}
-                    </p>
-                  </div>
-                </div>
-
-                {formData.stripeConnected ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                      Connected
-                    </span>
-                    <button 
-                      type="button"
-                      onClick={() => setFormData(prev => ({...prev, stripeConnected: false}))}
-                      className="text-[10px] font-bold text-slate-400 hover:text-slate-600 transition-colors"
-                    >
-                      Disconnect
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setFormData(prev => ({...prev, stripeConnected: true}))}
-                    className="px-4 py-2 bg-[#635BFF] hover:bg-[#524BDE] text-white text-xs font-bold rounded-xl transition-all shadow-sm"
-                  >
-                    Connect Stripe
-                  </button>
-                )}
-              </div>
-              {validationErrors.stripe && (
-                <p className="text-red-500 text-xs mt-3 font-semibold text-center">{validationErrors.stripe}</p>
-              )}
-            </div>
-
-            <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-4">
-              <p className="font-bold text-emerald-700 text-sm">70% revenue share</p>
-              <p className="mt-1 text-xs font-semibold text-emerald-600/70 leading-relaxed">
-                Platform retains 30% to cover hosting, payment ops, and marketing.
-              </p>
-            </div>
-          </div>
 
           <div className="pt-6 border-t border-slate-100 flex justify-end">
             <button

@@ -25,7 +25,7 @@ export default function TrainerLeftSidebar() {
         let score = 10;
         if (data.bio && data.bio.length > 0) score += 30;
         if (data.expertise && data.expertise.length > 0) score += 30;
-        score += 30; // Assuming stripeConnected is true for trainers
+        score += 30; // Assuming veemConnected is true for trainers
         return Math.min(score, 100);
       })()
     });

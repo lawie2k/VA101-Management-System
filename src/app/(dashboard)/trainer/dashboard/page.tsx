@@ -12,16 +12,28 @@ export default function TrainerDashboardPage() {
   useEffect(() => {
     async function checkSetup() {
       const savedProfile = localStorage.getItem("trainer_profile_data");
-      if (!savedProfile) {
+      if (savedProfile) {
+        try {
+          const data = JSON.parse(savedProfile);
+          if (data.status === "draft" || !data.fullName) {
+            router.replace("/trainer/profile/setup-profile-form");
+            return;
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      } else {
         try {
           const res = await fetch("/api/trainer/profile");
           if (res.ok) {
             const data = await res.json();
-            if (data && data.status !== "draft") {
+            if (data && data.status !== "draft" && data.fullName) {
               localStorage.setItem("trainer_profile_data", JSON.stringify(data));
             } else {
               router.replace("/trainer/profile/setup-profile-form");
             }
+          } else if (res.status === 404) {
+            router.replace("/trainer/profile/setup-profile-form");
           }
         } catch (e) {
           console.error("Failed to fetch trainer profile in dashboard", e);

@@ -1,7 +1,7 @@
 import React from "react";
 
 export function TrainerProfileRightSidebar({ profile }: { profile: any }) {
-  const completionScore = 10 + (profile.bio ? 30 : 0) + (profile.expertise ? 30 : 0) + (profile.stripeConnected ? 30 : 0);
+  const completionScore = 10 + (profile.bio ? 30 : 0) + (profile.expertise ? 30 : 0) + (profile.veemConnected ? 30 : 0);
 
   return (
     <div className="space-y-6">
@@ -28,7 +28,7 @@ export function TrainerProfileRightSidebar({ profile }: { profile: any }) {
             {profile.expertise ? "✅" : "⚠️"} Expertise ({profile.expertise ? "Complete" : "Needs work"})
           </li>
           <li className="flex items-center gap-2">
-            {profile.stripeConnected ? "✅" : "⚠️"} Stripe Connect ({profile.stripeConnected ? "Complete" : "Needs work"})
+            {profile.veemConnected ? "✅" : "⚠️"} Veem Connect ({profile.veemConnected ? "Complete" : "Needs work"})
           </li>
         </ul>
       </div>
@@ -45,7 +45,7 @@ export function TrainerProfileRightSidebar({ profile }: { profile: any }) {
               </svg>
             </div>
             <div className="flex-1">
-              <p className="text-sm font-bold text-slate-900">Stripe Connect</p>
+              <p className="text-sm font-bold text-slate-900">Veem Connect</p>
               <p className="text-[10px] font-semibold text-slate-500">Connected</p>
             </div>
             <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,0.1)]"></span>

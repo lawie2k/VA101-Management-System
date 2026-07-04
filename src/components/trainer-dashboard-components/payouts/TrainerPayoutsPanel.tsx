@@ -1,8 +1,31 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 
 export function TrainerPayoutsPanel() {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleConnectVeem = async () => {
+    try {
+      setIsLoading(true);
+      // For testing, hardcode a user ID or grab it from auth context in a real app
+      const response = await fetch("/api/payments/create-setup-intent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: "1", successUrl: window.location.href, cancelUrl: window.location.href })
+      });
+      
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error("Failed to connect Veem:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="w-full space-y-6">
       <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-xs">
@@ -18,8 +41,12 @@ export function TrainerPayoutsPanel() {
             <h3 className="text-sm font-extrabold text-slate-900">Payout Method</h3>
             <p className="text-[11px] text-slate-500 font-medium mt-1">Where your earnings will be sent.</p>
           </div>
-          <button className="px-4 py-2 rounded-full text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all">
-            Manage Stripe
+          <button 
+            onClick={handleConnectVeem}
+            disabled={isLoading}
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors disabled:opacity-50"
+          >
+            {isLoading ? "Loading..." : "Manage Veem"}
           </button>
         </div>
 
@@ -30,8 +57,8 @@ export function TrainerPayoutsPanel() {
             </svg>
           </div>
           <div className="flex-1">
-            <p className="text-sm font-bold text-slate-900">Stripe Express Account</p>
-            <p className="text-xs text-slate-500 font-medium">Connected and verified.</p>
+            <p className="text-sm font-bold text-slate-900">Veem Account</p>
+            <p className="text-[10px] font-semibold text-slate-500">Connected • xxx-xxxx-4921</p>
           </div>
           <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active

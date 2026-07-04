@@ -277,31 +277,28 @@ export function SettingsPanel() {
       </div>
 
       {/* Danger Zone */}
-      <div className="bg-white rounded-3xl border border-red-200/60 shadow-xs p-6">
-        <div className="flex items-start gap-3 mb-6">
-          <div className="w-9 h-9 rounded-xl bg-red-50 text-red-500 flex items-center justify-center shrink-0">
-            <IconTrash />
+      <div className="bg-white rounded-[2rem] p-6 sm:p-8 border border-red-100 shadow-xs mb-6 mt-12 relative overflow-hidden group">
+        <div className="flex flex-col sm:flex-row gap-8">
+          <div className="sm:w-1/3 shrink-0">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-red-50 text-red-500">
+              <IconTrash />
+            </div>
+            <h2 className="text-lg font-black tracking-tight mb-2 text-red-900">Delete Account</h2>
+            <p className="text-[11px] font-medium leading-relaxed text-slate-500">Permanently remove your VA101 account and all associated data.</p>
           </div>
-          <div>
-            <h3 className="text-sm font-extrabold text-red-600">Danger Zone</h3>
-            <p className="text-[11px] text-slate-400 font-medium mt-0.5">Permanently delete your account and all associated data</p>
+          <div className="sm:w-2/3 flex flex-col justify-center">
+            <div className="bg-red-50/60 border border-red-200/40 rounded-2xl p-4 mb-5">
+              <p className="text-[11px] text-red-600 font-semibold leading-relaxed">
+                Once you delete your account, all job applications, saved jobs, contracts, and profile data will be <strong>permanently erased</strong>. This cannot be undone.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="w-full py-3 rounded-full text-xs font-bold text-red-600 border border-red-200 hover:bg-red-50 hover:border-red-300 transition-all cursor-pointer"
+            >
+              Delete My Account
+            </button>
           </div>
-        </div>
-        
-        <div className="bg-red-50/50 border border-red-100 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <h4 className="text-xs font-bold text-slate-800">Delete Account</h4>
-            <p className="text-[11px] text-slate-500 mt-0.5 max-w-sm leading-relaxed">
-              Once you delete your account, there is no going back. Please be certain.
-            </p>
-          </div>
-          <button 
-            type="button" 
-            onClick={() => setShowDeleteModal(true)}
-            className="shrink-0 px-5 py-2.5 rounded-full text-xs font-bold text-red-600 bg-white border border-red-200 hover:bg-red-50 transition-all cursor-pointer shadow-sm w-full sm:w-auto"
-          >
-            Delete Account
-          </button>
         </div>
       </div>
 

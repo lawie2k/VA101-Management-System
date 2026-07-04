@@ -19,10 +19,7 @@ export default function ClientSetupProfileForm() {
     industry: "",
     companySize: "1-10",
     companyWebsite: "",
-    companyDescription: "",
-    billingContactName: "",
-    billingEmail: "",
-    billingPhone: ""
+    companyDescription: ""
   });
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -87,10 +84,7 @@ export default function ClientSetupProfileForm() {
     !formData.companyName.trim() ||
     !formData.industry.trim() ||
     !formData.companyWebsite.trim() ||
-    !formData.companyDescription.trim() ||
-    !formData.billingContactName.trim() ||
-    !formData.billingEmail.trim() ||
-    !formData.billingPhone.trim();
+    !formData.companyDescription.trim();
 
   useEffect(() => {
     // Check if profile is already configured in LocalStorage to block back navigation
@@ -135,15 +129,7 @@ export default function ClientSetupProfileForm() {
     }
 
     if (formData.companyWebsite.trim() && !URL_REGEX.test(formData.companyWebsite.trim())) {
-      errors.companyWebsite = "Please enter a valid website URL (e.g. https://example.com).";
-    }
-
-    if (formData.billingEmail.trim() && !EMAIL_REGEX.test(formData.billingEmail.trim())) {
-      errors.billingEmail = "Please enter a valid email format.";
-    }
-
-    if (formData.billingPhone.trim() && !/^[0-9+\s()-]{7,25}$/.test(formData.billingPhone.trim())) {
-      errors.billingPhone = "Please enter a valid contact number.";
+      errors.companyWebsite = "Please enter a valid URL (e.g. https://company.com).";
     }
 
     setValidationErrors(errors);
@@ -168,9 +154,6 @@ export default function ClientSetupProfileForm() {
       // Build profile data matching API schema
       const profileDataToSave = {
         ...formData,
-        billingPhone: formData.billingPhone.startsWith("+") 
-          ? formData.billingPhone 
-          : `${selectedCountry.code} ${formData.billingPhone}`,
         avatar: avatar || undefined,
         coverImage: coverImage || undefined
       };
@@ -207,7 +190,7 @@ export default function ClientSetupProfileForm() {
             Let's Set Up Your Client Profile
           </h1>
           <p className="mt-2 text-sm text-slate-500 font-medium">
-            Provide details about your company and billing contact info to start hiring top Virtual Assistants.
+            Provide details about your company to start hiring top Virtual Assistants.
           </p>
         </div>
 
@@ -222,61 +205,53 @@ export default function ClientSetupProfileForm() {
             </div>
           )}
 
-          {/* Section 0: Brand Images */}
-          <div>
-            <h3 className="text-sm font-extrabold text-slate-900 mb-4 border-b border-slate-100 pb-2">
-              Brand Assets
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {/* Avatar / Logo Upload */}
-              <div>
-                <label className="block text-xs font-bold text-slate-900 mb-2">Company Logo (Profile)</label>
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
-                    {avatar ? (
-                      <img src={avatar} alt="Logo preview" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-2xl">🏢</span>
-                    )}
-                  </div>
-                  <div>
-                    <label htmlFor="avatar-upload" className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 cursor-pointer transition-colors shadow-xs">
-                      Choose Logo
-                    </label>
-                    <input id="avatar-upload" type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
-                    {avatarError && <p className="text-red-500 text-[10px] mt-1 font-semibold">{avatarError}</p>}
-                  </div>
+          {/* Photos Setup */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 border-t border-slate-100 pt-5">
+            {/* Avatar / Logo Upload */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-slate-900">Company Logo (Profile)</label>
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
+                  {avatar ? (
+                    <img src={avatar} alt="Logo preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-slate-400 text-2xl font-black">?</span>
+                  )}
+                </div>
+                <div>
+                  <input id="avatar-upload" type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                  <label htmlFor="avatar-upload" className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 cursor-pointer transition-all shadow-xs">
+                    Select Image
+                  </label>
+                  {avatarError && <p className="text-red-500 text-[10px] mt-1 font-semibold">{avatarError}</p>}
                 </div>
               </div>
+            </div>
 
-              {/* Cover Image Upload */}
-              <div>
-                <label className="block text-xs font-bold text-slate-900 mb-2">Cover Header Image</label>
-                <div className="flex items-center gap-4">
-                  <div className="w-24 h-16 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
-                    {coverImage ? (
-                      <img src={coverImage} alt="Cover preview" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-slate-400 text-xs">No Cover</span>
-                    )}
-                  </div>
-                  <div>
-                    <label htmlFor="cover-upload" className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 cursor-pointer transition-colors shadow-xs">
-                      Choose Cover
-                    </label>
-                    <input id="cover-upload" type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" />
-                    {coverError && <p className="text-red-500 text-[10px] mt-1 font-semibold">{coverError}</p>}
-                  </div>
+            {/* Cover Image Upload */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-slate-900">Cover Header Image</label>
+              <div className="flex items-center gap-4">
+                <div className="w-24 h-16 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
+                  {coverImage ? (
+                    <img src={coverImage} alt="Cover preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-slate-400 text-xs font-bold">No banner</span>
+                  )}
+                </div>
+                <div>
+                  <input id="cover-upload" type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" />
+                  <label htmlFor="cover-upload" className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 cursor-pointer transition-all shadow-xs">
+                    Select Image
+                  </label>
+                  {coverError && <p className="text-red-500 text-[10px] mt-1 font-semibold">{coverError}</p>}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Section 1: Company Details */}
-          <div>
-            <h3 className="text-sm font-extrabold text-slate-900 mb-4 border-b border-slate-100 pb-2">
-              Company Information
-            </h3>
+          {/* Company Details */}
+          <div className="border-t border-slate-100 pt-5">
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
@@ -390,95 +365,32 @@ export default function ClientSetupProfileForm() {
               <p className="text-[10px] font-semibold text-slate-500 mt-1.5 ml-1">
                 * Minimum 20 characters required for profile completion score.
               </p>
-            </div>
+          </div>
           </div>
 
-          {/* Section 2: Billing & Contacts */}
-          <div className="pt-4">
-            <h3 className="text-sm font-extrabold text-slate-900 mb-4 border-b border-slate-100 pb-2">
-              Billing & Contact Information
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div>
-                <label htmlFor="billingContactName" className="block text-xs font-bold text-slate-900 mb-2">
-                  Billing Contact Name
-                </label>
-                <input
-                  id="billingContactName"
-                  name="billingContactName"
-                  type="text"
-                  value={formData.billingContactName}
-                  onChange={handleInputChange}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#E84E29] focus:ring-1 focus:ring-[#E84E29] transition-all font-medium text-slate-800 bg-slate-50/30"
-                  placeholder="e.g. Jane Doe"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="billingEmail" className="block text-xs font-bold text-slate-900 mb-2">
-                  Billing Email Address
-                </label>
-                <input
-                  id="billingEmail"
-                  name="billingEmail"
-                  type="text"
-                  value={formData.billingEmail}
-                  onChange={handleInputChange}
-                  className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-all font-medium text-slate-800 bg-slate-50/30 ${
-                    validationErrors.billingEmail
-                      ? "border-red-300 focus:border-red-400 focus:ring-1 focus:ring-red-400"
-                      : "border-slate-200 focus:border-[#E84E29] focus:ring-1 focus:ring-[#E84E29]"
-                  }`}
-                  placeholder="e.g. accounting@acme.com"
-                />
-                {validationErrors.billingEmail && (
-                  <p className="text-red-600 text-[10px] font-semibold mt-1">
-                    {validationErrors.billingEmail}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-5">
-              <PhoneInput
-                value={formData.billingPhone}
-                onChange={(val) => setFormData(prev => ({ ...prev, billingPhone: val }))}
-                selectedCountry={selectedCountry}
-                onCountryChange={setSelectedCountry}
-                label="Billing Contact Number"
-                required
-              />
-              {validationErrors.billingPhone && (
-                <p className="text-red-600 text-[10px] font-semibold mt-1">
-                  {validationErrors.billingPhone}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Action Buttons */}
+          {/* Actions */}
           <div className="flex justify-end pt-4 border-t border-slate-100">
             <button
               type="submit"
-              disabled={loading || isFormIncomplete}
-              className={`px-8 py-3 rounded-full text-xs font-bold tracking-widest uppercase transition-all duration-300 active:scale-[0.98] ${
-                loading || isFormIncomplete
-                  ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none border border-slate-200"
-                  : "bg-[#E84E29] hover:bg-[#d03d1c] text-white cursor-pointer shadow-md shadow-orange-500/10"
-              } flex items-center justify-center gap-2`}
+              disabled={
+                loading ||
+                !formData.companyName.trim() ||
+                !formData.industry.trim() ||
+                !formData.companyWebsite.trim() ||
+                !formData.companyDescription.trim()
+              }
+              className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent rounded-full text-xs font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] transition-all shadow-sm cursor-pointer disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed"
             >
               {loading ? (
-                <>
-                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Saving...
-                </>
+                <span className="flex items-center gap-2">
+                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  Saving Profile...
+                </span>
               ) : (
                 "Complete Setup"
               )}
             </button>
           </div>
-
         </form>
       </div>
     </div>

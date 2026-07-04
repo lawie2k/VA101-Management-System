@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import VALeftSidebar from "../../../../components/va-dashboard-components/VALeftSidebar";
 import DashboardMainFeed from "../../../../components/va-dashboard-components/dashboard/DashboardMainFeed";
@@ -59,6 +60,7 @@ const IconChevronRight = ({ className = "w-4 h-4" }) => (
 
 
 export default function Page() {
+  const router = useRouter();
   const [savedJobs, setSavedJobs] = useState<string[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
   const [interviews, setInterviews] = useState<any[]>([]);
@@ -76,34 +78,47 @@ export default function Page() {
   });
 
   useEffect(() => {
-    function loadProfile() {
-      const saved = localStorage.getItem("va_profile_data");
-      if (saved) {
-        try {
-          const data = JSON.parse(saved);
-          setProfileState(prev => ({
-            ...prev,
-            fullName: data.fullName || prev.fullName,
-            avatar: (data.avatar === undefined || data.avatar === null) ? prev.avatar : data.avatar,
-            coverImage: data.coverImage || prev.coverImage,
-            title: data.title || prev.title,
-            location: data.location || prev.location,
-            availability: data.openToOpportunities ? "Open to opportunities" : "Unavailable",
-            skills: data.skills || prev.skills,
-            completion: (() => {
-              let score = 10;
-              if (data.about?.length > 20) score += 20;
-              if (data.portfolio?.length > 0) score += 20;
-              if (data.portfolio?.length > 1) score += 10;
-              if (data.experience?.length > 0) score += 20;
-              if (data.skills?.length >= 3) score += 10;
-              if (data.tools?.length >= 2) score += 10;
-              return Math.min(score, 100);
-            })()
-          }));
-        } catch (e) {
-          console.error(e);
+    function loadProfile(data?: any) {
+      if (!data) {
+        const saved = localStorage.getItem("va_profile_data");
+        if (saved) {
+          try {
+            data = JSON.parse(saved);
+          } catch (e) {
+            console.error(e);
+          }
         }
+      }
+
+      if (data) {
+        if (!data.title || !data.location) {
+          router.replace("/va/profile/setup-profile-form");
+          return;
+        }
+
+        setProfileState(prev => ({
+          ...prev,
+          fullName: data.fullName || prev.fullName,
+          avatar: (data.avatar === undefined || data.avatar === null) ? prev.avatar : data.avatar,
+          coverImage: data.coverImage || prev.coverImage,
+          title: data.title || prev.title,
+          location: data.location || prev.location,
+          availability: data.openToOpportunities ? "Open to opportunities" : "Unavailable",
+          skills: data.skills || prev.skills,
+          completion: (() => {
+            let score = 10;
+            if (data.about?.length > 20) score += 20;
+            if (data.portfolio?.length > 0) score += 20;
+            if (data.portfolio?.length > 1) score += 10;
+            if (data.experience?.length > 0) score += 20;
+            if (data.skills?.length >= 3) score += 10;
+            if (data.tools?.length >= 2) score += 10;
+            return Math.min(score, 100);
+          })()
+        }));
+      } else {
+        // Fallback sync if no local storage data found initially
+        syncDbProfile();
       }
     }
 
@@ -112,8 +127,14 @@ export default function Page() {
         const res = await fetch("/api/va/profile");
         if (res.ok) {
           const data = await res.json();
+          if (!data.title || !data.location) {
+            router.replace("/va/profile/setup-profile-form");
+            return;
+          }
           localStorage.setItem("va_profile_data", JSON.stringify(data));
-          loadProfile();
+          loadProfile(data);
+        } else if (res.status === 404) {
+          router.replace("/va/profile/setup-profile-form");
         }
       } catch (e) {
         console.error("Dashboard profile sync error:", e);

@@ -1,6 +1,8 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import { Button } from "./VAProfileUI";
 import { IconX } from "./VAProfileIcons";
+import { LocationAutocomplete } from "@/src/components/ui/LocationAutocomplete";
 import { VAProfileData } from "./types";
 
 export function VAProfileModals(props: any) {
@@ -81,11 +83,9 @@ export function VAProfileModals(props: any) {
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Location</label>
-                    <input 
-                      type="text" 
-                      required
+                    <LocationAutocomplete 
                       value={profileForm.location} 
-                      onChange={e => setProfileForm({ ...profileForm, location: e.target.value })}
+                      onChange={(val) => setProfileForm({ ...profileForm, location: val })}
                       className="w-full rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-semibold"
                     />
                   </div>
@@ -365,18 +365,17 @@ export function VAProfileModals(props: any) {
                       />
                       <label 
                         htmlFor="avatar-file-upload"
-                        className="inline-flex items-center justify-center font-bold px-4 py-2 border border-slate-200 hover:border-slate-350 bg-white hover:bg-slate-55/70 text-slate-700 rounded-xl cursor-pointer text-xs transition-all shadow-xs shrink-0"
+                        className="inline-flex items-center justify-center font-bold px-4 py-2 border border-slate-200 hover:border-slate-350 bg-white hover:bg-slate-50 text-slate-700 rounded-xl cursor-pointer text-xs transition-all shadow-xs shrink-0"
                       >
-                        📂 Select Image File
+                        Select Image File
                       </label>
                       {avatarForm && (
                         <button 
                           type="button"
                           onClick={() => setAvatarForm("")}
-                          className="px-4 py-2 rounded-xl border border-red-200 bg-red-50 text-red-650 hover:bg-red-100/50 hover:border-red-300 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 shadow-xs"
-                          title="Clear profile photo"
+                          className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-[10px] font-bold rounded-lg border border-red-200 transition-colors"
                         >
-                          🗑️ Clear Photo
+                          Clear Photo
                         </button>
                       )}
                       <span className="text-[10px] font-bold text-slate-400">Max size: 1.5MB (JPG, PNG)</span>
@@ -388,7 +387,7 @@ export function VAProfileModals(props: any) {
                         <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-200 bg-white">
                           <img src={avatarForm} alt="Upload preview" className="w-full h-full object-cover" />
                         </div>
-                        <span className="text-[10px] font-bold text-emerald-600">✓ Image file loaded successfully!</span>
+                        <span className="text-[10px] font-bold text-emerald-600">Image file loaded successfully!</span>
                       </div>
                     )}
                   </div>
@@ -416,18 +415,17 @@ export function VAProfileModals(props: any) {
                       />
                       <label 
                         htmlFor="cover-file-upload"
-                        className="inline-flex items-center justify-center font-bold px-4 py-2 border border-slate-200 hover:border-slate-350 bg-white hover:bg-slate-55/70 text-slate-700 rounded-xl cursor-pointer text-xs transition-all shadow-xs shrink-0"
+                        className="inline-flex items-center justify-center font-bold px-4 py-2 border border-slate-200 hover:border-slate-350 bg-white hover:bg-slate-50 text-slate-700 rounded-xl cursor-pointer text-xs transition-all shadow-xs shrink-0"
                       >
-                        📂 Select Cover Image
+                        Select Cover Image
                       </label>
                       {coverForm && (
                         <button 
                           type="button"
                           onClick={() => setCoverForm("")}
-                          className="px-4 py-2 rounded-xl border border-red-200 bg-red-50 text-red-650 hover:bg-red-100/50 hover:border-red-300 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 shadow-xs"
-                          title="Clear cover image"
+                          className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-[10px] font-bold rounded-lg border border-red-200 transition-colors"
                         >
-                          🗑️ Clear Cover
+                          Clear Cover
                         </button>
                       )}
                       <span className="text-[10px] font-bold text-slate-400">Max size: 1.5MB (JPG, PNG)</span>
@@ -439,7 +437,7 @@ export function VAProfileModals(props: any) {
                         <div className="w-16 h-10 rounded-lg overflow-hidden border border-slate-200 bg-white">
                           <img src={coverForm} alt="Cover preview" className="w-full h-full object-cover" />
                         </div>
-                        <span className="text-[10px] font-bold text-emerald-600">✓ Cover file loaded successfully!</span>
+                        <span className="text-[10px] font-bold text-emerald-600">Cover file loaded successfully!</span>
                        </div>
                      )}
                    </div>

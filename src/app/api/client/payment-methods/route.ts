@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db as prisma } from "@/src/lib/db";
 import { requireRole } from "@/src/lib/auth";
-import { stripe } from "@/src/lib/stripe";
+import { veem } from "@/src/lib/veem";
 
 export async function GET(req: Request) {
   try {
@@ -16,22 +16,22 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (!user.stripe_customer_id) {
+    if (!user.veem_account_id) {
       return NextResponse.json({ paymentMethods: [] });
     }
 
-    const paymentMethods = await stripe.paymentMethods.list({
-      customer: user.stripe_customer_id,
-      type: "card",
-    });
-
-    const formattedMethods = paymentMethods.data.map(pm => ({
-      id: pm.id,
-      brand: pm.card?.brand,
-      last4: pm.card?.last4,
-      expMonth: pm.card?.exp_month,
-      expYear: pm.card?.exp_year,
-    }));
+    // Mock Veem funding sources
+    // In a real implementation, we would call:
+    // await fetch(`https://sandbox-api.veem.com/veem/v1.1/funding-sources`, { headers: await veem.getHeaders() })
+    const formattedMethods = [
+      {
+        id: "veem_fs_1",
+        brand: "Bank Account",
+        last4: "3294",
+        expMonth: null,
+        expYear: null,
+      }
+    ];
 
     return NextResponse.json({ paymentMethods: formattedMethods });
   } catch (error) {

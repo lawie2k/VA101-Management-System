@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import ClientLeftSidebar from "../../../../components/client-dashboard-components/ClientLeftSidebar";
 import ClientMainFeed from "../../../../components/client-dashboard-components/dashboard/ClientMainFeed";
 import ClientRightSidebar from "../../../../components/client-dashboard-components/dashboard/ClientRightSidebar";
 
 export default function ClientDashboardPage() {
+  const router = useRouter();
   const [companyName, setCompanyName] = useState("");
 
   useEffect(() => {
@@ -13,12 +15,35 @@ export default function ClientDashboardPage() {
     if (saved) {
       try {
         const data = JSON.parse(saved);
+        if (!data.companyName) {
+          router.replace("/client/profile/setup-profile-form");
+          return;
+        }
         setCompanyName(data.companyName || "");
       } catch (e) {
         console.error("Failed to parse client profile:", e);
       }
+    } else {
+      // Fallback API check if missing from local storage
+      fetch("/api/client/profile")
+        .then(res => {
+          if (res.status === 404) {
+            router.replace("/client/profile/setup-profile-form");
+            throw new Error("Profile not found");
+          }
+          return res.json();
+        })
+        .then(data => {
+          if (!data.companyName) {
+            router.replace("/client/profile/setup-profile-form");
+          } else {
+            localStorage.setItem("client_profile_data", JSON.stringify(data));
+            setCompanyName(data.companyName);
+          }
+        })
+        .catch(err => console.error(err));
     }
-  }, []);
+  }, [router]);
 
   const [jobPosts, setJobPosts] = useState<any[]>([]);
   const [shortlistedCandidates, setShortlistedCandidates] = useState<any[]>([]);

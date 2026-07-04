@@ -55,7 +55,6 @@ export async function GET(req: Request) {
       userId: user.id.toString(),
       fullName: user.full_name,
       email: user.email,
-      phone: user.phone || "",
       learningGoal: user.student_profiles.learning_goal || "",
       status: user.student_profiles.status || "active",
       avatarUrl,
@@ -75,7 +74,7 @@ export async function PATCH(req: Request) {
     const userId = currentUser.id;
 
     const body = await req.json();
-    const { fullName, phone, learningGoal, avatarUrl, coverImage } = body;
+    const { fullName, learningGoal, avatarUrl, coverImage } = body;
 
     const updated = await prisma.$transaction(async (tx) => {
       // Handle avatar and cover image JSON merging
@@ -106,12 +105,11 @@ export async function PATCH(req: Request) {
       }
 
       // Update User if basic info is provided
-      if (fullName !== undefined || phone !== undefined || newProfilePhotoUrl !== undefined) {
+      if (fullName !== undefined || newProfilePhotoUrl !== undefined) {
         await tx.users.update({
           where: { id: BigInt(userId) },
           data: {
             ...(fullName !== undefined && { full_name: fullName }),
-            ...(phone !== undefined && { phone: phone }),
             ...(newProfilePhotoUrl !== undefined && { profile_photo_url: newProfilePhotoUrl }),
           }
         });

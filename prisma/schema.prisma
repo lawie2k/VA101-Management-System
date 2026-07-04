@@ -43,9 +43,7 @@ model client_profiles {
   company_size         String?           @db.VarChar(100)
   company_website      String?           @db.VarChar(255)
   company_description  String?           @db.Text
-  billing_contact_name String?           @db.VarChar(150)
-  billing_email        String?           @db.VarChar(150)
-  billing_phone        String?           @db.VarChar(50)
+
   status               String?           @default("active") @db.VarChar(50)
   created_at           DateTime?         @default(now()) @db.Timestamp(0)
   updated_at           DateTime?         @default(now()) @db.Timestamp(0)
@@ -141,8 +139,8 @@ model invoices {
   due_date          DateTime?          @db.Date
   status            String?            @default("unpaid") @db.VarChar(100)
   created_by        BigInt?            @db.UnsignedBigInt
-  stripe_payment_intent_id String?            @db.VarChar(255)
-  stripe_checkout_session_id String?          @db.VarChar(255)
+  veem_payment_id                   String?            @db.VarChar(255)
+  veem_request_id                   String?          @db.VarChar(255)
   created_at        DateTime?          @default(now()) @db.Timestamp(0)
   updated_at        DateTime?          @default(now()) @db.Timestamp(0)
   invoice_receipts  invoice_receipts[]
@@ -262,8 +260,8 @@ model users {
   phone                                                String?              @db.VarChar(50)
   account_status                                       String?              @default("active") @db.VarChar(50)
   profile_photo_url                                    String?              @db.LongText
-  stripe_customer_id                                   String?              @db.VarChar(255)
-  stripe_subscription_id                               String?              @db.VarChar(255)
+  veem_account_id                                      String?              @db.VarChar(255)
+  veem_token                                           String?              @db.VarChar(255)
   created_at                                           DateTime?            @default(now()) @db.Timestamp(0)
   updated_at                                           DateTime?            @default(now()) @db.Timestamp(0)
   assignments                                          assignments[]

@@ -6,7 +6,6 @@ interface StudentProfileSidebarProps {
   strength: number;
   profile: {
     fullName: string;
-    phone: string;
     learningGoal: string;
   };
 }
@@ -30,9 +29,6 @@ export function StudentProfileSidebar({ strength, profile }: StudentProfileSideb
         <ul className="mt-3.5 space-y-1.5 text-[11px] font-bold text-slate-500">
           <li className="flex items-center gap-1.5">
             {profile.fullName ? "✅" : "⚠️"} Full name
-          </li>
-          <li className="flex items-center gap-1.5">
-            {profile.phone ? "✅" : "⚠️"} Phone number
           </li>
           <li className="flex items-center gap-1.5">
             {profile.learningGoal ? "✅" : "⚠️"} Learning goal

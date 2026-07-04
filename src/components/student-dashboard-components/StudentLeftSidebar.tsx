@@ -9,7 +9,6 @@ const DEFAULT_COVER = "https://images.unsplash.com/photo-1618005182384-a83a8bd57
 interface StudentProfile {
   id?: string;
   fullName: string;
-  phone?: string;
   learningGoal: string;
   avatarUrl?: string;
   coverImage?: string;
@@ -51,8 +50,7 @@ export default function StudentLeftSidebar() {
 
   const computeCompletion = (data: StudentProfile) => {
     let score = 20; // Base
-    if (data.fullName?.trim() && data.fullName !== "Loading...") score += 20;
-    if (data.phone?.trim()) score += 20;
+    if (data.fullName?.trim() && data.fullName !== "Loading...") score += 40;
     if (data.learningGoal?.trim() && data.learningGoal !== "Loading profile...") score += 40;
     return Math.min(score, 100);
   };

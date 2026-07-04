@@ -1,65 +1,67 @@
 import { NextResponse } from "next/server";
-import { stripe } from "@/src/lib/stripe";
+import { veem } from "@/src/lib/veem";
 import { db as prisma } from "@/src/lib/db";
-import Stripe from "stripe";
+import crypto from "crypto";
 
 export async function POST(req: Request) {
   const payload = await req.text();
-  const signature = req.headers.get("stripe-signature");
+  const signature = req.headers.get("X-VEEM-SIGNATURE");
 
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const webhookSecret = process.env.VEEM_WEBHOOK_SECRET;
   
   if (!signature || !webhookSecret) {
     console.error("Missing signature or webhook secret");
     return NextResponse.json({ error: "Missing signature or webhook secret" }, { status: 400 });
   }
 
-  let event: Stripe.Event;
-
-  try {
-    event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
-  } catch (err: any) {
-    console.error(`Webhook signature verification failed: ${err.message}`);
+  // Verify Veem webhook signature (HMAC SHA256)
+  const hmac = crypto.createHmac("sha256", webhookSecret);
+  const digest = hmac.update(payload).digest("base64");
+  
+  if (signature !== digest) {
+    console.error("Webhook signature verification failed");
     return NextResponse.json({ error: "Webhook signature verification failed" }, { status: 400 });
+  }
+
+  // Parse Veem webhook event
+  let event;
+  try {
+    event = JSON.parse(payload);
+  } catch (err: any) {
+    return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
   }
 
   // Handle the event securely inside a transaction when writing to the DB
   try {
-    switch (event.type) {
-      case "checkout.session.completed": {
-        const session = event.data.object as Stripe.Checkout.Session;
+    switch (event.eventType) {
+      case "PaymentStatusChanged": {
+        const payment = event.payment;
+        const invoiceId = payment.externalInvoiceRefId;
         
-        if (session.mode === "payment") {
-          const invoiceId = session.metadata?.invoiceId;
-          
-          if (invoiceId) {
-            // Use transaction to ensure safe status transition
-            await prisma.$transaction(async (tx) => {
-              const invoice = await tx.invoices.findUnique({
-                where: { id: BigInt(invoiceId) }
-              });
-              
-              if (invoice && invoice.status !== "paid") {
-                await tx.invoices.update({
-                  where: { id: invoice.id },
-                  data: {
-                    status: "paid",
-                    stripe_payment_intent_id: session.payment_intent as string,
-                  }
-                });
-                
-                // We could also record a payment entry in the payments table here
-              }
+        if (invoiceId && payment.status === "Sent") {
+          // Use transaction to ensure safe status transition
+          await prisma.$transaction(async (tx) => {
+            // Find invoice by its internal invoice_number which we passed as externalInvoiceRefId
+            const invoice = await tx.invoices.findUnique({
+              where: { invoice_number: invoiceId }
             });
-          }
+            
+            if (invoice && invoice.status !== "paid") {
+              await tx.invoices.update({
+                where: { id: invoice.id },
+                data: {
+                  status: "paid",
+                  veem_payment_id: payment.id,
+                }
+              });
+            }
+          });
         }
         break;
       }
       
-      // More events could be handled here (like setup_intent.succeeded)
-      
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        console.log(`Unhandled event type: ${event.eventType}`);
     }
 
     return NextResponse.json({ received: true });

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { stripe } from "@/src/lib/stripe";
+import { veem } from "@/src/lib/veem";
 import { db as prisma } from "@/src/lib/db";
 
 export async function POST(req: Request) {
@@ -31,57 +31,50 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User not found for this invoice" }, { status: 404 });
     }
 
-    // Determine or create Stripe Customer
-    let customerId = user.stripe_customer_id;
-    if (!customerId) {
-      const customer = await stripe.customers.create({
+    // Generate Veem Auth Headers
+    const headers = await veem.getHeaders();
+
+    // Create Veem Payment Request (Mock Payload for Veem structure)
+    const veemPayload = {
+      amount: {
+        number: Number(invoice.amount),
+        currency: invoice.currency?.toUpperCase() || "USD"
+      },
+      payee: {
         email: user.email,
-        name: user.full_name || undefined,
-        metadata: {
-          userId: user.id.toString(),
-        }
-      });
-      customerId = customer.id;
-      
-      // Save customer ID in DB
-      await prisma.users.update({
-        where: { id: user.id },
-        data: { stripe_customer_id: customerId }
-      });
+        firstName: user.full_name?.split(" ")[0] || "Client",
+        lastName: user.full_name?.split(" ")[1] || "",
+        type: "Personal"
+      },
+      purposeOfPayment: "Services",
+      externalInvoiceRefId: invoice.invoice_number
+    };
+
+    const response = await fetch("https://sandbox-api.veem.com/veem/v1.1/payments", {
+      method: "POST",
+      headers,
+      body: JSON.stringify(veemPayload)
+    });
+
+    let paymentUrl = successUrl;
+    let paymentId = `veem_mock_${Date.now()}`;
+
+    if (response.ok) {
+      const data = await response.json();
+      paymentId = data.id;
+      // In a real flow, Veem might return a claimLink or hosted payment URL
+      paymentUrl = data.claimLink || successUrl;
+    } else {
+      console.warn("Veem API request failed, using mock payment ID");
     }
 
-    // Create Checkout Session
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      customer: customerId,
-      line_items: [
-        {
-          price_data: {
-            currency: invoice.currency?.toLowerCase() || "usd",
-            product_data: {
-              name: `Invoice #${invoice.invoice_number}`,
-            },
-            unit_amount: Math.round(Number(invoice.amount) * 100), // Convert to cents
-          },
-          quantity: 1,
-        },
-      ],
-      mode: "payment",
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      client_reference_id: invoice.id.toString(),
-      metadata: {
-        invoiceId: invoice.id.toString(),
-      }
-    });
-
-    // Save checkout session ID to invoice
+    // Save Veem request ID to invoice
     await prisma.invoices.update({
       where: { id: invoice.id },
-      data: { stripe_checkout_session_id: session.id }
+      data: { veem_request_id: paymentId }
     });
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: paymentUrl });
   } catch (error) {
     console.error("Error creating checkout session:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

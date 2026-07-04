@@ -1,12 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import PhoneInput from "../../../../components/forms/PhoneInput";
-import { popularDialCodes } from "../../../../lib/countryCodes";
 
 import { StudentProfileHeader } from "../../../../components/student-dashboard-components/profile/StudentProfileHeader";
 import { StudentLearningJourney } from "../../../../components/student-dashboard-components/profile/StudentLearningJourney";
-import { StudentBasicInfo } from "../../../../components/student-dashboard-components/profile/StudentBasicInfo";
 import { StudentProfileSidebar } from "../../../../components/student-dashboard-components/profile/StudentProfileSidebar";
 import { IconX } from "../../../../components/student-dashboard-components/profile/ProfileIcons";
 import { Button } from "../../../../components/student-dashboard-components/profile/ProfileUI";
@@ -15,20 +12,18 @@ export default function StudentProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCountry, setSelectedCountry] = useState(popularDialCodes[0]);
   
   const [activeModal, setActiveModal] = useState<"basic" | "learning" | "avatar" | "cover" | null>(null);
 
   const [profile, setProfile] = useState({
     fullName: "",
     email: "",
-    phone: "",
     learningGoal: "",
     avatarUrl: "",
     coverImage: "",
   });
 
-  const [basicForm, setBasicForm] = useState({ fullName: "", phone: "" });
+  const [basicForm, setBasicForm] = useState({ fullName: "" });
   const [learningForm, setLearningForm] = useState({ learningGoal: "" });
   const [avatarForm, setAvatarForm] = useState<string | null>(null);
   const [coverForm, setCoverForm] = useState<string | null>(null);
@@ -46,7 +41,6 @@ export default function StudentProfilePage() {
         setProfile({
           fullName: data.fullName || "",
           email: data.email || "",
-          phone: data.phone || "",
           learningGoal: data.learningGoal || "",
           avatarUrl: data.avatarUrl || "",
           coverImage: data.coverImage || "",
@@ -61,15 +55,14 @@ export default function StudentProfilePage() {
 
   const strength = (() => {
     let score = 20; // Base
-    if (profile.fullName.trim()) score += 20;
-    if (profile.phone.trim()) score += 20;
+    if (profile.fullName.trim()) score += 40;
     if (profile.learningGoal.trim()) score += 40;
     return Math.min(score, 100);
   })();
 
   const openModal = (type: "basic" | "learning" | "avatar" | "cover") => {
     if (type === "basic") {
-      setBasicForm({ fullName: profile.fullName, phone: profile.phone });
+      setBasicForm({ fullName: profile.fullName });
     } else if (type === "learning") {
       setLearningForm({ learningGoal: profile.learningGoal });
     } else if (type === "avatar") {
@@ -86,26 +79,21 @@ export default function StudentProfilePage() {
     setSaving(true);
     setError(null);
 
-    const formattedPhone = basicForm.phone.startsWith("+")
-      ? basicForm.phone
-      : `${selectedCountry.code} ${basicForm.phone}`;
-
     try {
       const res = await fetch("/api/student/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName: basicForm.fullName,
-          phone: formattedPhone,
         }),
       });
 
       if (!res.ok) throw new Error("Failed to update basic info");
       
-      setProfile(prev => ({ ...prev, fullName: basicForm.fullName, phone: formattedPhone }));
+      setProfile(prev => ({ ...prev, fullName: basicForm.fullName }));
       
       const cached = JSON.parse(localStorage.getItem("student_profile_data") || "{}");
-      localStorage.setItem("student_profile_data", JSON.stringify({ ...cached, fullName: basicForm.fullName, phone: formattedPhone }));
+      localStorage.setItem("student_profile_data", JSON.stringify({ ...cached, fullName: basicForm.fullName }));
       window.dispatchEvent(new Event("studentProfileUpdate"));
       
       setActiveModal(null);
@@ -206,7 +194,6 @@ export default function StudentProfilePage() {
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="space-y-6">
           <StudentLearningJourney learningGoal={profile.learningGoal} openModal={() => openModal("learning")} />
-          <StudentBasicInfo email={profile.email} phone={profile.phone} openModal={() => openModal("basic")} />
         </div>
 
         <StudentProfileSidebar strength={strength} profile={profile} />
@@ -255,15 +242,6 @@ export default function StudentProfilePage() {
                       value={basicForm.fullName}
                       onChange={(e) => setBasicForm({ ...basicForm, fullName: e.target.value })}
                       className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all shadow-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-900 mb-1.5">Phone Number</label>
-                    <PhoneInput 
-                      value={basicForm.phone}
-                      onChange={(val) => setBasicForm({ ...basicForm, phone: val })}
-                      selectedCountry={selectedCountry}
-                      onCountryChange={setSelectedCountry}
                     />
                   </div>
                 </form>

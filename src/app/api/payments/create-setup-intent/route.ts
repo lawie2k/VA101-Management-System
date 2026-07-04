@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { stripe } from "@/src/lib/stripe";
+import { veem } from "@/src/lib/veem";
 import { db as prisma } from "@/src/lib/db";
 
 export async function POST(req: Request) {
@@ -18,34 +18,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Determine or create Stripe Customer
-    let customerId = user.stripe_customer_id;
-    if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: user.email,
-        name: user.full_name || undefined,
-        metadata: {
-          userId: user.id.toString(),
-        }
-      });
-      customerId = customer.id;
-      
-      await prisma.users.update({
-        where: { id: user.id },
-        data: { stripe_customer_id: customerId }
-      });
-    }
+    // Veem doesn't have a "setup intent" for cards like Stripe.
+    // Instead, this route would typically redirect the user to Veem's OAuth authorization page.
+    const veemClientId = process.env.VEEM_CLIENT_ID || "test_client_id";
+    const redirectUri = encodeURIComponent(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/payments/veem-callback`);
+    
+    // Construct the Veem OAuth URL
+    const veemAuthUrl = `https://sandbox-api.veem.com/oauth/authorize?client_id=${veemClientId}&response_type=code&redirect_uri=${redirectUri}&state=${userId}`;
 
-    // Create a Checkout Session for setting up a payment method
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      mode: "setup",
-      customer: customerId,
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-    });
-
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: veemAuthUrl });
   } catch (error) {
     console.error("Error creating setup session:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

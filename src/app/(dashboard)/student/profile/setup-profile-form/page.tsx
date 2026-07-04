@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import PhoneInput from "../../../../../components/forms/PhoneInput";
-import { popularDialCodes } from "../../../../../lib/countryCodes";
 
 export default function StudentSetupProfileForm() {
   const router = useRouter();
@@ -13,10 +11,8 @@ export default function StudentSetupProfileForm() {
 
   const [formData, setFormData] = useState({
     fullName: "",
-    phone: "",
     learningGoal: "",
   });
-  const [selectedCountry, setSelectedCountry] = useState(popularDialCodes[0]);
 
   const [avatar, setAvatar] = useState<string>("");
   const [avatarError, setAvatarError] = useState<string | null>(null);
@@ -68,7 +64,7 @@ export default function StudentSetupProfileForm() {
     reader.readAsDataURL(file);
   };
 
-  const isFormIncomplete = !formData.fullName.trim() || !formData.phone.trim() || !formData.learningGoal.trim();
+  const isFormIncomplete = !formData.fullName.trim() || !formData.learningGoal.trim();
 
   useEffect(() => {
     // Check if profile is already configured in LocalStorage to block back navigation
@@ -109,17 +105,12 @@ export default function StudentSetupProfileForm() {
     setError(null);
     setLoading(true);
 
-    const formattedPhone = formData.phone.startsWith("+")
-      ? formData.phone
-      : `${selectedCountry.code} ${formData.phone}`;
-
     try {
       const res = await fetch("/api/student/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName: formData.fullName,
-          phone: formattedPhone,
           learningGoal: formData.learningGoal,
           avatarUrl: avatar || undefined,
           coverImage: coverImage || undefined,
@@ -135,7 +126,6 @@ export default function StudentSetupProfileForm() {
       // Build profile data matching API schema
       const profileDataToSave = {
         fullName: formData.fullName,
-        phone: formattedPhone,
         learningGoal: formData.learningGoal,
         avatarUrl: avatar || undefined,
         coverImage: coverImage || undefined,
@@ -188,47 +178,46 @@ export default function StudentSetupProfileForm() {
             </div>
           )}
 
-          {/* Section 0: Brand Images */}
-          <div>
-            <h3 className="text-sm font-extrabold text-slate-900 mb-4 border-b border-slate-100 pb-2">
-              Profile Images
-            </h3>
-            
-            <div className="space-y-6">
-              {/* Cover Image */}
-              <div>
-                <label className="block text-xs font-bold text-slate-900 mb-2">Header Profile / Cover Image</label>
-                <div className="w-full h-32 bg-slate-100 rounded-xl overflow-hidden relative border border-slate-200 group flex items-center justify-center">
-                  {coverImage ? (
-                    <img src={coverImage} alt="Cover preview" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-sm text-slate-400 font-medium">No cover image selected</span>
-                  )}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <label htmlFor="cover-upload" className="px-4 py-2 bg-white text-slate-900 text-xs font-bold rounded-full cursor-pointer hover:bg-slate-50 transition-colors shadow-md">
-                      Upload Header
-                    </label>
-                    <input id="cover-upload" type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" />
-                  </div>
-                </div>
-                {coverError && <p className="text-red-500 text-[10px] mt-1 font-semibold">{coverError}</p>}
-              </div>
-
-              {/* Avatar */}
+          {/* Photos Setup */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 border-t border-slate-100 pt-5">
+            {/* Avatar Upload */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-slate-900">Profile Picture</label>
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
+                <div className="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
                   {avatar ? (
                     <img src={avatar} alt="Profile preview" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-xs text-slate-500 font-medium">profile</span>
+                    <span className="text-slate-400 text-2xl font-black">?</span>
                   )}
                 </div>
                 <div>
-                  <label htmlFor="avatar-upload" className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 cursor-pointer transition-colors shadow-xs">
-                    Choose Profile Photo
-                  </label>
                   <input id="avatar-upload" type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                  <label htmlFor="avatar-upload" className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 cursor-pointer transition-all shadow-xs">
+                    Select Image
+                  </label>
                   {avatarError && <p className="text-red-500 text-[10px] mt-1 font-semibold">{avatarError}</p>}
+                </div>
+              </div>
+            </div>
+
+            {/* Cover Image Upload */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-slate-900">Cover Header Image</label>
+              <div className="flex items-center gap-4">
+                <div className="w-24 h-16 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
+                  {coverImage ? (
+                    <img src={coverImage} alt="Cover preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-slate-400 text-xs font-bold">No banner</span>
+                  )}
+                </div>
+                <div>
+                  <input id="cover-upload" type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" />
+                  <label htmlFor="cover-upload" className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 cursor-pointer transition-all shadow-xs">
+                    Select Image
+                  </label>
+                  {coverError && <p className="text-red-500 text-[10px] mt-1 font-semibold">{coverError}</p>}
                 </div>
               </div>
             </div>
@@ -254,16 +243,6 @@ export default function StudentSetupProfileForm() {
                   onChange={handleInputChange}
                   className="w-full border border-slate-200 focus:border-[#E84E29] focus:ring-1 focus:ring-[#E84E29] rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium text-slate-800 bg-slate-50/30"
                   placeholder="e.g. John Doe"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-900 mb-2">Phone Number</label>
-                <PhoneInput 
-                  value={formData.phone}
-                  onChange={(val) => setFormData(prev => ({ ...prev, phone: val }))}
-                  selectedCountry={selectedCountry}
-                  onCountryChange={setSelectedCountry}
                 />
               </div>
 
