@@ -12,8 +12,9 @@ const navItems = [
   { label: "Jobs", href: "/va/jobs" },
   { label: "My Applications", href: "/va/applications" },
   { label: "Interviews", href: "/va/interviews" },
-  { label: "Training", href: "/va/training" },
+  { label: "Courses", href: "/va/training" },
   { label: "My Learning", href: "/va/my-learning" },
+  { label: "Payout History", href: "/va/payouts" },
   { label: "Settings", href: "/va/settings" },
 ];
 

@@ -12,7 +12,7 @@ const navItems = [
   { label: "My Materials", href: "/trainer/materials/my-materials" },
   { label: "Upload Material", href: "/trainer/materials/upload-material" },
   { label: "Earnings", href: "/trainer/earnings" },
-  { label: "Payouts", href: "/trainer/payouts" },
+  { label: "Payout History", href: "/trainer/payouts" },
   { label: "Settings", href: "/trainer/settings" },
 ];
 

@@ -110,10 +110,10 @@ export default function Page() {
       localStorage.removeItem("student_profile_data");
 
       // Successful registration -> route to setup profile first for VAs, otherwise dashboard
-      if (accountType === "va") window.location.href = "/va/profile/setup-profile-form";
-      else if (accountType === "client") window.location.href = "/client/profile/setup-profile-form";
-      else if (accountType === "trainer") window.location.href = "/trainer/profile/setup-profile-form";
-      else if (accountType === "student") window.location.href = "/student/dashboard";
+      if (accountType === "va") window.location.replace("/va/profile/setup-profile-form");
+      else if (accountType === "client") window.location.replace("/client/profile/setup-profile-form");
+      else if (accountType === "trainer") window.location.replace("/trainer/profile/setup-profile-form");
+      else if (accountType === "student") window.location.replace("/student/dashboard");
     } catch (err: any) {
       setError(err.message);
     } finally {

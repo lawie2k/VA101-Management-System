@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import PaymentGatewayModal from "../payments/PaymentGatewayModal";
 
 /* ─── Inline SVG Icons ─── */
 
@@ -59,37 +60,164 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+/* ─── Interfaces ─── */
+interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  date: string;
+  amount: string;
+  status: string;
+  description: string;
+}
+
 /* ─── Component ─── */
 
 export default function ClientRightSidebar() {
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Payment Modal State
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [activeInvoiceId, setActiveInvoiceId] = useState<string | undefined>();
+  
+  // Receipt Upload State
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+
+  const fetchInvoices = async () => {
+    try {
+      const res = await fetch("/api/client/invoices");
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        // Only show upcoming invoices in the sidebar action queue
+        setInvoices(data.filter(inv => inv.status === "Upcoming"));
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInvoices();
+    const handleInvoiceUpdate = () => fetchInvoices();
+    window.addEventListener("invoiceAdded", handleInvoiceUpdate);
+    return () => window.removeEventListener("invoiceAdded", handleInvoiceUpdate);
+  }, []);
+
+  const handlePayClick = (invoiceId: string) => {
+    setActiveInvoiceId(invoiceId);
+    setIsPaymentModalOpen(true);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, invoiceId: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingId(invoiceId);
+    
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("invoiceId", invoiceId);
+
+      const res = await fetch("/api/client/invoices/receipts", {
+        method: "POST",
+        body: formData
+      });
+
+      if (res.ok) {
+        alert("Receipt uploaded successfully! Your invoice is now pending review.");
+        fetchInvoices(); // Refresh the list
+      } else {
+        const data = await res.json();
+        alert("Failed to upload receipt: " + (data.error || "Unknown error"));
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error uploading receipt.");
+    } finally {
+      setUploadingId(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <aside className="lg:col-span-3 h-full overflow-y-auto scrollbar-none space-y-6 pb-6">
 
       {/* Payment Reminders */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs">
+      <div className={`bg-white border ${invoices.length > 0 ? 'border-[#E84E29]/20 bg-orange-50/10' : 'border-slate-200'} rounded-3xl p-6 shadow-xs`}>
         <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3.5">
-          Payment Reminders
+          {invoices.length > 0 ? "Action Required" : "Payment Reminders"}
         </h4>
 
-        <div className="rounded-2xl bg-amber-50/60 border border-amber-200/50 p-4 space-y-2.5">
-          <div className="flex items-start gap-2.5">
-            <IconAlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-xs font-bold text-slate-800">No pending payments</p>
-              <p className="text-[10px] text-slate-400 font-medium mt-0.5">
-                All payments are up to date.
-              </p>
+        {isLoading ? (
+          <div className="animate-pulse space-y-3">
+            <div className="h-16 bg-slate-100 rounded-2xl"></div>
+          </div>
+        ) : invoices.length === 0 ? (
+          <div className="rounded-2xl bg-amber-50/60 border border-amber-200/50 p-4 space-y-2.5">
+            <div className="flex items-start gap-2.5">
+              <IconAlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-bold text-slate-800">No pending payments</p>
+                <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+                  All payments are up to date.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-[10px] font-semibold text-slate-500 mb-2">You have unpaid invoices. Please pay and upload the receipt.</p>
+            {invoices.map(invoice => (
+              <div key={invoice.id} className="p-4 bg-orange-50 border border-[#E84E29]/20 rounded-2xl relative">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <p className="text-xs font-bold text-slate-900 leading-tight">Invoice #{invoice.invoiceNumber}</p>
+                    <p className="text-[10px] text-slate-500 font-medium">{invoice.description}</p>
+                  </div>
+                  <strong className="text-sm text-slate-800">{invoice.amount}</strong>
+                </div>
+                
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  className="hidden" 
+                  accept="image/*,.pdf"
+                  onChange={(e) => handleFileUpload(e, invoice.id)}
+                />
+                
+                <div className="flex gap-2 mt-3">
+                  <button 
+                    onClick={() => handlePayClick(invoice.id)}
+                    className="flex-1 text-center px-3 py-2 bg-[#E84E29] text-white hover:bg-[#DA431E] transition-colors text-[10px] font-bold rounded-xl shadow-xs"
+                  >
+                    Pay Now
+                  </button>
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingId === invoice.id}
+                    className="flex-1 text-center px-3 py-2 bg-white border border-[#E84E29] text-[#E84E29] hover:bg-orange-50 transition-colors text-[10px] font-bold rounded-xl shadow-xs disabled:opacity-60"
+                  >
+                    {uploadingId === invoice.id ? "Uploading..." : "Upload Receipt"}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
-        <Link
-          href="/client/payments"
-          className="mt-3 w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-full text-[11px] font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] transition-all shadow-xs cursor-pointer"
-        >
-          <IconUpload className="w-3.5 h-3.5" />
-          Manage Payments
-        </Link>
+        {invoices.length === 0 && (
+          <Link
+            href="/client/payments"
+            className="mt-3 w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-full text-[11px] font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] transition-all shadow-xs cursor-pointer"
+          >
+            <IconUpload className="w-3.5 h-3.5" />
+            Manage Payments
+          </Link>
+        )}
       </div>
 
       {/* Contract Status */}
@@ -98,21 +226,36 @@ export default function ClientRightSidebar() {
           Contract Status
         </h4>
 
-        <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
-          <div className="flex items-center gap-2 text-xs text-slate-400 font-semibold">
-            <IconFileText className="w-4 h-4 text-slate-300" />
-            <p>No active contracts yet.</p>
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 overflow-hidden shrink-0">
+              <img src="/placeholder-avatar.jpg" alt="VA" className="w-full h-full object-cover" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex justify-between items-center mb-1">
+                <p className="text-xs font-bold text-slate-900 truncate">Sarah Jenkins</p>
+                <StatusBadge status="active" />
+              </div>
+              <p className="text-[10px] text-slate-500 font-medium truncate">Social Media Manager</p>
+            </div>
           </div>
         </div>
 
         <Link
           href="/client/contracts"
-          className="mt-3 w-full inline-flex items-center justify-center py-2.5 border border-slate-200 rounded-full text-[11px] font-bold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer"
+          className="mt-4 w-full inline-flex items-center justify-center py-2.5 rounded-full text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
         >
-          View Contracts
+          View All Contracts
         </Link>
       </div>
 
+      {/* Payment Modal */}
+      <PaymentGatewayModal 
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        invoiceId={activeInvoiceId}
+        onSuccess={() => fetchInvoices()}
+      />
     </aside>
   );
 }

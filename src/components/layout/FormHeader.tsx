@@ -191,8 +191,8 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
     } catch (e) {
       console.error(e);
     }
-    // Hard redirect clears the Next.js client-side router cache and browser memory
-    window.location.href = "/login";
+    // Hard redirect clears the Next.js client-side router cache and browser memory, replace prevents back button
+    window.location.replace("/login");
   };
 
   return (

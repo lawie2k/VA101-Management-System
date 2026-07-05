@@ -73,7 +73,7 @@ export default function StudentSetupProfileForm() {
       try {
         const parsed = JSON.parse(saved);
         if (parsed.learningGoal) {
-          router.replace("/student/dashboard");
+          window.location.replace("/student/dashboard");
           return;
         }
       } catch (e) {
@@ -155,7 +155,7 @@ export default function StudentSetupProfileForm() {
       localStorage.setItem("student_profile_data", JSON.stringify(profileDataToSave));
       window.dispatchEvent(new Event("studentProfileUpdate"));
 
-      router.replace("/student/dashboard");
+      window.location.replace("/student/dashboard");
     } catch (err: any) {
       setError(err.message);
       setLoading(false);

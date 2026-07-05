@@ -10,7 +10,7 @@ const navItems = [
   { label: "Dashboard", href: "/student/dashboard" },
   { label: "My Profile", href: "/student/profile" },
   { label: "My Learning", href: "/student/my-learning" },
-  { label: "Browse Training", href: "/student/training" },
+  { label: "Browse Courses", href: "/student/training" },
   { label: "Payments", href: "/student/payments" },
   { label: "Settings", href: "/student/settings" },
 ];

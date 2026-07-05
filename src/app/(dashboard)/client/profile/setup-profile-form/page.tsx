@@ -93,7 +93,7 @@ export default function ClientSetupProfileForm() {
       try {
         const parsed = JSON.parse(saved);
         if (parsed.companyName && parsed.industry) {
-          router.replace("/client/dashboard");
+          window.location.replace("/client/dashboard");
           return;
         }
       } catch (e) {
@@ -185,7 +185,7 @@ export default function ClientSetupProfileForm() {
       localStorage.setItem("client_profile_data", JSON.stringify(profileDataToSave));
       
       // Navigate client to dashboard and replace history state to avoid back navigating loops
-      router.replace("/client/dashboard");
+      window.location.replace("/client/dashboard");
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
       setLoading(false);

@@ -119,3 +119,6 @@ va101-management-system/
 * **Colors**: Pure slate grey bases (`slate-500` through `slate-950`), white glassmorphic containers, and brand orange accents (`#E84E29` / `bg-[#E84E29]`).
 * **Interactive Elements**: High-fidelity pill button styles, soft transitions, and hover-triggered scale / lifted shadow animation cues.
 
+
+## 7. File Storage & Uploads
+* **AWS S3 Only**: All file uploads (profile pictures, resumes, receipts, training materials, etc.) must be implemented using AWS S3 (or equivalent cloud storage). Do NOT use local filesystem storage (e.g., `public/uploads`) for any permanent or production file storage.

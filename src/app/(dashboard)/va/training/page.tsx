@@ -168,6 +168,35 @@ export default function VATrainingCatalogPage() {
     fetchPurchases();
   }, []);
 
+  const [pendingPurchases, setPendingPurchases] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function fetchPendingPurchases() {
+      try {
+        const res = await fetch("/api/va/training/purchases/pending");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) setPendingPurchases(data);
+        }
+      } catch (e) {
+        console.error("Failed to load pending purchases:", e);
+      }
+    }
+    
+    const handlePurchaseAdded = () => fetchPendingPurchases();
+    if (typeof window !== "undefined") {
+      window.addEventListener("trainingPurchaseAdded", handlePurchaseAdded);
+    }
+
+    fetchPendingPurchases();
+
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("trainingPurchaseAdded", handlePurchaseAdded);
+      }
+    };
+  }, []);
+
   const toggleSaveJob = (id: string) => {
     const updated = savedJobs.includes(id) 
       ? savedJobs.filter(item => item !== id) 
@@ -223,6 +252,7 @@ export default function VATrainingCatalogPage() {
 
         <TrainingRightSidebar 
           courses={courses}
+          pendingPurchases={pendingPurchases}
         />
 
       </div>

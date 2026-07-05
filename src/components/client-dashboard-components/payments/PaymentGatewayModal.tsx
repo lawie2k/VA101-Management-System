@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { PAYMENT_GATEWAY_LINKS } from "../../../lib/constants/payments";
 
 type PaymentGatewayModalProps = {
   isOpen: boolean;
@@ -52,8 +53,9 @@ export default function PaymentGatewayModal({ isOpen, onClose, onSuccess, invoic
       }
 
       // Open the payment link
-      if (gateway === "Wise") {
-        window.open("https://wise.com/pay/business/virtualassistant101globalsolutionsincopc?utm_source=open_link", "_blank");
+      const link = PAYMENT_GATEWAY_LINKS[gateway];
+      if (link) {
+        window.open(link, "_blank");
       } else {
         alert(`Payment link for ${gateway} coming soon!`);
       }
@@ -188,6 +190,17 @@ export default function PaymentGatewayModal({ isOpen, onClose, onSuccess, invoic
               </div>
               <span className="text-xs font-bold text-slate-700">Coins.ph</span>
             </button>
+          </div>
+
+          <div className="pt-2 text-center border-t border-slate-200 mt-4">
+            <a 
+              href="https://www.virtualassistant101.com/2026/06/how-to-make-payment-to-virtual.html" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-[11px] font-bold text-[#E84E29] hover:text-[#c43b17] hover:underline"
+            >
+              How to make a payment?
+            </a>
           </div>
         </div>
       </div>

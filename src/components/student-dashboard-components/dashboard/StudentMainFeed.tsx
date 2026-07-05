@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { IconSparkles, IconPlayerPlay, IconChevronRight } from "../StudentIcons";
 
 export default function StudentMainFeed() {
@@ -58,16 +59,16 @@ export default function StudentMainFeed() {
         </div>
       </div>
 
-      {/* Recommended Trainings */}
+      {/* Recommended Courses */}
       <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs">
         <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
           <div>
-            <h2 className="text-lg font-extrabold text-slate-900">Featured Trainings</h2>
+            <h2 className="text-lg font-extrabold text-slate-900">Featured Courses</h2>
             <p className="text-xs font-medium text-slate-500 mt-1">Courses highly recommended for you</p>
           </div>
-          <button className="text-[#E84E29] text-xs font-bold flex items-center hover:underline">
+          <Link href="/student/training" className="text-[#E84E29] text-xs font-bold flex items-center hover:underline">
             View All <IconChevronRight className="w-4 h-4" />
-          </button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -87,7 +88,7 @@ export default function StudentMainFeed() {
                   )}
                   <div className="absolute bottom-3 left-3 text-white">
                     <span className="px-2 py-1 bg-[#E84E29] rounded-md text-[10px] font-bold uppercase tracking-wider">
-                      {course.price === 0 ? "Free" : `$${course.price}`}
+                      {!course.price || course.price === 0 ? "Free" : `$${course.price}`}
                     </span>
                   </div>
                 </div>
@@ -98,10 +99,10 @@ export default function StudentMainFeed() {
                   <p className="text-xs text-slate-500 line-clamp-2 mb-4">
                     {course.description || "Learn new skills with this comprehensive training course."}
                   </p>
-                  <button className="w-full flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-xs font-bold py-2 rounded-xl transition-colors cursor-pointer">
+                  <Link href="/student/training" className="w-full flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-xs font-bold py-2 rounded-xl transition-colors cursor-pointer">
                     <IconPlayerPlay className="w-4 h-4 text-[#E84E29]" fill="currentColor" />
-                    Preview Course
-                  </button>
+                    Go to Course
+                  </Link>
                 </div>
               </div>
             ))

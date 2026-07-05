@@ -32,6 +32,7 @@ const CATEGORIES = [
 export default function UploadMaterialForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFree, setIsFree] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     category: "Operations",
@@ -55,7 +56,7 @@ export default function UploadMaterialForm() {
         body: JSON.stringify({
           title: formData.title,
           category: formData.category,
-          price: parseFloat(formData.price),
+          price: isFree ? 0 : parseFloat(formData.price),
           description: formData.description
         })
       });
@@ -75,7 +76,7 @@ export default function UploadMaterialForm() {
     }
   };
 
-  const isFormValid = formData.title.trim() !== "" && formData.category.trim() !== "" && String(formData.price).trim() !== "" && formData.description.trim() !== "";
+  const isFormValid = formData.title.trim() !== "" && formData.category.trim() !== "" && (isFree || String(formData.price).trim() !== "") && formData.description.trim() !== "";
 
   return (
     <>
@@ -130,21 +131,33 @@ export default function UploadMaterialForm() {
             </div>
 
             <div>
-              <label htmlFor="price" className="block text-xs font-bold text-slate-900 mb-1.5 uppercase tracking-wider">
-                Price ($) <span className="text-[#E84E29]">*</span>
-              </label>
-              <input 
-                id="price"
-                name="price"
-                type="number"
-                min="0"
-                step="0.01"
-                required
-                placeholder="e.g. 49.99"
-                value={formData.price}
-                onChange={handleInputChange}
-                className="w-full border border-slate-200 bg-slate-50 rounded-xl p-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-[#E84E29]/50 transition-all shadow-xs"
-              />
+              <div className="flex flex-col gap-2">
+                <label htmlFor="price" className="block text-xs font-bold text-slate-900 mb-1.5 uppercase tracking-wider">
+                  Price ($) {!isFree && <span className="text-[#E84E29]">*</span>}
+                </label>
+                <input 
+                  id="price"
+                  name="price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  required={!isFree}
+                  disabled={isFree}
+                  placeholder={isFree ? "Free Course" : "e.g. 49.99"}
+                  value={isFree ? "" : formData.price}
+                  onChange={handleInputChange}
+                  className="w-full border border-slate-200 bg-slate-50 rounded-xl p-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-[#E84E29]/50 transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+                <label className="flex items-center gap-2 cursor-pointer mt-1">
+                  <input 
+                    type="checkbox" 
+                    checked={isFree}
+                    onChange={(e) => setIsFree(e.target.checked)}
+                    className="w-4 h-4 rounded text-[#E84E29] focus:ring-[#E84E29] border-slate-300"
+                  />
+                  <span className="text-xs font-bold text-slate-700">Make this course free</span>
+                </label>
+              </div>
             </div>
 
             <div className="sm:col-span-2">

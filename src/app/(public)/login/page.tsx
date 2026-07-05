@@ -26,7 +26,7 @@ export default function Page() {
           const data = await res.json();
           if (data.authenticated && data.user) {
             const dashboardRoute = getDashboardRoute(data.user.roles || []);
-            router.replace(dashboardRoute);
+            window.location.replace(dashboardRoute);
           }
         }
       } catch (err) {
@@ -73,7 +73,7 @@ export default function Page() {
 
       // Session established -> route user to dashboard based on primary role
       const dashboardRoute = getDashboardRoute(data.user.roles || []);
-      window.location.href = dashboardRoute;
+      window.location.replace(dashboardRoute);
     } catch (err: any) {
       setError(err.message);
     } finally {

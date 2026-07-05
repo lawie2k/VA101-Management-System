@@ -149,7 +149,7 @@ export default function TrainerSetupProfileForm() {
       localStorage.setItem("trainer_profile_data", JSON.stringify(finalProfileData));
       window.dispatchEvent(new Event("trainerProfileUpdate"));
 
-      router.push("/trainer/dashboard");
+      window.location.replace("/trainer/dashboard");
     } catch (err: any) {
       setError(err.message);
     } finally {

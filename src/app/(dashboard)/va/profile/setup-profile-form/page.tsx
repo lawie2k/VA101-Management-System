@@ -150,7 +150,7 @@ export default function ProfileSetupPage() {
           const profileData = await res.json();
           // If they already completed the profile fields, redirect them immediately
           if (profileData.title && profileData.location && profileData.about) {
-            router.replace("/va/dashboard");
+            window.location.replace("/va/dashboard");
             return;
           }
         } else {
@@ -243,7 +243,7 @@ export default function ProfileSetupPage() {
         window.dispatchEvent(new Event("profileUpdate"));
       }
 
-      router.replace("/va/dashboard");
+      window.location.replace("/va/dashboard");
     } catch (err: any) {
       setError(err.message);
     } finally {

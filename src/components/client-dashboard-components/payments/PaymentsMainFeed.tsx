@@ -125,8 +125,17 @@ export default function PaymentsMainFeed() {
                 {invoice.status !== "Paid" && invoice.status !== "Pending Review" && (
                   <>
                     <button 
+                      onClick={() => {
+                        setGatewayInvoiceId(invoice.id);
+                        setIsGatewayModalOpen(true);
+                      }}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-bold text-white bg-[#E84E29] hover:bg-[#d44321] transition-all cursor-pointer shadow-sm shadow-[#E84E29]/20"
+                    >
+                      Pay Now
+                    </button>
+                    <button 
                       onClick={() => openUploadModal(invoice.id)}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-all cursor-pointer"
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-bold text-[#E84E29] bg-orange-50 border border-[#E84E29]/20 hover:bg-orange-100 transition-all cursor-pointer"
                     >
                       Upload Receipt
                     </button>
