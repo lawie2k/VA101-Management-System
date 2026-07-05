@@ -29,7 +29,7 @@ export async function GET(req: Request) {
       date: inv.due_date ? inv.due_date.toISOString().split('T')[0] : "TBD",
       amount: `$${inv.amount.toString()}`,
       status: inv.status === "paid" ? "Paid" : (inv.status === "unpaid" ? "Upcoming" : inv.status),
-      description: `Invoice ${inv.invoice_number}`,
+      description: inv.billing_cycle || `Invoice ${inv.invoice_number}`,
     }));
 
     return NextResponse.json(formatted);

@@ -3,6 +3,36 @@ import { db as prisma } from "@/src/lib/db";
 
 import { requireRole } from "../../../../lib/auth";
 
+export async function GET(req: Request) {
+  try {
+    const currentUser = await requireRole("client");
+    const userId = currentUser.id;
+
+    const profile = await prisma.client_profiles.findUnique({
+      where: { user_id: BigInt(userId) },
+      include: { users: { select: { full_name: true, email: true, profile_photo_url: true } } }
+    });
+
+    if (!profile) {
+      return new NextResponse(null, { status: 404 });
+    }
+
+    return NextResponse.json({
+      fullName: profile.users?.full_name || "",
+      email: profile.users?.email || "",
+      avatarUrl: profile.users?.profile_photo_url || "",
+      companyName: profile.company_name || "",
+      industry: profile.industry || "",
+      companySize: profile.company_size || "",
+      companyWebsite: profile.company_website || "",
+      companyDescription: profile.company_description || "",
+    });
+  } catch (error) {
+    console.error("Failed to fetch client profile:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
+
 export async function PUT(req: Request) {
   try {
     const currentUser = await requireRole("client");

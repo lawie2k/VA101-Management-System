@@ -153,6 +153,11 @@ export default function ProfileSetupPage() {
             router.replace("/va/dashboard");
             return;
           }
+        } else {
+          if (res.status === 401 || res.status === 403) {
+            window.location.href = "/login";
+            return;
+          }
         }
       } catch (err) {
         console.error("Failed to load user profile", err);
@@ -161,6 +166,18 @@ export default function ProfileSetupPage() {
       }
     }
     loadInitialUserData();
+    
+    // Prevent back navigation during setup
+    if (typeof window !== "undefined") {
+      window.history.pushState(null, "", window.location.href);
+      const handlePopState = () => {
+        window.history.pushState(null, "", window.location.href);
+      };
+      window.addEventListener("popstate", handlePopState);
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
+      };
+    }
   }, [router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {

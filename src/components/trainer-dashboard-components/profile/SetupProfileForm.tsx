@@ -41,6 +41,20 @@ export default function TrainerSetupProfileForm() {
   }, []);
 
   useEffect(() => {
+    // Prevent back navigation during setup
+    if (typeof window !== "undefined") {
+      window.history.pushState(null, "", window.location.href);
+      const handlePopState = () => {
+        window.history.pushState(null, "", window.location.href);
+      };
+      window.addEventListener("popstate", handlePopState);
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
+      };
+    }
+  }, []);
+
+  useEffect(() => {
     async function checkExistingProfile() {
       try {
         const res = await fetch("/api/trainer/profile");
@@ -49,6 +63,13 @@ export default function TrainerSetupProfileForm() {
           if (data && data.status !== "draft") {
             localStorage.setItem("trainer_profile_data", JSON.stringify(data));
             router.replace("/trainer/dashboard");
+            return;
+          }
+        } else {
+          // If the API returns an error (like 403 Forbidden because they are a VA, not a trainer)
+          // immediately kick them back to login to re-route them to their correct dashboard.
+          if (res.status === 401 || res.status === 403) {
+            window.location.href = "/login";
             return;
           }
         }

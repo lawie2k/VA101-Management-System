@@ -83,7 +83,15 @@ export default function StudentSetupProfileForm() {
 
     // Attempt to prefill full name if available
     fetch("/api/auth/me")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          if (res.status === 401 || res.status === 403) {
+            window.location.href = "/login";
+          }
+          return null;
+        }
+        return res.json();
+      })
       .then((data) => {
         if (data && data.user) {
           setFormData((prev) => ({ ...prev, fullName: data.user.full_name || "" }));
@@ -91,6 +99,18 @@ export default function StudentSetupProfileForm() {
       })
       .catch((e) => console.error(e))
       .finally(() => setInitialLoading(false));
+      
+    // Prevent back navigation during setup
+    if (typeof window !== "undefined") {
+      window.history.pushState(null, "", window.location.href);
+      const handlePopState = () => {
+        window.history.pushState(null, "", window.location.href);
+      };
+      window.addEventListener("popstate", handlePopState);
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
+      };
+    }
   }, [router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -248,7 +268,7 @@ export default function StudentSetupProfileForm() {
 
               <div>
                 <label htmlFor="learningGoal" className="block text-xs font-bold text-slate-900 mb-2">
-                  Learning Goal <span className="text-red-500">*</span>
+                  About You & Interests <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   id="learningGoal"
@@ -258,7 +278,7 @@ export default function StudentSetupProfileForm() {
                   value={formData.learningGoal}
                   onChange={handleInputChange}
                   className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#E84E29] focus:ring-1 focus:ring-[#E84E29] transition-all font-medium text-slate-800 bg-slate-50/30 resize-none"
-                  placeholder="What do you hope to achieve with these trainings?"
+                  placeholder="Tell us a bit about yourself and what kinds of materials or skills you are looking for."
                 />
               </div>
             </div>

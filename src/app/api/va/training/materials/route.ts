@@ -30,7 +30,12 @@ export async function GET() {
         status: "active"
       },
       include: {
-        training_categories: true
+        training_categories: true,
+        trainer_profiles: {
+          include: {
+            users: true
+          }
+        }
       }
     });
 
@@ -40,7 +45,10 @@ export async function GET() {
       description: c.description || "",
       price: c.price ? parseFloat(c.price.toString()) : 0,
       thumbnail: c.thumbnail_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3",
-      category: c.training_categories?.name || "General Training"
+      category: c.training_categories?.name || "General Training",
+      instructor: c.trainer_profiles?.users?.full_name || "Unknown Instructor",
+      lessons: 1, // DB schema doesn't have lessons count yet, default to 1
+      skills: [] // DB schema doesn't have skills linked to materials yet
     }));
 
     return NextResponse.json(serializeBigInt(payload));

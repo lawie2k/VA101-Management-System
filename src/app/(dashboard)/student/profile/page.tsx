@@ -211,7 +211,7 @@ export default function StudentProfilePage() {
             <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50/50 rounded-t-3xl">
               <h2 className="text-lg font-black text-slate-900">
                 {activeModal === "basic" && "Edit Basic Information"}
-                {activeModal === "learning" && "Edit Learning Goal"}
+                {activeModal === "learning" && "Edit About You"}
                 {activeModal === "avatar" && "Update Profile Picture"}
                 {activeModal === "cover" && "Update Cover Image"}
               </h2>
@@ -250,7 +250,7 @@ export default function StudentProfilePage() {
               {activeModal === "learning" && (
                 <form id="learning-form" onSubmit={handleSaveLearning} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-900 mb-1.5">What are you hoping to learn or achieve?</label>
+                    <label className="block text-xs font-bold text-slate-900 mb-1.5">Tell us a bit about yourself and your interests.</label>
                     <textarea 
                       rows={6}
                       required

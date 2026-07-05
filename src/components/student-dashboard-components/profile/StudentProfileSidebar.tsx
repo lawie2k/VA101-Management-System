@@ -31,7 +31,7 @@ export function StudentProfileSidebar({ strength, profile }: StudentProfileSideb
             {profile.fullName ? "✅" : "⚠️"} Full name
           </li>
           <li className="flex items-center gap-1.5">
-            {profile.learningGoal ? "✅" : "⚠️"} Learning goal
+            {profile.learningGoal ? "✅" : "⚠️"} About you
           </li>
         </ul>
       </PCard>

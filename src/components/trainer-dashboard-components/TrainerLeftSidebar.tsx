@@ -22,10 +22,9 @@ export default function TrainerLeftSidebar() {
       avatar: data.avatar || null,
       coverImage: data.coverImage || null,
       completion: (() => {
-        let score = 10;
-        if (data.bio && data.bio.length > 0) score += 30;
-        if (data.expertise && data.expertise.length > 0) score += 30;
-        score += 30; // Assuming veemConnected is true for trainers
+        let score = 20;
+        if (data.bio && data.bio.length > 0) score += 40;
+        if (data.expertise && data.expertise.length > 0) score += 40;
         return Math.min(score, 100);
       })()
     });

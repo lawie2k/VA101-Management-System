@@ -5,25 +5,9 @@ import React, { useState } from "react";
 export function TrainerPayoutsPanel() {
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleConnectVeem = async () => {
-    try {
-      setIsLoading(true);
-      // For testing, hardcode a user ID or grab it from auth context in a real app
-      const response = await fetch("/api/payments/create-setup-intent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: "1", successUrl: window.location.href, cancelUrl: window.location.href })
-      });
-      
-      const data = await response.json();
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    } catch (error) {
-      console.error("Failed to connect Veem:", error);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleConnect = async () => {
+    // This will be replaced with the manual payout method form later
+    alert("Manual payout method form coming soon!");
   };
 
   return (
@@ -42,27 +26,15 @@ export function TrainerPayoutsPanel() {
             <p className="text-[11px] text-slate-500 font-medium mt-1">Where your earnings will be sent.</p>
           </div>
           <button 
-            onClick={handleConnectVeem}
-            disabled={isLoading}
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors disabled:opacity-50"
+            onClick={handleConnect}
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors"
           >
-            {isLoading ? "Loading..." : "Manage Veem"}
+            Add Payout Method
           </button>
         </div>
 
-        <div className="flex items-center gap-4 p-4 border border-slate-200 rounded-2xl bg-slate-50">
-          <div className="w-10 h-10 rounded-xl bg-[#635BFF]/10 flex items-center justify-center text-[#635BFF]">
-            <svg className="w-5 h-5" viewBox="0 0 40 40" fill="none">
-              <path d="M20 0C8.954 0 0 8.954 0 20s8.954 20 20 20 20-8.954 20-20S31.046 0 20 0zm6.92 14.625c-.244-2.617-2.314-4.524-5.467-4.524-3.69 0-6.19 2.222-6.19 5.642 0 6.643 9.077 5.438 9.077 8.358 0 1.25-.976 1.933-2.42 1.933-1.802 0-2.825-.87-3.21-2.26l-3.327.535c.58 2.617 2.802 4.6 6.37 4.6 4.015 0 6.45-2.235 6.45-5.748 0-6.84-9.077-5.542-9.077-8.373 0-1.07.915-1.764 2.225-1.764 1.512 0 2.457.755 2.72 1.986l3.327-.552-.477-4.832v4.999z" fill="currentColor"/>
-            </svg>
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-bold text-slate-900">Veem Account</p>
-            <p className="text-[10px] font-semibold text-slate-500">Connected • xxx-xxxx-4921</p>
-          </div>
-          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
-          </span>
+        <div className="flex flex-col items-center justify-center py-6 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">
+          <p className="text-xs font-semibold text-slate-500">No payout method added yet.</p>
         </div>
       </div>
 

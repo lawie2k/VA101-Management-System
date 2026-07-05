@@ -183,10 +183,16 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
   const handleSignOut = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
+      // Clear profile caches
+      localStorage.removeItem("client_profile_data");
+      localStorage.removeItem("student_profile_data");
+      localStorage.removeItem("trainer_profile_data");
+      localStorage.removeItem("va_profile_data");
     } catch (e) {
       console.error(e);
     }
-    router.push("/login");
+    // Hard redirect clears the Next.js client-side router cache and browser memory
+    window.location.href = "/login";
   };
 
   return (

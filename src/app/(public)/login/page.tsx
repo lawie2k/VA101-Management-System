@@ -73,7 +73,7 @@ export default function Page() {
 
       // Session established -> route user to dashboard based on primary role
       const dashboardRoute = getDashboardRoute(data.user.roles || []);
-      router.push(dashboardRoute);
+      window.location.href = dashboardRoute;
     } catch (err: any) {
       setError(err.message);
     } finally {

@@ -101,7 +101,30 @@ export default function ClientSetupProfileForm() {
       }
     }
 
-    setInitialLoading(false);
+    fetch("/api/auth/me")
+      .then((res) => {
+        if (!res.ok) {
+          if (res.status === 401 || res.status === 403) {
+            window.location.href = "/login";
+          }
+          return null;
+        }
+        return res.json();
+      })
+      .catch((e) => console.error(e))
+      .finally(() => setInitialLoading(false));
+
+    // Prevent back navigation during setup
+    if (typeof window !== "undefined") {
+      window.history.pushState(null, "", window.location.href);
+      const handlePopState = () => {
+        window.history.pushState(null, "", window.location.href);
+      };
+      window.addEventListener("popstate", handlePopState);
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
+      };
+    }
   }, [router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
