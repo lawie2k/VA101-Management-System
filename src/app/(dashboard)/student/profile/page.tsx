@@ -23,8 +23,7 @@ export default function StudentProfilePage() {
     coverImage: "",
   });
 
-  const [basicForm, setBasicForm] = useState({ fullName: "" });
-  const [learningForm, setLearningForm] = useState({ learningGoal: "" });
+  const [basicForm, setBasicForm] = useState({ fullName: "", learningGoal: "" });
   const [avatarForm, setAvatarForm] = useState<string | null>(null);
   const [coverForm, setCoverForm] = useState<string | null>(null);
 
@@ -62,9 +61,7 @@ export default function StudentProfilePage() {
 
   const openModal = (type: "basic" | "learning" | "avatar" | "cover") => {
     if (type === "basic") {
-      setBasicForm({ fullName: profile.fullName });
-    } else if (type === "learning") {
-      setLearningForm({ learningGoal: profile.learningGoal });
+      setBasicForm({ fullName: profile.fullName, learningGoal: profile.learningGoal });
     } else if (type === "avatar") {
       setAvatarForm(profile.avatarUrl || "");
     } else if (type === "cover") {
@@ -85,15 +82,16 @@ export default function StudentProfilePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName: basicForm.fullName,
+          learningGoal: basicForm.learningGoal,
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to update basic info");
+      if (!res.ok) throw new Error("Failed to update profile info");
       
-      setProfile(prev => ({ ...prev, fullName: basicForm.fullName }));
+      setProfile(prev => ({ ...prev, fullName: basicForm.fullName, learningGoal: basicForm.learningGoal }));
       
       const cached = JSON.parse(localStorage.getItem("student_profile_data") || "{}");
-      localStorage.setItem("student_profile_data", JSON.stringify({ ...cached, fullName: basicForm.fullName }));
+      localStorage.setItem("student_profile_data", JSON.stringify({ ...cached, fullName: basicForm.fullName, learningGoal: basicForm.learningGoal }));
       window.dispatchEvent(new Event("studentProfileUpdate"));
       
       setActiveModal(null);
@@ -104,35 +102,6 @@ export default function StudentProfilePage() {
     }
   };
 
-  const handleSaveLearning = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    setError(null);
-
-    try {
-      const res = await fetch("/api/student/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          learningGoal: learningForm.learningGoal,
-        }),
-      });
-
-      if (!res.ok) throw new Error("Failed to update learning goal");
-      
-      setProfile(prev => ({ ...prev, learningGoal: learningForm.learningGoal }));
-      
-      const cached = JSON.parse(localStorage.getItem("student_profile_data") || "{}");
-      localStorage.setItem("student_profile_data", JSON.stringify({ ...cached, learningGoal: learningForm.learningGoal }));
-      window.dispatchEvent(new Event("studentProfileUpdate"));
-      
-      setActiveModal(null);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: "avatar" | "cover") => {
     const file = e.target.files?.[0];
@@ -193,7 +162,7 @@ export default function StudentProfilePage() {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="space-y-6">
-          <StudentLearningJourney learningGoal={profile.learningGoal} openModal={() => openModal("learning")} />
+          <StudentLearningJourney learningGoal={profile.learningGoal} />
         </div>
 
         <StudentProfileSidebar strength={strength} profile={profile} />
@@ -244,18 +213,14 @@ export default function StudentProfilePage() {
                       className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all shadow-xs"
                     />
                   </div>
-                </form>
-              )}
-
-              {activeModal === "learning" && (
-                <form id="learning-form" onSubmit={handleSaveLearning} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-900 mb-1.5">Tell us a bit about yourself and your interests.</label>
+                    <label className="block text-xs font-bold text-slate-900 mb-1.5">About You</label>
                     <textarea 
                       rows={6}
                       required
-                      value={learningForm.learningGoal}
-                      onChange={(e) => setLearningForm({ ...learningForm, learningGoal: e.target.value })}
+                      value={basicForm.learningGoal}
+                      onChange={(e) => setBasicForm({ ...basicForm, learningGoal: e.target.value })}
+                      placeholder="Tell us a bit about yourself and your interests."
                       className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all shadow-xs resize-none"
                     />
                   </div>

@@ -1,9 +1,7 @@
 import React from "react";
-import { createPortal } from "react-dom";
 import { Button } from "./VAProfileUI";
 import { IconX } from "./VAProfileIcons";
 import { LocationAutocomplete } from "@/src/components/ui/LocationAutocomplete";
-import { VAProfileData } from "./types";
 
 export function VAProfileModals(props: any) {
   const { activeModal, setActiveModal, profileForm, setProfileForm, aboutForm, setAboutForm, expForm, setExpForm, portForm, setPortForm, certForm, setCertForm, availForm, setAvailForm, avatarForm, setAvatarForm, coverForm, setCoverForm, handleSaveProfile, handleSaveAbout, handleSaveExperience, handleSavePortfolio, handleSaveCertifications, handleSaveAvailability, handleSaveAvatar, handleSaveCover, handleFileUpload, uploadError, handleCoverUpload, coverUploadError, ALL_NICHES } = props;
@@ -96,7 +94,7 @@ export function VAProfileModals(props: any) {
                       onChange={e => setProfileForm({ ...profileForm, niche: e.target.value })}
                       className="w-full rounded-xl border border-slate-200 p-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-semibold"
                     >
-                      {ALL_NICHES.map(n => (
+                      {ALL_NICHES?.map((n: string) => (
                         <option key={n} value={n}>{n}</option>
                       ))}
                     </select>
@@ -168,14 +166,46 @@ export function VAProfileModals(props: any) {
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Period (Duration)</label>
-                    <input 
-                      type="text" 
-                      required
-                      placeholder="e.g. 2024 – Present or 2022 – 2024"
-                      value={expForm.period} 
-                      onChange={e => setExpForm({ ...expForm, period: e.target.value })}
-                      className="w-full rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-semibold"
-                    />
+                    <div className="flex gap-3 items-center">
+                      <input 
+                        type="month" 
+                        required
+                        value={expForm.startDate || ""} 
+                        onChange={e => {
+                          const newStart = e.target.value;
+                          const newPeriod = `${newStart} - ${expForm.isCurrent ? 'Present' : (expForm.endDate || '')}`;
+                          setExpForm({ ...expForm, startDate: newStart, period: newPeriod });
+                        }}
+                        className="w-full rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-semibold"
+                      />
+                      <span className="text-slate-400 font-bold">to</span>
+                      <input 
+                        type="month" 
+                        required={!expForm.isCurrent}
+                        disabled={expForm.isCurrent}
+                        value={expForm.endDate || ""} 
+                        onChange={e => {
+                          const newEnd = e.target.value;
+                          const newPeriod = `${expForm.startDate || ''} - ${newEnd}`;
+                          setExpForm({ ...expForm, endDate: newEnd, period: newPeriod });
+                        }}
+                        className="w-full rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 mt-3">
+                      <input 
+                        type="checkbox" 
+                        id="is-current"
+                        checked={expForm.isCurrent || false} 
+                        onChange={e => {
+                          const isCurrent = e.target.checked;
+                          const newPeriod = `${expForm.startDate || ''} - ${isCurrent ? 'Present' : (expForm.endDate || '')}`;
+                          setExpForm({ ...expForm, isCurrent, period: newPeriod });
+                        }}
+                        className="h-4.5 w-4.5 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                      />
+                      <label htmlFor="is-current" className="text-xs font-bold text-slate-700 cursor-pointer">I currently work here</label>
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">

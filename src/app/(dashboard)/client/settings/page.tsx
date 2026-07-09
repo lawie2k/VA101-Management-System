@@ -1,17 +1,18 @@
 "use client";
 
-import ClientLeftSidebar from "../../../../components/client-dashboard-components/ClientLeftSidebar";
-import SettingsMainFeed from "../../../../components/client-dashboard-components/settings/SettingsMainFeed";
-import SettingsRightSidebar from "../../../../components/client-dashboard-components/settings/SettingsRightSidebar";
+import { Suspense } from "react";
+import { SettingsPanel } from "../../../../components/shared/SettingsPanel";
 
 export default function ClientSettingsPage() {
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 h-[calc(100vh-144px)] overflow-hidden">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch h-full overflow-hidden">
-        <ClientLeftSidebar />
-        <SettingsMainFeed />
-        <SettingsRightSidebar />
-      </div>
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex justify-center">
+      <Suspense fallback={
+        <div className="flex justify-center items-center h-64 w-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#E84E29]"></div>
+        </div>
+      }>
+        <SettingsPanel role="client" />
+      </Suspense>
     </div>
   );
 }

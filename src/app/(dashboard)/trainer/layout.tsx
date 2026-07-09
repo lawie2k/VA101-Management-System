@@ -52,16 +52,26 @@ export default function TrainerLayout({ children }: { children: React.ReactNode 
     checkAuth();
   }, [pathname, router]);
 
-  // Loading guard for authenticated pages
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#E84E29]"></div>
-      </div>
-    );
-  }
-
-  const showNav = isAuthenticated;
+  const showNav = isAuthenticated || loading;
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="w-full max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 animate-pulse">
+            <div className="md:col-span-3 space-y-6 hidden md:block">
+              <div className="h-[300px] bg-slate-200/50 rounded-3xl"></div>
+              <div className="h-[200px] bg-slate-200/50 rounded-3xl"></div>
+            </div>
+            <div className="md:col-span-9 space-y-6">
+              <div className="h-24 bg-slate-200/50 rounded-3xl"></div>
+              <div className="h-[400px] bg-slate-200/50 rounded-3xl"></div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return children;
+  };
   const isSetupPage = pathname === "/trainer/profile/setup-profile-form";
 
   return (
@@ -108,7 +118,7 @@ export default function TrainerLayout({ children }: { children: React.ReactNode 
 
       {/* Main content padding-top */}
       <div className={`flex-grow ${isSetupPage ? "pt-20 md:pt-24" : (showNav ? "pt-36" : "pt-24")} transition-all duration-300`}>
-        {children}
+        {renderContent()}
       </div>
       
       {/* Footer added to all pages */}

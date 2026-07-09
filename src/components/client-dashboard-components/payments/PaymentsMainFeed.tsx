@@ -16,6 +16,7 @@ export default function PaymentsMainFeed() {
   const [loading, setLoading] = useState(true);
   const [isGatewayModalOpen, setIsGatewayModalOpen] = useState(false);
   const [gatewayInvoiceId, setGatewayInvoiceId] = useState<string | undefined>(undefined);
+  const [initiatedInvoices, setInitiatedInvoices] = useState<Record<string, boolean>>({});
   
   // Receipt Upload State
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -116,26 +117,43 @@ export default function PaymentsMainFeed() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-100">
-              <span className="text-[11px] font-semibold text-slate-400">Due {invoice.date}</span>
-              <div className="flex items-center gap-2">
-                <button className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-all cursor-pointer">
-                  <IconDownload className="w-3.5 h-3.5" /> Download PDF
-                </button>
+              <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-100">
+                <span className="text-[11px] font-semibold text-slate-400">Due {invoice.date}</span>
+                <div className="flex items-center gap-2">
                 {invoice.status !== "Paid" && invoice.status !== "Pending Review" && (
                   <>
-                    <button 
-                      onClick={() => {
-                        setGatewayInvoiceId(invoice.id);
-                        setIsGatewayModalOpen(true);
-                      }}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-bold text-white bg-[#E84E29] hover:bg-[#d44321] transition-all cursor-pointer shadow-sm shadow-[#E84E29]/20"
-                    >
-                      Pay Now
-                    </button>
+                    {initiatedInvoices[invoice.id] ? (
+                      <button 
+                        onClick={() => {
+                          setInitiatedInvoices(prev => {
+                            const next = { ...prev };
+                            delete next[invoice.id];
+                            return next;
+                          });
+                        }}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => {
+                          setGatewayInvoiceId(invoice.id);
+                          setIsGatewayModalOpen(true);
+                        }}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-bold text-white bg-[#E84E29] hover:bg-[#d44321] transition-all cursor-pointer shadow-sm shadow-[#E84E29]/20"
+                      >
+                        Pay Now
+                      </button>
+                    )}
                     <button 
                       onClick={() => openUploadModal(invoice.id)}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-bold text-[#E84E29] bg-orange-50 border border-[#E84E29]/20 hover:bg-orange-100 transition-all cursor-pointer"
+                      disabled={!initiatedInvoices[invoice.id]}
+                      className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-bold transition-all border ${
+                        initiatedInvoices[invoice.id]
+                          ? "text-[#E84E29] bg-orange-50 border-[#E84E29]/20 hover:bg-orange-100 cursor-pointer"
+                          : "text-slate-400 bg-slate-50 border-slate-200 cursor-not-allowed opacity-60"
+                      }`}
                     >
                       Upload Receipt
                     </button>
@@ -156,17 +174,24 @@ export default function PaymentsMainFeed() {
         }} 
         onSuccess={() => {
           setIsGatewayModalOpen(false);
-          setGatewayInvoiceId(undefined);
-          // Reload the invoices!
-          async function reload() {
-            setLoading(true);
-            try {
-              const res = await fetch("/api/client/invoices");
-              if (res.ok) setInvoices(await res.json());
-            } catch (e) { console.error(e); }
-            setLoading(false);
+          if (gatewayInvoiceId) {
+            setInitiatedInvoices(prev => ({ ...prev, [gatewayInvoiceId]: true }));
           }
-          reload();
+          const isNewInvoice = !gatewayInvoiceId;
+          setGatewayInvoiceId(undefined);
+          
+          if (isNewInvoice) {
+            // Reload the invoices only if it was a standalone payment creation
+            async function reload() {
+              setLoading(true);
+              try {
+                const res = await fetch("/api/client/invoices");
+                if (res.ok) setInvoices(await res.json());
+              } catch (e) { console.error(e); }
+              setLoading(false);
+            }
+            reload();
+          }
         }}
       />
 

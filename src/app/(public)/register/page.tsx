@@ -131,6 +131,15 @@ export default function Page() {
       <div className="max-w-5xl w-full space-y-8 my-auto">
         {/* Title */}
         <div>
+          <button 
+            onClick={() => router.back()}
+            className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors mb-4 cursor-pointer"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back
+          </button>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
             Create your account
           </h1>

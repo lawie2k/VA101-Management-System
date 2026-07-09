@@ -4,20 +4,12 @@ import { IconPencil } from "./ProfileIcons";
 
 interface StudentLearningJourneyProps {
   learningGoal: string;
-  openModal: () => void;
 }
 
-export function StudentLearningJourney({ learningGoal, openModal }: StudentLearningJourneyProps) {
+export function StudentLearningJourney({ learningGoal }: StudentLearningJourneyProps) {
   return (
     <PCard className="hover:border-slate-350">
-      <PCardHeader 
-        title="About You" 
-        action={
-          <Button variant="ghost" size="sm" className="rounded-full p-2" onClick={openModal}>
-            <IconPencil className="h-4 w-4 text-slate-500" />
-          </Button>
-        }
-      />
+      <PCardHeader title="About You" />
       <p className="text-sm leading-relaxed text-slate-600 font-medium whitespace-pre-line">
         {learningGoal || "No info provided yet. Share your interests!"}
       </p>

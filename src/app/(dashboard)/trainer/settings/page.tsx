@@ -1,26 +1,18 @@
 "use client";
 
-import TrainerLeftSidebar from "../../../../components/trainer-dashboard-components/TrainerLeftSidebar";
-import { TrainerSettingsPanel } from "../../../../components/trainer-dashboard-components/settings/TrainerSettingsPanel";
+import { Suspense } from "react";
+import { SettingsPanel } from "../../../../components/va-dashboard-components/settings/SettingsPanel";
 
 export default function TrainerSettingsPage() {
   return (
-    <div className="w-full max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-        
-        {/* Left Sidebar (3 cols) */}
-        <div className="md:col-span-3">
-          <div className="sticky top-8">
-            <TrainerLeftSidebar />
-          </div>
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex justify-center">
+      <Suspense fallback={
+        <div className="flex justify-center items-center h-64 w-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#E84E29]"></div>
         </div>
-
-        {/* Main Feed (9 cols) */}
-        <div className="md:col-span-9 flex flex-col gap-6">
-          <TrainerSettingsPanel />
-        </div>
-
-      </div>
+      }>
+        <SettingsPanel />
+      </Suspense>
     </div>
   );
 }

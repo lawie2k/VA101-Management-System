@@ -187,7 +187,7 @@ export default function DashboardLeftSidebar() {
       {/* Quick Links */}
       <div className="bg-white border border-slate-200 rounded-3xl p-4 shadow-xs">
         <Link 
-          href="/va/settings" 
+          href="/va/settings?tab=payouts" 
           className="w-full flex items-center justify-between p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-100 group"
         >
           <div className="flex items-center gap-3">

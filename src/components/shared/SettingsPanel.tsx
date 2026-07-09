@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { IconSettings } from "../StudentIcons";
+import { useSearchParams } from "next/navigation";
+
+const IconSettings = ({ className = "w-4 h-4" }) => (<svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>);
 
 const IconMail = () => (
   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -76,8 +78,8 @@ export function DeleteModal({ onClose, onConfirm }: { onClose: () => void; onCon
               <p className="text-xs font-bold text-red-700">This action is permanent and irreversible.</p>
               <ul className="text-[11px] text-red-600 font-semibold space-y-1.5 list-disc list-inside">
                 <li>All enrolled courses and progress will be lost</li>
-                <li>Your student profile data will be permanently deleted</li>
-                <li>Access to active purchases will be revoked</li>
+                <li>Your profile data will be permanently deleted</li>
+                <li>Access to active purchases and contracts will be revoked</li>
                 <li>Pending payments may still be processed</li>
               </ul>
             </div>
@@ -123,7 +125,10 @@ export function DeleteModal({ onClose, onConfirm }: { onClose: () => void; onCon
   );
 }
 
-export function SettingsPanel() {
+export function SettingsPanel({ role }: { role: string }) {
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab") === "security" ? "security" : "account";
+  const [activeTab, setActiveTab] = useState<"account" | "security">(initialTab);
   const [newEmail, setNewEmail] = useState("");
   const [confirmEmail, setConfirmEmail] = useState("");
   const [currentPasswordForEmail, setCurrentPasswordForEmail] = useState("");
@@ -149,7 +154,7 @@ export function SettingsPanel() {
     }
     setEmailLoading(true);
     try {
-      const res = await fetch("/api/student/settings", {
+      const res = await fetch(`/api/${role}/settings`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "update_email", newEmail, currentPassword: currentPasswordForEmail }),
@@ -177,7 +182,7 @@ export function SettingsPanel() {
     }
     setPasswordLoading(true);
     try {
-      const res = await fetch("/api/student/settings", {
+      const res = await fetch(`/api/${role}/settings`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "update_password", currentPassword, newPassword }),
@@ -198,6 +203,21 @@ export function SettingsPanel() {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    try {
+      const res = await fetch(`/api/${role}/settings`, { method: "DELETE" });
+      if (res.ok) {
+        window.location.href = "/login";
+      } else {
+        showToastMsg("Failed to delete account", "error");
+        setShowDeleteModal(false);
+      }
+    } catch (err) {
+      showToastMsg("An error occurred", "error");
+      setShowDeleteModal(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-3xl space-y-6">
       
@@ -213,9 +233,9 @@ export function SettingsPanel() {
 
       {/* Header */}
       <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-xs mb-6">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
-            <IconSettings className="text-slate-700 w-5 h-5" stroke={2} />
+            <IconSettings className="text-slate-700 w-5 h-5" />
           </div>
           <div>
             <h1 className="text-xl font-extrabold text-slate-900">Settings</h1>
@@ -224,102 +244,104 @@ export function SettingsPanel() {
             </p>
           </div>
         </div>
-      </div>
 
-      {/* Email Section */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6">
-        <div className="flex items-start gap-3 mb-6">
-          <div className="w-9 h-9 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center shrink-0">
-            <IconMail />
-          </div>
-          <div>
-            <h3 className="text-sm font-extrabold text-slate-900">Email Address</h3>
-            <p className="text-[11px] text-slate-400 font-medium mt-0.5">Change the email associated with your account</p>
-          </div>
+        <div className="flex space-x-2 border-b border-slate-100">
+          <button 
+            onClick={() => setActiveTab("account")}
+            className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${activeTab === "account" ? "border-[#E84E29] text-[#E84E29]" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
+          >
+            Account
+          </button>
+          <button 
+            onClick={() => setActiveTab("security")}
+            className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${activeTab === "security" ? "border-[#E84E29] text-[#E84E29]" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
+          >
+            Security
+          </button>
         </div>
-        
-        <form onSubmit={handleUpdateEmail} className="space-y-4">
-          <InputField id="newEmail" label="New Email Address" type="email" value={newEmail} onChange={setNewEmail} />
-          <InputField id="confirmEmail" label="Confirm New Email" type="email" value={confirmEmail} onChange={setConfirmEmail} />
-          <InputField id="currentPasswordForEmail" label="Current Password" type="password" value={currentPasswordForEmail} onChange={setCurrentPasswordForEmail} hint="Required to confirm email changes" />
-          
-          <div className="pt-2">
-            <button type="submit" disabled={emailLoading || !newEmail || !confirmEmail || !currentPasswordForEmail} className="rounded-full px-6 py-2.5 text-xs font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-              {emailLoading ? "Updating..." : "Update Email"}
-            </button>
-          </div>
-        </form>
       </div>
 
-      {/* Password Section */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6">
-        <div className="flex items-start gap-3 mb-6">
-          <div className="w-9 h-9 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center shrink-0">
-            <IconLock />
-          </div>
-          <div>
-            <h3 className="text-sm font-extrabold text-slate-900">Password</h3>
-            <p className="text-[11px] text-slate-400 font-medium mt-0.5">Ensure your account is using a long, random password</p>
-          </div>
-        </div>
-        
-        <form onSubmit={handleUpdatePassword} className="space-y-4">
-          <InputField id="currentPassword" label="Current Password" type="password" value={currentPassword} onChange={setCurrentPassword} />
-          <InputField id="newPassword" label="New Password" type="password" value={newPassword} onChange={setNewPassword} hint="Must be at least 8 characters" />
-          <InputField id="confirmPassword" label="Confirm New Password" type="password" value={confirmPassword} onChange={setConfirmPassword} />
-          
-          <div className="pt-2">
-            <button type="submit" disabled={passwordLoading || !currentPassword || !newPassword || !confirmPassword} className="rounded-full px-6 py-2.5 text-xs font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-              {passwordLoading ? "Updating..." : "Update Password"}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* Danger Zone */}
-      <div className="bg-white rounded-[2rem] p-6 sm:p-8 border border-red-100 shadow-xs mb-6 mt-12 relative overflow-hidden group">
-        <div className="flex flex-col sm:flex-row gap-8">
-          <div className="sm:w-1/3 shrink-0">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-red-50 text-red-500">
-              <IconTrash />
+      {activeTab === "account" && (
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6">
+          <div className="flex items-start gap-3 mb-6">
+            <div className="w-9 h-9 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center shrink-0">
+              <IconMail />
             </div>
-            <h2 className="text-lg font-black tracking-tight mb-2 text-red-900">Delete Account</h2>
-            <p className="text-[11px] font-medium leading-relaxed text-slate-500">Permanently remove your VA101 account and all associated data.</p>
-          </div>
-          <div className="sm:w-2/3 flex flex-col justify-center">
-            <div className="bg-red-50/60 border border-red-200/40 rounded-2xl p-4 mb-5">
-              <p className="text-[11px] text-red-600 font-semibold leading-relaxed">
-                Once you delete your account, all course progress, learning materials, and profile data will be <strong>permanently erased</strong>. This cannot be undone.
-              </p>
+            <div>
+              <h3 className="text-sm font-extrabold text-slate-900">Email Address</h3>
+              <p className="text-[11px] text-slate-400 font-medium mt-0.5">Change the email associated with your account</p>
             </div>
-            <button
-              onClick={() => setShowDeleteModal(true)}
-              className="w-full py-3 rounded-full text-xs font-bold text-red-600 border border-red-200 hover:bg-red-50 hover:border-red-300 transition-all cursor-pointer"
-            >
-              Delete My Account
-            </button>
           </div>
+          
+          <form onSubmit={handleUpdateEmail} className="space-y-4">
+            <InputField id="newEmail" label="New Email Address" type="email" value={newEmail} onChange={setNewEmail} />
+            <InputField id="confirmEmail" label="Confirm New Email" type="email" value={confirmEmail} onChange={setConfirmEmail} />
+            <InputField id="currentPasswordForEmail" label="Current Password" type="password" value={currentPasswordForEmail} onChange={setCurrentPasswordForEmail} hint="Required to confirm email changes" />
+            
+            <div className="pt-2">
+              <button type="submit" disabled={emailLoading || !newEmail || !confirmEmail || !currentPasswordForEmail} className="rounded-full px-6 py-2.5 text-xs font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                {emailLoading ? "Updating..." : "Update Email"}
+              </button>
+            </div>
+          </form>
         </div>
-      </div>
+      )}
+
+      {activeTab === "security" && (
+        <>
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6">
+            <div className="flex items-start gap-3 mb-6">
+              <div className="w-9 h-9 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center shrink-0">
+                <IconLock />
+              </div>
+              <div>
+                <h3 className="text-sm font-extrabold text-slate-900">Password</h3>
+                <p className="text-[11px] text-slate-400 font-medium mt-0.5">Ensure your account is using a long, random password</p>
+              </div>
+            </div>
+            
+            <form onSubmit={handleUpdatePassword} className="space-y-4">
+              <InputField id="currentPassword" label="Current Password" type="password" value={currentPassword} onChange={setCurrentPassword} />
+              <InputField id="newPassword" label="New Password" type="password" value={newPassword} onChange={setNewPassword} hint="Must be at least 8 characters" />
+              <InputField id="confirmPassword" label="Confirm New Password" type="password" value={confirmPassword} onChange={setConfirmPassword} />
+              
+              <div className="pt-2">
+                <button type="submit" disabled={passwordLoading || !currentPassword || !newPassword || !confirmPassword} className="rounded-full px-6 py-2.5 text-xs font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                  {passwordLoading ? "Updating..." : "Update Password"}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div className="bg-white rounded-[2rem] p-6 sm:p-8 border border-red-100 shadow-xs mb-6 mt-12 relative overflow-hidden group">
+            <div className="flex flex-col sm:flex-row gap-8">
+              <div className="sm:w-1/3 shrink-0">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-red-50 text-red-500">
+                  <IconTrash />
+                </div>
+                <h2 className="text-lg font-black tracking-tight mb-2 text-red-900">Delete Account</h2>
+                <p className="text-[11px] font-medium leading-relaxed text-slate-500">Permanently remove your VA101 account and all associated data.</p>
+              </div>
+              <div className="sm:w-2/3 flex flex-col justify-center">
+                <div className="bg-red-50/60 border border-red-200/40 rounded-2xl p-4 mb-5">
+                  <p className="text-[11px] text-red-600 font-semibold leading-relaxed">
+                    Once you delete your account, all job applications, saved jobs, contracts, and profile data will be <strong>permanently erased</strong>. This cannot be undone.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="w-full py-3 rounded-full text-xs font-bold text-red-600 border border-red-200 hover:bg-red-50 hover:border-red-300 transition-all cursor-pointer"
+                >
+                  Delete My Account
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {showDeleteModal && (
-        <DeleteModal 
-          onClose={() => setShowDeleteModal(false)} 
-          onConfirm={async () => {
-            try {
-              const res = await fetch("/api/student/settings", { method: "DELETE" });
-              if (res.ok) {
-                window.location.href = "/login";
-              } else {
-                showToastMsg("Failed to delete account", "error");
-                setShowDeleteModal(false);
-              }
-            } catch (err) {
-              showToastMsg("An error occurred", "error");
-              setShowDeleteModal(false);
-            }
-          }} 
-        />
+        <DeleteModal onClose={() => setShowDeleteModal(false)} onConfirm={handleDeleteAccount} />
       )}
 
     </div>
@@ -357,4 +379,3 @@ function InputField({ id, label, type = "text", value, onChange, placeholder, hi
     </div>
   );
 }
-
