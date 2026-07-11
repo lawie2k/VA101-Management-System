@@ -52,6 +52,20 @@ const ALL_TOOLS = [
   "Airtable"
 ];
 
+const TIME_OPTIONS = [
+  "12:00", "12:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30",
+  "04:00", "04:30", "05:00", "05:30", "06:00", "06:30", "07:00", "07:30",
+  "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30"
+];
+
+const TIMEZONE_OPTIONS = [
+  "EST", "CST", "MST", "PST", "GMT", "BST", "CET", "EET", "IST", "AEST", "AWST", "PHT"
+];
+
+const DAY_OPTIONS = [
+  "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+];
+
 // ==========================================
 // Helper Sub-Components
 // ==========================================
@@ -80,10 +94,14 @@ export default function PostJobPage() {
     title: "",
     roleNeeded: "",
     niche: ALL_NICHES[0],
-    workDays: "",
-    workHours: "",
+    workDaysStart: "Monday",
+    workDaysEnd: "Friday",
+    workHoursStart: "09:00",
+    workHoursStartPeriod: "AM",
+    workHoursEnd: "05:00",
+    workHoursEndPeriod: "PM",
     description: "",
-    timezone: "",
+    timezone: "EST",
   });
 
   const [rate, setRate] = useState<number | "">(12);
@@ -123,7 +141,7 @@ export default function PostJobPage() {
       jobTitle: formData.title,
       roleNeeded: formData.roleNeeded,
       jobDescription: formData.description,
-      workSchedule: `${formData.workDays}${formData.workHours ? ", " + formData.workHours : ""}`,
+      workSchedule: `${formData.workDaysStart} - ${formData.workDaysEnd}, ${formData.workHoursStart} ${formData.workHoursStartPeriod} - ${formData.workHoursEnd} ${formData.workHoursEndPeriod} ${formData.timezone}`,
       workShift: "flexible", // Hardcoded or omitted as this is mock
       timezone: formData.timezone,
       clientHourlyRate: rate,
@@ -216,7 +234,7 @@ export default function PostJobPage() {
               />
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2">
               <div>
                 <label htmlFor="niche" className="block text-xs font-bold text-slate-900 mb-1.5">
                   Core Specialty (Niche)
@@ -233,33 +251,83 @@ export default function PostJobPage() {
               </div>
 
               <div>
-                <label htmlFor="workDays" className="block text-xs font-bold text-slate-900 mb-1.5">
+                <label className="block text-xs font-bold text-slate-900 mb-1.5">
                   Work Days
                 </label>
-                <input 
-                  id="workDays"
-                  name="workDays"
-                  type="text"
-                  placeholder="e.g. Mon–Fri"
-                  value={formData.workDays}
-                  onChange={handleInputChange}
-                  className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all shadow-xs"
-                />
+                <div className="flex gap-2">
+                  <select 
+                    name="workDaysStart"
+                    value={formData.workDaysStart}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all bg-white text-slate-800 font-medium"
+                  >
+                    {DAY_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                  <span className="flex items-center text-slate-400 font-bold">-</span>
+                  <select 
+                    name="workDaysEnd"
+                    value={formData.workDaysEnd}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all bg-white text-slate-800 font-medium"
+                  >
+                    {DAY_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </div>
               </div>
 
-              <div>
-                <label htmlFor="workHours" className="block text-xs font-bold text-slate-900 mb-1.5">
-                  Work Hours
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-bold text-slate-900 mb-1.5">
+                  Work Hours & Timezone
                 </label>
-                <input 
-                  id="workHours"
-                  name="workHours"
-                  type="text"
-                  placeholder="e.g. 9am–1pm EST"
-                  value={formData.workHours}
-                  onChange={handleInputChange}
-                  className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all shadow-xs"
-                />
+                <div className="flex gap-2">
+                  <div className="flex flex-1 gap-1.5">
+                    <select 
+                      name="workHoursStart"
+                      value={formData.workHoursStart}
+                      onChange={handleInputChange}
+                      className="flex-1 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all bg-white text-slate-800 font-medium"
+                    >
+                      {TIME_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                    <select
+                      name="workHoursStartPeriod"
+                      value={formData.workHoursStartPeriod}
+                      onChange={handleInputChange}
+                      className="w-20 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all bg-white text-slate-800 font-medium"
+                    >
+                      <option value="AM">AM</option>
+                      <option value="PM">PM</option>
+                    </select>
+                  </div>
+                  <span className="flex items-center text-slate-400 font-bold">-</span>
+                  <div className="flex flex-1 gap-1.5">
+                    <select 
+                      name="workHoursEnd"
+                      value={formData.workHoursEnd}
+                      onChange={handleInputChange}
+                      className="flex-1 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all bg-white text-slate-800 font-medium"
+                    >
+                      {TIME_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                    <select
+                      name="workHoursEndPeriod"
+                      value={formData.workHoursEndPeriod}
+                      onChange={handleInputChange}
+                      className="w-20 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all bg-white text-slate-800 font-medium"
+                    >
+                      <option value="AM">AM</option>
+                      <option value="PM">PM</option>
+                    </select>
+                  </div>
+                  <select 
+                    name="timezone"
+                    value={formData.timezone}
+                    onChange={handleInputChange}
+                    className="w-28 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all bg-white text-slate-800 font-medium"
+                  >
+                    {TIMEZONE_OPTIONS.map(tz => <option key={tz} value={tz}>{tz}</option>)}
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -390,9 +458,9 @@ export default function PostJobPage() {
           {/* Action Trigger Submit */}
           <button
             type="submit"
-            disabled={loading || !formData.title.trim() || !formData.roleNeeded.trim() || !formData.workDays.trim() || !formData.workHours.trim() || !formData.description.trim() || !rate}
+            disabled={loading || !formData.title.trim() || !formData.roleNeeded.trim() || !formData.description.trim() || !rate}
             className={`w-full inline-flex items-center justify-center py-3.5 px-6 rounded-full text-xs font-bold transition-all ${
-              (loading || !formData.title.trim() || !formData.roleNeeded.trim() || !formData.workDays.trim() || !formData.workHours.trim() || !formData.description.trim() || !rate)
+              (loading || !formData.title.trim() || !formData.roleNeeded.trim() || !formData.description.trim() || !rate)
                 ? "bg-slate-200 text-slate-400 border-transparent cursor-not-allowed hover:bg-slate-200 hover:text-slate-400 shadow-none hover:shadow-none"
                 : "text-white bg-[#E84E29] hover:bg-[#DA431E] cursor-pointer shadow-sm hover:shadow-md"
             }`}

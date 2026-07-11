@@ -22,7 +22,7 @@ const typeOptions: TypeOption[] = [
   {
     id: "client",
     title: "Client",
-    desc: "Post jobs and meet pre-screened VAs.",
+    desc: "Post jobs and find the perfect VA.",
   },
   {
     id: "trainer",
@@ -32,7 +32,7 @@ const typeOptions: TypeOption[] = [
   {
     id: "student",
     title: "Student",
-    desc: "Buy VA training and unlock instant access.",
+    desc: "Buy courses and unlock instant access.",
   },
 ];
 
