@@ -54,6 +54,7 @@ model client_profiles {
   invoices             invoices[]
   job_posts            job_posts[]
   shortlists           shortlists[]
+  tasks                tasks[]
 }
 
 model contracts {
@@ -294,6 +295,7 @@ model users {
   training_purchases                                   training_purchases[]
   user_roles                                           user_roles[]
   va_profiles                                          va_profiles?
+  va_feedback_va_feedback_reviewer_user_idTousers      va_feedback[]        @relation("va_feedback_reviewer_user_idTousers")
 
   @@index([email], map: "idx_users_email")
 }
@@ -323,6 +325,8 @@ model va_profiles {
   niches                niches?                 @relation(fields: [preferred_niche_id], references: [id], onUpdate: NoAction, map: "va_profiles_ibfk_2")
   va_skills             va_skills[]
   va_tools              va_tools[]
+  va_feedback           va_feedback[]
+  tasks                 tasks[]
 
   @@index([preferred_niche_id], map: "preferred_niche_id")
 }
@@ -558,6 +562,11 @@ model payouts {
   processed_at                           DateTime?       @db.Timestamp(0)
   reference_number                       String?         @db.VarChar(150)
   remarks                                String?         @db.Text
+  pay_period                             String?         @db.VarChar(100)
+  payslip_number                         String?         @db.VarChar(150)
+  payment_method_override                String?         @db.VarChar(100)
+  payslip_acknowledged                   Boolean?        @default(false)
+  payslip_url                            String?         @db.Text
   created_at                             DateTime?       @default(now()) @db.Timestamp(0)
   updated_at                             DateTime?       @default(now()) @db.Timestamp(0)
   commissions                            commissions?    @relation(fields: [commission_id], references: [id], onUpdate: NoAction, map: "payouts_ibfk_1")
@@ -658,6 +667,7 @@ model training_materials {
   reviewed_by              BigInt?                   @db.UnsignedBigInt
   reviewed_at              DateTime?                 @db.Timestamp(0)
   admin_remarks            String?                   @db.Text
+  class_start_date         DateTime?                 @db.Date
   created_at               DateTime?                 @default(now()) @db.Timestamp(0)
   updated_at               DateTime?                 @default(now()) @db.Timestamp(0)
   learning_access          learning_access[]
@@ -681,6 +691,7 @@ model training_purchases {
   payment_id           BigInt?            @db.UnsignedBigInt
   amount_paid          Decimal            @db.Decimal(10, 2)
   access_status        String?            @default("locked") @db.VarChar(100)
+  invoice_number       String?            @db.VarChar(150)
   purchased_at         DateTime?          @default(now()) @db.Timestamp(0)
   training_materials   training_materials @relation(fields: [training_material_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "training_purchases_ibfk_1")
   users                users              @relation(fields: [buyer_user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "training_purchases_ibfk_2")
@@ -729,4 +740,35 @@ model va_tools {
 
   @@unique([va_profile_id, tool_id], map: "va_profile_id")
   @@index([tool_id], map: "tool_id")
+}
+
+model va_feedback {
+  id                 BigInt       @id @default(autoincrement()) @db.UnsignedBigInt
+  va_profile_id      BigInt       @db.UnsignedBigInt
+  reviewer_user_id   BigInt       @db.UnsignedBigInt
+  rating             Int          
+  comment            String?      @db.Text
+  created_at         DateTime?    @default(now()) @db.Timestamp(0)
+  va_profiles        va_profiles  @relation(fields: [va_profile_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users              users        @relation("va_feedback_reviewer_user_idTousers", fields: [reviewer_user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([va_profile_id], map: "va_feedback_profile_id")
+  @@index([reviewer_user_id], map: "va_feedback_reviewer_id")
+}
+
+model tasks {
+  id                BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  va_profile_id     BigInt          @db.UnsignedBigInt
+  client_profile_id BigInt?         @db.UnsignedBigInt
+  title             String          @db.VarChar(255)
+  description       String?         @db.Text
+  resource_link     String?         @db.Text
+  submission_link   String?         @db.Text
+  status            String          @default("todo") @db.VarChar(50)
+  due_date          DateTime?       @db.Timestamp(0)
+  created_at        DateTime?       @default(now()) @db.Timestamp(0)
+  updated_at        DateTime?       @default(now()) @db.Timestamp(0)
+
+  va_profiles       va_profiles     @relation(fields: [va_profile_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  client_profiles   client_profiles? @relation(fields: [client_profile_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }

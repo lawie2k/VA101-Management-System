@@ -46,6 +46,7 @@ export async function GET(req: Request) {
     // Serialize BigInts and format response
     const formatted = rawContracts.map(c => ({
       id: c.id.toString(),
+      vaProfileId: c.va_profile_id.toString(),
       vaName: c.va_profiles.users?.full_name || "Unknown VA",
       role: c.assignments?.job_posts.role_needed || c.assignments?.job_posts.job_title || "Virtual Assistant",
       rate: c.assignments?.job_posts.client_hourly_rate ? `$${c.assignments.job_posts.client_hourly_rate}/hr` : "TBD",

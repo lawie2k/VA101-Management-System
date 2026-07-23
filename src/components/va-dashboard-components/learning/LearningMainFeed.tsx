@@ -10,10 +10,10 @@ const IconCheckCircle = ({ className = "w-4 h-4" }) => (
 );
 
 const COURSE_INFOS = {
-  "c-1": { title: "VA101 Professional Ethics & Standards", category: "Core Training", lessons: ["Professional Communication", "Client Privacy & NDAs", "Reporting Activity Logs", "Managing Boundaries"] },
-  "c-2": { title: "Advanced Client Lead Generation Strategies", category: "Marketing & Sales", lessons: ["Lead Profile Target Research", "Cold Email Outbox Setup", "Scripting High Conversion Mail", "Outreach Analytics tracking"] },
-  "c-3": { title: "CRM Administration & Contact Matrix Handling", category: "Operations", lessons: ["CRM Dashboard Basics", "Lead Pipeline Management", "Properties and Tagging", "Automation Triggers"] },
-  "c-4": { title: "Shopify Store Support & Inventory Handling", category: "E-commerce Support", lessons: ["Shopify Dashboard Overview", "Fulfillment Operations", "Return & Refund Policy", "Zendesk Integration"] }
+  "c-1": { title: "VA101 Professional Ethics & Standards", category: "Core Training", lessons: ["Professional Communication", "Client Privacy & NDAs", "Reporting Activity Logs", "Managing Boundaries"], invoice: "INV-1029", amount: 0, paymentDate: "2026-06-10", classStartDate: "2026-06-15" },
+  "c-2": { title: "Advanced Client Lead Generation Strategies", category: "Marketing & Sales", lessons: ["Lead Profile Target Research", "Cold Email Outbox Setup", "Scripting High Conversion Mail", "Outreach Analytics tracking"], invoice: "INV-1035", amount: 49.99, paymentDate: "2026-07-01", classStartDate: "2026-07-05" },
+  "c-3": { title: "CRM Administration & Contact Matrix Handling", category: "Operations", lessons: ["CRM Dashboard Basics", "Lead Pipeline Management", "Properties and Tagging", "Automation Triggers"], invoice: "INV-1040", amount: 29.99, paymentDate: "2026-07-15", classStartDate: "2026-07-20" },
+  "c-4": { title: "Shopify Store Support & Inventory Handling", category: "E-commerce Support", lessons: ["Shopify Dashboard Overview", "Fulfillment Operations", "Return & Refund Policy", "Zendesk Integration"], invoice: "INV-1042", amount: 39.99, paymentDate: "2026-07-18", classStartDate: "2026-07-25" }
 };
 
 interface LearningMainFeedProps {
@@ -66,6 +66,26 @@ export default function LearningMainFeed({
                   ) : (
                     <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">In Progress</span>
                   )}
+                </div>
+
+                {/* Course Details (Invoice, Amount, Date) */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-3 border-y border-slate-100 my-2 text-[10px]">
+                  <div>
+                    <span className="text-slate-400 block mb-0.5 font-bold uppercase tracking-wider">Invoice No.</span>
+                    <span className="text-slate-700 font-extrabold">{info.invoice}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block mb-0.5 font-bold uppercase tracking-wider">Amount Paid</span>
+                    <span className="text-[#E84E29] font-extrabold">${info.amount.toFixed(2)}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block mb-0.5 font-bold uppercase tracking-wider">Payment Date</span>
+                    <span className="text-slate-700 font-extrabold">{new Date(info.paymentDate).toLocaleDateString()}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block mb-0.5 font-bold uppercase tracking-wider">Class Start Date</span>
+                    <span className="text-slate-700 font-extrabold">{new Date(info.classStartDate).toLocaleDateString()}</span>
+                  </div>
                 </div>
 
                 {/* Progress bar */}

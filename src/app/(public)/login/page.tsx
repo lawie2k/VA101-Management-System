@@ -205,16 +205,6 @@ export default function Page() {
           </Link>
         </p>
 
-        {/* Discovery Call booking CTA */}
-        <div className="mt-6 pt-5 border-t border-slate-150 flex flex-col items-center text-center">
-          <p className="text-xs text-slate-500 font-medium">Looking to hire a Virtual Assistant?</p>
-          <Link
-            href="/discovery-calls"
-            className="mt-2.5 w-full inline-flex items-center justify-center py-2.5 px-4 border border-slate-200 hover:border-slate-350 rounded-full text-xs font-extrabold text-slate-755 bg-slate-50 hover:bg-slate-100/70 transition-all cursor-pointer shadow-xs"
-          >
-             Book a free Discovery Call
-          </Link>
-        </div>
       </div>
 
       {/* Spacer helper to push footer down cleanly */}

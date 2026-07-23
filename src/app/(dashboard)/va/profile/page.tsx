@@ -168,6 +168,8 @@ export function VAProfile() {
   });
 
   // Load from database on mount
+  const [feedbackData, setFeedbackData] = useState<any>({ feedbacks: [], averageRating: 0, totalReviews: 0 });
+
   useEffect(() => {
     async function fetchProfile() {
       try {
@@ -180,6 +182,18 @@ export function VAProfile() {
         }
       } catch (e) {
         console.error("Failed to load database profile data", e);
+      }
+      
+      try {
+        const fbRes = await fetch("/api/va/feedback");
+        if (fbRes.ok) {
+          const fbData = await fbRes.json();
+          if (fbData.success) {
+            setFeedbackData(fbData.data);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load feedback data", e);
       } finally {
         setIsLoaded(true);
       }
@@ -475,6 +489,7 @@ export function VAProfile() {
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <VAProfileMainFeed 
             profile={profile}
+            feedbackData={feedbackData}
             openEditAbout={openEditAbout}
             openAddExperience={openAddExperience}
             handleRemoveExp={handleDeleteExperience}

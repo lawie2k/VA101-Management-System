@@ -147,8 +147,10 @@ export function TrainerSettingsPanel() {
 
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isEditingPayout, setIsEditingPayout] = useState(false);
+  const [hasSavedPayout, setHasSavedPayout] = useState(false);
 
-  const [payoutMethod, setPayoutMethod] = useState("Bank Transfer");
+  const [payoutMethod, setPayoutMethod] = useState("GCash");
   const [payoutAccountName, setPayoutAccountName] = useState("");
   const [payoutDetails, setPayoutDetails] = useState("");
   const [payoutLoading, setPayoutLoading] = useState(false);
@@ -159,9 +161,12 @@ export function TrainerSettingsPanel() {
         const res = await fetch("/api/trainer/settings/payout");
         const json = await res.json();
         if (json.success && json.data) {
-          setPayoutMethod(json.data.method_type || "Bank Transfer");
+          setHasSavedPayout(true);
+          setPayoutMethod(json.data.method_type || "GCash");
           setPayoutAccountName(json.data.account_name || "");
           setPayoutDetails(json.data.masked_details || "");
+        } else {
+          setIsEditingPayout(true);
         }
       } catch (err) {
         console.error(err);
@@ -186,6 +191,8 @@ export function TrainerSettingsPanel() {
       const data = await res.json();
       if (res.ok) {
         showToastMsg("Payout details updated successfully", "success");
+        setHasSavedPayout(true);
+        setIsEditingPayout(false);
       } else {
         showToastMsg(data.error || "Failed to update payout details", "error");
       }
@@ -412,36 +419,75 @@ export function TrainerSettingsPanel() {
             </div>
           </div>
           
-          <form onSubmit={handleUpdatePayout} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5 px-1">Payment Method</label>
-              <div className="relative">
-                <select 
-                  value={payoutMethod}
-                  onChange={(e) => setPayoutMethod(e.target.value)}
-                  className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#E84E29]/20 focus:border-[#E84E29] transition-all cursor-pointer font-semibold"
+          {!isEditingPayout && hasSavedPayout ? (
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 shadow-lg border border-slate-700 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#E84E29]/20 rounded-full blur-2xl transform -translate-x-1/2 translate-y-1/2"></div>
+              
+              <div className="relative z-10 flex justify-between items-start mb-6">
+                <div className="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 flex items-center gap-2 text-white font-bold text-sm">
+                  {payoutMethod}
+                </div>
+                <button 
+                  onClick={() => setIsEditingPayout(true)}
+                  className="text-white/60 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border border-transparent hover:border-white/10"
                 >
-                  <option value="Bank Transfer">Bank Transfer (Local)</option>
-                  <option value="GCash">GCash</option>
-                  <option value="Maya">Maya</option>
-                  <option value="Wise">Wise</option>
-                  <option value="Veem">Veem</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                  Edit Details
+                </button>
+              </div>
+
+              <div className="relative z-10 space-y-1">
+                <p className="text-white/60 text-xs font-semibold uppercase tracking-widest">Account Name</p>
+                <p className="text-white font-bold text-lg tracking-wide">{payoutAccountName}</p>
+              </div>
+
+              <div className="relative z-10 mt-5 space-y-1">
+                <p className="text-white/60 text-xs font-semibold uppercase tracking-widest">Account Number / Details</p>
+                <div className="flex items-center gap-3">
+                  <p className="text-white font-mono text-xl tracking-wider">{payoutDetails}</p>
                 </div>
               </div>
             </div>
+          ) : (
+            <form onSubmit={handleUpdatePayout} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 px-1">Payment Method</label>
+                <div className="relative">
+                  <select 
+                    value={payoutMethod}
+                    onChange={(e) => setPayoutMethod(e.target.value)}
+                    className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#E84E29]/20 focus:border-[#E84E29] transition-all cursor-pointer font-semibold"
+                  >
+                    <option value="GCash">GCash</option>
+                    <option value="Maya">Maya</option>
+                    <option value="Wise">Wise</option>
+                    <option value="Veem">Veem</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </div>
+                </div>
+              </div>
 
-            <InputField id="payoutAccountName" label="Account Name" type="text" value={payoutAccountName} onChange={setPayoutAccountName} hint="The exact name registered to the account" />
-            <InputField id="payoutDetails" label="Account Number / Details" type="text" value={payoutDetails} onChange={setPayoutDetails} hint="Ensure this is double checked" />
-            
-            <div className="pt-2">
-              <button type="submit" disabled={payoutLoading || !payoutAccountName || !payoutDetails} className="rounded-full px-6 py-2.5 text-xs font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                {payoutLoading ? "Saving..." : "Save Payout Details"}
-              </button>
-            </div>
-          </form>
+              <InputField id="payoutAccountName" label="Account Name" type="text" value={payoutAccountName} onChange={setPayoutAccountName} hint="The exact name registered to the account" />
+              <InputField id="payoutDetails" label="Account Number / Details" type="text" value={payoutDetails} onChange={setPayoutDetails} hint="Ensure this is double checked" />
+              
+              <div className="pt-2 flex gap-3">
+                <button type="submit" disabled={payoutLoading || !payoutAccountName || !payoutDetails} className="rounded-full px-6 py-2.5 text-xs font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                  {payoutLoading ? "Saving..." : "Save Payout Details"}
+                </button>
+                {hasSavedPayout && (
+                  <button 
+                    type="button" 
+                    onClick={() => setIsEditingPayout(false)} 
+                    className="rounded-full px-6 py-2.5 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+            </form>
+          )}
         </div>
       )}
 

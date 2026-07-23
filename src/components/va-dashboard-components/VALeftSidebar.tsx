@@ -10,6 +10,12 @@ const IconMapPin = ({ className = "w-4 h-4" }) => (
   </svg>
 );
 
+const IconStar = ({ className = "w-4 h-4" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+  </svg>
+);
+
 const DEFAULT_COVER = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&h=300&q=80";
 
 export default function DashboardLeftSidebar() {
@@ -24,6 +30,7 @@ export default function DashboardLeftSidebar() {
     skills: [] as string[]
   });
   const [views, setViews] = useState(0);
+  const [feedbackData, setFeedbackData] = useState<{averageRating: number, totalReviews: number} | null>(null);
 
   const updateState = (data: any) => {
     setProfile({
@@ -77,6 +84,21 @@ export default function DashboardLeftSidebar() {
       }
     }
     syncProfile();
+
+    async function syncFeedback() {
+      try {
+        const res = await fetch("/api/va/feedback");
+        if (res.ok) {
+          const fbData = await res.json();
+          if (fbData.success) {
+            setFeedbackData(fbData.data);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch feedback in sidebar:", err);
+      }
+    }
+    syncFeedback();
 
     // 3. Listen to profile updates emitted across tabs/headers
     const handleProfileUpdate = () => {
@@ -155,11 +177,20 @@ export default function DashboardLeftSidebar() {
             </div>
           </div>
 
-          {/* Analytics */}
-          <div className="mt-5 pt-4 border-t border-slate-100 text-start">
-            <div>
+          {/* Analytics & Ratings */}
+          <div className="mt-5 pt-4 border-t border-slate-100 text-start flex divide-x divide-slate-100">
+            <div className="pr-5">
               <p className="text-lg font-black text-slate-800">{views}</p>
-              <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">Profile Views</p>
+              <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase mt-0.5">Profile Views</p>
+            </div>
+            <div className="pl-5">
+              <p className="text-lg font-black text-slate-800 flex items-center gap-1.5">
+                {feedbackData ? feedbackData.averageRating.toFixed(1) : "0.0"}
+                <IconStar className="w-4 h-4 text-amber-400 fill-amber-400" />
+              </p>
+              <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase mt-0.5">
+                Ratings ({feedbackData?.totalReviews || 0})
+              </p>
             </div>
           </div>
         </div>

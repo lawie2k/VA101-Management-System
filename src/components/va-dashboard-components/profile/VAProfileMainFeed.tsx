@@ -1,9 +1,9 @@
 import React from "react";
 import { PCard, PCardHeader, Button, Badge } from "./VAProfileUI";
-import { IconCalendar, IconPencil, IconBriefcase, IconMapPin, IconPlus, IconGraduationCap, IconX, IconCheck, IconWrench } from "./VAProfileIcons";
+import { IconCalendar, IconPencil, IconBriefcase, IconMapPin, IconPlus, IconGraduationCap, IconX, IconCheck, IconWrench, IconStar } from "./VAProfileIcons";
 import { VAProfileData } from "./types";
 
-export function VAProfileMainFeed({ profile, openEditAbout, openAddExperience, handleDeleteExperience, openAddPortfolio, handleDeletePortfolio, openAddCertification, handleDeleteCertification, editSkills, setEditSkills, toggleSkill, ALL_SKILLS, editTools, setEditTools, toggleTool, ALL_TOOLS, editNiches, setEditNiches, toggleNiche, ALL_NICHES, handleSaveProfile, openEditAvailability }: any) {
+export function VAProfileMainFeed({ profile, feedbackData, openEditAbout, openAddExperience, handleDeleteExperience, openAddPortfolio, handleDeletePortfolio, openAddCertification, handleDeleteCertification, editSkills, setEditSkills, toggleSkill, ALL_SKILLS, editTools, setEditTools, toggleTool, ALL_TOOLS, editNiches, setEditNiches, toggleNiche, ALL_NICHES, handleSaveProfile, openEditAvailability }: any) {
   return (
     <div className="space-y-6">
           
@@ -21,6 +21,59 @@ export function VAProfileMainFeed({ profile, openEditAbout, openAddExperience, h
               {profile.about || "Write a short summary about your background and specialty to attract potential clients."}
             </p>
           </PCard>
+
+          {/* RATINGS SECTION */}
+          {feedbackData && (
+            <PCard className="hover:border-slate-350">
+              <PCardHeader title="Ratings" />
+              {feedbackData.feedbacks && feedbackData.feedbacks.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+                    <div className="flex items-center">
+                      <IconStar className="w-5 h-5 text-amber-400 fill-amber-400" />
+                      <span className="ml-1.5 text-xl font-black text-slate-900">{feedbackData.averageRating.toFixed(1)}</span>
+                    </div>
+                    <span className="text-sm text-slate-500 font-medium">Based on {feedbackData.totalReviews} reviews</span>
+                  </div>
+                  {feedbackData.feedbacks.map((fb: any) => (
+                    <div key={fb.id} className="py-3 last:pb-0">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center text-slate-500 overflow-hidden">
+                            {fb.users?.profile_photo_url ? (
+                              <img src={fb.users.profile_photo_url} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-xs font-bold">{fb.users?.full_name?.[0] || 'C'}</span>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-slate-900">{fb.users?.full_name || 'Client'}</p>
+                            <p className="text-xs text-slate-500 font-medium">{new Date(fb.created_at).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        <div className="flex text-amber-400">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <IconStar key={i} className={`w-3.5 h-3.5 ${i < fb.rating ? 'fill-amber-400' : 'text-slate-200'}`} />
+                          ))}
+                        </div>
+                      </div>
+                      {fb.comment && (
+                        <p className="text-sm text-slate-700 italic">"{fb.comment}"</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-4 text-center">
+                  <IconStar className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                  <p className="text-sm font-bold text-slate-700">No ratings yet</p>
+                  <p className="text-xs text-slate-500 mt-1 max-w-[250px] mx-auto">
+                    As you complete assignments, client and admin ratings will appear here.
+                  </p>
+                </div>
+              )}
+            </PCard>
+          )}
 
           {/* FEATURED / PORTFOLIO SECTION */}
           <PCard className="hover:border-slate-350">

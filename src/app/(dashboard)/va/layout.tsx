@@ -14,6 +14,7 @@ const navItems = [
   { label: "Interviews", href: "/va/interviews" },
   { label: "Courses", href: "/va/training" },
   { label: "My Learning", href: "/va/my-learning" },
+  { label: "Assigned Tasks", href: "/va/tasks" },
   { label: "Payout History", href: "/va/payouts" },
   { label: "Settings", href: "/va/settings" },
 ];

@@ -289,8 +289,15 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
         <div className="hidden md:flex items-center gap-4">
           {isDashboard ? (
             /* Authenticated User Profile Dropdown */
-            <div className="relative">
-              <button
+            <>
+              <a
+                href="/discovery-calls"
+                className="bg-[#E84E29] hover:bg-[#DA431E] text-white font-bold text-xs tracking-wider rounded-full px-5 py-2 transition-all flex items-center gap-1"
+              >
+                Get started <span>↗</span>
+              </a>
+              <div className="relative">
+                <button
                 onClick={() => toggleDropdown("profile")}
                 onBlur={() => setTimeout(() => setActiveDropdown(null), 150)}
                 className="flex items-center gap-2 focus:outline-none cursor-pointer group"
@@ -357,6 +364,7 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
                 </div>
               )}
             </div>
+            </>
           ) : (
             /* Public Sign In & Get Started actions */
             <>
@@ -367,7 +375,7 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
                 Sign in
               </Link>
               <a
-                href="https://www.virtualassistant101.com/p/contact-us.html"
+                href="/discovery-calls"
                 className="bg-[#E84E29] hover:bg-[#DA431E] text-white font-bold text-xs tracking-wider rounded-full px-5 py-3 transition-all flex items-center gap-1"
               >
                 Get started <span>↗</span>
@@ -487,12 +495,18 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
                     My Profile
                   </Link>
                 )}
+                <a
+                  href="/discovery-calls"
+                  className="w-full text-center bg-[#E84E29] hover:bg-[#DA431E] text-white font-bold text-sm tracking-wider rounded-full py-2.5"
+                >
+                  Get started ↗
+                </a>
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);
                     handleSignOut();
                   }}
-                  className="w-full text-center bg-[#E84E29] hover:bg-[#DA431E] text-white font-bold text-sm tracking-wider rounded-full py-2.5 cursor-pointer"
+                  className="w-full text-center border border-[#1c1c1e] text-gray-300 hover:text-white hover:bg-[#1c1c1e] font-bold text-sm tracking-wider rounded-full py-2.5 cursor-pointer"
                 >
                   Sign out
                 </button>
@@ -508,7 +522,7 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
                   Sign in
                 </Link>
                 <a
-                  href="https://www.virtualassistant101.com/p/contact-us.html"
+                  href="/discovery-calls"
                   className="w-full text-center bg-[#E84E29] hover:bg-[#DA431E] text-white font-bold text-sm tracking-wider rounded-full py-2.5"
                 >
                   Get started ↗
