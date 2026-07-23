@@ -9,8 +9,49 @@ import { VAProfileMainFeed } from "../../../../components/va-dashboard-component
 import { VAProfileRightSidebar } from "../../../../components/va-dashboard-components/profile/VAProfileRightSidebar";
 import { VAProfileModals } from "../../../../components/va-dashboard-components/profile/VAProfileModals";
 
+export interface Experience {
+  id: string;
+  company: string;
+  role: string;
+  period: string;
+}
+
+export interface Portfolio {
+  id: string;
+  icon: string;
+  title: string;
+  sub: string;
+}
+
+export interface Certification {
+  id: string;
+  title: string;
+  provider: string;
+  completed: boolean;
+  progress: number;
+}
+
+export interface ProfileData {
+  fullName: string;
+  title: string;
+  experienceYears: number;
+  location: string;
+  niche: string;
+  expectedRate: number;
+  openToOpportunities: boolean;
+  avatar: string | null;
+  coverImage: string | null;
+  about: string;
+  experience: Experience[];
+  portfolio: Portfolio[];
+  certifications: Certification[];
+  skills: string[];
+  tools: string[];
+  availability: { hours: string; schedule: string; timezone: string };
+}
+
 // Constants & Initial Mock Profile Data
-const INITIAL_PROFILE = {
+const INITIAL_PROFILE: ProfileData = {
   fullName: "Lawie Enriquez",
   title: "Senior Full Stack Developer",
   experienceYears: 4,

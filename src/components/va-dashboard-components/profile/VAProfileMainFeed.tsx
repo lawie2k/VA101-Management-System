@@ -1,9 +1,9 @@
 import React from "react";
 import { PCard, PCardHeader, Button, Badge } from "./VAProfileUI";
-import { IconEdit, IconCheckCircle, IconExternalLink, IconCalendar, IconBuilding, IconTrash, IconPencil, IconBriefcase, IconMapPin, IconPlus, IconGraduationCap, IconX, IconCheck, IconWrench } from "./VAProfileIcons";
+import { IconCalendar, IconPencil, IconBriefcase, IconMapPin, IconPlus, IconGraduationCap, IconX, IconCheck, IconWrench } from "./VAProfileIcons";
 import { VAProfileData } from "./types";
 
-export function VAProfileMainFeed({ profile, openEditAbout, openAddExperience, handleRemoveExp, openAddPortfolio, handleRemovePort, openAddCertification, handleDeleteCertification, editSkills, setEditSkills, toggleSkill, ALL_SKILLS, editTools, setEditTools, toggleTool, ALL_TOOLS, editNiches, setEditNiches, toggleNiche, ALL_NICHES, handleSaveProfile, openEditAvailability }: any) {
+export function VAProfileMainFeed({ profile, openEditAbout, openAddExperience, handleDeleteExperience, openAddPortfolio, handleDeletePortfolio, openAddCertification, handleDeleteCertification, editSkills, setEditSkills, toggleSkill, ALL_SKILLS, editTools, setEditTools, toggleTool, ALL_TOOLS, editNiches, setEditNiches, toggleNiche, ALL_NICHES, handleSaveProfile, openEditAvailability }: any) {
   return (
     <div className="space-y-6">
           
@@ -36,7 +36,7 @@ export function VAProfileMainFeed({ profile, openEditAbout, openAddExperience, h
               <p className="text-xs text-slate-400 font-semibold italic">No portfolio items added yet. Click Add to show work samples.</p>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
-                {profile.portfolio.map((item) => (
+                {profile.portfolio.map((item: any) => (
                   <div key={item.id} className="group flex items-center justify-between gap-3 rounded-2xl border border-slate-150 bg-slate-50/50 p-3 hover:border-slate-300 hover:bg-white transition-all">
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white border border-slate-100 text-xl shadow-xs">
@@ -74,7 +74,7 @@ export function VAProfileMainFeed({ profile, openEditAbout, openAddExperience, h
               <p className="text-xs text-slate-400 font-semibold italic">No work experience listed yet.</p>
             ) : (
               <ul className="space-y-4">
-                {profile.experience.map((exp) => (
+                {profile.experience.map((exp: any) => (
                   <li key={exp.id} className="group flex items-start justify-between gap-3">
                     <div className="flex gap-3">
                       <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-orange-50 border border-orange-100 text-[#E84E29]">
@@ -116,7 +116,7 @@ export function VAProfileMainFeed({ profile, openEditAbout, openAddExperience, h
             />
             <div className="flex flex-wrap gap-2">
               {editSkills ? (
-                ALL_SKILLS.map((s) => {
+                ALL_SKILLS.map((s: string) => {
                   const active = profile.skills.includes(s);
                   return (
                     <button
@@ -133,7 +133,7 @@ export function VAProfileMainFeed({ profile, openEditAbout, openAddExperience, h
                   );
                 })
               ) : (
-                profile.skills.map((s) => (
+                profile.skills.map((s: string) => (
                   <Badge key={s} variant="default" className="rounded-full font-bold">
                     {s}
                   </Badge>
@@ -159,7 +159,7 @@ export function VAProfileMainFeed({ profile, openEditAbout, openAddExperience, h
             />
             <div className="flex flex-wrap gap-2">
               {editTools ? (
-                ALL_TOOLS.map((t) => {
+                ALL_TOOLS.map((t: string) => {
                   const active = profile.tools.includes(t);
                   return (
                     <button
@@ -176,7 +176,7 @@ export function VAProfileMainFeed({ profile, openEditAbout, openAddExperience, h
                   );
                 })
               ) : (
-                profile.tools.map((t) => (
+                profile.tools.map((t: string) => (
                   <span
                     key={t}
                     className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold bg-orange-50 border border-orange-100 text-orange-750"
@@ -205,7 +205,7 @@ export function VAProfileMainFeed({ profile, openEditAbout, openAddExperience, h
             />
             <div className="flex flex-wrap gap-2">
               {editNiches ? (
-                ALL_NICHES.map((n) => {
+                ALL_NICHES.map((n: string) => {
                   const active = profile.niche === n;
                   return (
                     <button
@@ -278,7 +278,7 @@ export function VAProfileMainFeed({ profile, openEditAbout, openAddExperience, h
               <p className="text-xs text-slate-400 font-semibold italic">No courses or certifications listed.</p>
             ) : (
               <ul className="space-y-3">
-                {profile.certifications.map((cert) => (
+                {profile.certifications.map((cert: any) => (
                   <li key={cert.id} className="group flex items-center justify-between gap-3 rounded-2xl bg-slate-50/30 border border-slate-100 p-3 hover:bg-slate-50/70 transition-all">
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-orange-50 text-[#E84E29] border border-orange-100/50">
