@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import { useToast, Toast } from "../../shared/useToast";
 const IconSettings = ({ className = "w-4 h-4" }) => (<svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>);
 
 const IconMail = () => (
@@ -145,7 +146,7 @@ export function TrainerSettingsPanel() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
 
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const { toast, showToast } = useToast();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isEditingPayout, setIsEditingPayout] = useState(false);
   const [hasSavedPayout, setHasSavedPayout] = useState(false);
@@ -190,28 +191,24 @@ export function TrainerSettingsPanel() {
       });
       const data = await res.json();
       if (res.ok) {
-        showToastMsg("Payout details updated successfully", "success");
+        showToast("Payout details updated successfully", "success");
         setHasSavedPayout(true);
         setIsEditingPayout(false);
       } else {
-        showToastMsg(data.error || "Failed to update payout details", "error");
+        showToast(data.error || "Failed to update payout details", "error");
       }
     } catch (err) {
-      showToastMsg("An error occurred", "error");
+      showToast("An error occurred", "error");
     } finally {
       setPayoutLoading(false);
     }
   };
 
-  const showToastMsg = (message: string, type: "success" | "error") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
 
   const handleUpdateEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newEmail !== confirmEmail) {
-      return showToastMsg("New emails do not match", "error");
+      return showToast("New emails do not match", "error");
     }
     setEmailLoading(true);
     try {
@@ -222,15 +219,15 @@ export function TrainerSettingsPanel() {
       });
       const data = await res.json();
       if (res.ok) {
-        showToastMsg("Email updated successfully", "success");
+        showToast("Email updated successfully", "success");
         setNewEmail("");
         setConfirmEmail("");
         setCurrentPasswordForEmail("");
       } else {
-        showToastMsg(data.error || "Failed to update email", "error");
+        showToast(data.error || "Failed to update email", "error");
       }
     } catch (err) {
-      showToastMsg("An error occurred", "error");
+      showToast("An error occurred", "error");
     } finally {
       setEmailLoading(false);
     }
@@ -239,7 +236,7 @@ export function TrainerSettingsPanel() {
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      return showToastMsg("New passwords do not match", "error");
+      return showToast("New passwords do not match", "error");
     }
     setPasswordLoading(true);
     try {
@@ -250,15 +247,15 @@ export function TrainerSettingsPanel() {
       });
       const data = await res.json();
       if (res.ok) {
-        showToastMsg("Password updated successfully", "success");
+        showToast("Password updated successfully", "success");
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
       } else {
-        showToastMsg(data.error || "Failed to update password", "error");
+        showToast(data.error || "Failed to update password", "error");
       }
     } catch (err) {
-      showToastMsg("An error occurred", "error");
+      showToast("An error occurred", "error");
     } finally {
       setPasswordLoading(false);
     }
@@ -270,11 +267,11 @@ export function TrainerSettingsPanel() {
       if (res.ok) {
         window.location.href = "/login";
       } else {
-        showToastMsg("Failed to delete account", "error");
+        showToast("Failed to delete account", "error");
         setShowDeleteModal(false);
       }
     } catch (err) {
-      showToastMsg("An error occurred", "error");
+      showToast("An error occurred", "error");
       setShowDeleteModal(false);
     }
   };
@@ -282,15 +279,7 @@ export function TrainerSettingsPanel() {
   return (
     <div className="w-full max-w-3xl space-y-6">
       
-      {/* Toast Notification */}
-      {toast && (
-        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-5 py-3.5 rounded-2xl shadow-lg text-sm font-bold animate-fade-in ${
-          toast.type === "success" ? "bg-emerald-600 text-white" : "bg-red-600 text-white"
-        }`}>
-          {toast.type === "success" && <IconCheck />}
-          {toast.message}
-        </div>
-      )}
+      <Toast toast={toast} />
 
       {/* Header */}
       <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-xs mb-6">

@@ -3,7 +3,7 @@
 // ============================================================
 
 export const ROLES = {
-  SUPER_ADMIN: "super_admin",
+  SUPER_ADMIN: "admin",
   FINANCE: "finance",
   EMPLOYEE: "employee",
   VA: "va",
@@ -69,7 +69,7 @@ export const ROLE_COLORS: Record<string, { bg: string; text: string }> = {
 
 export const ROLE_DASHBOARD_ROUTES: Record<string, string> = {
   [ROLES.SUPER_ADMIN]: "/admin/dashboard",
-  [ROLES.FINANCE]: "/finance/dashboard",
+  [ROLES.FINANCE]: "/admin/dashboard",
   [ROLES.EMPLOYEE]: "/admin/dashboard",
   [ROLES.VA]: "/va/dashboard",
   [ROLES.CLIENT]: "/client/dashboard",

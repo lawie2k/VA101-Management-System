@@ -1,381 +1,508 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import { useToast, Toast } from "./useToast";
 
-const IconSettings = ({ className = "w-4 h-4" }) => (<svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>);
-
-const IconMail = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-    <polyline points="22,6 12,12 2,6" />
+// --- Icons ---
+const IconUser = ({ className = "w-4 h-4" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
   </svg>
 );
-
-const IconLock = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+const IconLock = ({ className = "w-4 h-4" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
   </svg>
 );
-
-const IconCheck = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12" />
+const IconBell = ({ className = "w-4 h-4" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
   </svg>
 );
-
-const IconEye = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-    <circle cx="12" cy="12" r="3" />
+const IconPlug = ({ className = "w-4 h-4" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22v-5" />
+    <path d="M9 8V2" />
+    <path d="M15 8V2" />
+    <path d="M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z" />
   </svg>
 );
-
-const IconEyeOff = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-    <line x1="1" y1="1" x2="23" y2="23" />
-  </svg>
-);
-
-const IconTrash = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+const IconTrash = ({ className = "w-4 h-4" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="3 6 5 6 21 6" />
     <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
     <path d="M10 11v6M14 11v6" />
     <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
   </svg>
 );
+const IconCheck = () => (
+  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
 
-const DELETE_PHRASE = "DELETE MY ACCOUNT";
-
-export function DeleteModal({ onClose, onConfirm }: { onClose: () => void; onConfirm: () => void }) {
-  const [step, setStep] = useState<1 | 2>(1);
-  const [phrase, setPhrase] = useState("");
-  const [password, setPassword] = useState("");
-  const isReady = phrase === DELETE_PHRASE && password.length >= 8;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-7 border border-red-100">
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-10 h-10 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 shrink-0">
-            <IconTrash />
-          </div>
-          <div>
-            <h3 className="text-base font-extrabold text-slate-900">Delete Account</h3>
-            <p className="text-[11px] text-slate-400 font-medium">
-              Step {step} of 2 — {step === 1 ? "Understand consequences" : "Final confirmation"}
-            </p>
-          </div>
-        </div>
-
-        {step === 1 && (
-          <div className="space-y-4">
-            <div className="bg-red-50 border border-red-200/60 rounded-2xl p-4 space-y-2">
-              <p className="text-xs font-bold text-red-700">This action is permanent and irreversible.</p>
-              <ul className="text-[11px] text-red-600 font-semibold space-y-1.5 list-disc list-inside">
-                <li>All enrolled courses and progress will be lost</li>
-                <li>Your profile data will be permanently deleted</li>
-                <li>Access to active purchases and contracts will be revoked</li>
-                <li>Pending payments may still be processed</li>
-              </ul>
-            </div>
-            <div className="flex gap-3 pt-2">
-              <button onClick={onClose} className="flex-1 py-2.5 rounded-full text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all cursor-pointer">
-                Cancel — Keep my account
-              </button>
-              <button onClick={() => setStep(2)} className="flex-1 py-2.5 rounded-full text-xs font-bold text-white bg-red-500 hover:bg-red-600 transition-all cursor-pointer">
-                I understand, continue
-              </button>
-            </div>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1.5">
-                Type <span className="font-black text-red-600 tracking-wide">{DELETE_PHRASE}</span> to confirm
-              </label>
-              <input type="text" value={phrase} onChange={e => setPhrase(e.target.value)} placeholder="Type the phrase exactly..." className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-400/40 focus:border-transparent transition-all" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1.5">Enter your account password</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Your current password" className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-400/40 focus:border-transparent transition-all" />
-            </div>
-            <div className="flex gap-3 pt-2">
-              <button onClick={() => { setStep(1); setPhrase(""); setPassword(""); }} className="flex-1 py-2.5 rounded-full text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all cursor-pointer">
-                Go back
-              </button>
-              <button
-                disabled={!isReady}
-                onClick={onConfirm}
-                className={`flex-1 py-2.5 rounded-full text-xs font-bold transition-all ${isReady ? "text-white bg-red-600 hover:bg-red-700 cursor-pointer shadow-sm" : "text-slate-400 bg-slate-100 cursor-not-allowed"}`}
-              >
-                Permanently Delete
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+type Tab = "account" | "security" | "notifications" | "danger";
 
 export function SettingsPanel({ role }: { role: string }) {
   const searchParams = useSearchParams();
-  const initialTab = searchParams.get("tab") === "security" ? "security" : "account";
-  const [activeTab, setActiveTab] = useState<"account" | "security">(initialTab);
-  const [newEmail, setNewEmail] = useState("");
-  const [confirmEmail, setConfirmEmail] = useState("");
-  const [currentPasswordForEmail, setCurrentPasswordForEmail] = useState("");
-  const [emailLoading, setEmailLoading] = useState(false);
+  const initialTab = (searchParams.get("tab") as Tab) || "account";
+  const [activeTab, setActiveTab] = useState<Tab>(["account", "security", "notifications", "danger"].includes(initialTab) ? initialTab : "account");
+  
+  const [userData, setUserData] = useState<{ fullName?: string, email?: string }>({});
 
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [passwordLoading, setPasswordLoading] = useState(false);
+  const { toast, showToast } = useToast();
 
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const navItems = [
+    { id: "account", label: "Account", icon: IconUser },
+    { id: "security", label: "Security", icon: IconLock },
+    { id: "notifications", label: "Notifications", icon: IconBell },
+    { id: "danger", label: "Danger zone", icon: IconTrash },
+  ] as const;
 
-  const showToastMsg = (message: string, type: "success" | "error") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
-
-  const handleUpdateEmail = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newEmail !== confirmEmail) {
-      return showToastMsg("New emails do not match", "error");
-    }
-    setEmailLoading(true);
-    try {
-      const res = await fetch(`/api/${role}/settings`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "update_email", newEmail, currentPassword: currentPasswordForEmail }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showToastMsg("Email updated successfully", "success");
-        setNewEmail("");
-        setConfirmEmail("");
-        setCurrentPasswordForEmail("");
-      } else {
-        showToastMsg(data.error || "Failed to update email", "error");
-      }
-    } catch (err) {
-      showToastMsg("An error occurred", "error");
-    } finally {
-      setEmailLoading(false);
-    }
-  };
-
-  const handleUpdatePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      return showToastMsg("New passwords do not match", "error");
-    }
-    setPasswordLoading(true);
-    try {
-      const res = await fetch(`/api/${role}/settings`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "update_password", currentPassword, newPassword }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showToastMsg("Password updated successfully", "success");
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-      } else {
-        showToastMsg(data.error || "Failed to update password", "error");
-      }
-    } catch (err) {
-      showToastMsg("An error occurred", "error");
-    } finally {
-      setPasswordLoading(false);
-    }
-  };
-
-  const handleDeleteAccount = async () => {
-    try {
-      const res = await fetch(`/api/${role}/settings`, { method: "DELETE" });
-      if (res.ok) {
-        window.location.href = "/login";
-      } else {
-        showToastMsg("Failed to delete account", "error");
-        setShowDeleteModal(false);
-      }
-    } catch (err) {
-      showToastMsg("An error occurred", "error");
-      setShowDeleteModal(false);
-    }
-  };
+  // Fetch real auth state for basic settings
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then(r => r.json())
+      .then(data => {
+        if (data.authenticated && data.user) {
+          setUserData({ fullName: data.user.fullName, email: data.user.email });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
-    <div className="w-full max-w-3xl space-y-6">
+    <div className="w-full max-w-7xl animate-in fade-in duration-500 pb-20 mx-auto">
       
-      {/* Toast Notification */}
-      {toast && (
-        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-5 py-3.5 rounded-2xl shadow-lg text-sm font-bold animate-fade-in ${
-          toast.type === "success" ? "bg-emerald-600 text-white" : "bg-red-600 text-white"
-        }`}>
-          {toast.type === "success" && <IconCheck />}
-          {toast.message}
-        </div>
-      )}
+      <Toast toast={toast} />
 
       {/* Header */}
-      <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-xs mb-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
-            <IconSettings className="text-slate-700 w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-xl font-extrabold text-slate-900">Settings</h1>
-            <p className="text-xs font-medium text-slate-500 mt-1">
-              Manage your account and security preferences
-            </p>
-          </div>
-        </div>
-
-        <div className="flex space-x-2 border-b border-slate-100">
-          <button 
-            onClick={() => setActiveTab("account")}
-            className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${activeTab === "account" ? "border-[#E84E29] text-[#E84E29]" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
-          >
-            Account
-          </button>
-          <button 
-            onClick={() => setActiveTab("security")}
-            className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${activeTab === "security" ? "border-[#E84E29] text-[#E84E29]" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
-          >
-            Security
-          </button>
-        </div>
+      <div className="mb-8">
+        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Settings</h1>
+        <p className="text-sm font-semibold text-slate-500 mt-1">
+          Manage your Super Admin account preferences and security.
+        </p>
       </div>
 
-      {activeTab === "account" && (
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6">
-          <div className="flex items-start gap-3 mb-6">
-            <div className="w-9 h-9 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center shrink-0">
-              <IconMail />
-            </div>
-            <div>
-              <h3 className="text-sm font-extrabold text-slate-900">Email Address</h3>
-              <p className="text-[11px] text-slate-400 font-medium mt-0.5">Change the email associated with your account</p>
-            </div>
-          </div>
-          
-          <form onSubmit={handleUpdateEmail} className="space-y-4">
-            <InputField id="newEmail" label="New Email Address" type="email" value={newEmail} onChange={setNewEmail} />
-            <InputField id="confirmEmail" label="Confirm New Email" type="email" value={confirmEmail} onChange={setConfirmEmail} />
-            <InputField id="currentPasswordForEmail" label="Current Password" type="password" value={currentPasswordForEmail} onChange={setCurrentPasswordForEmail} hint="Required to confirm email changes" />
-            
-            <div className="pt-2">
-              <button type="submit" disabled={emailLoading || !newEmail || !confirmEmail || !currentPasswordForEmail} className="rounded-full px-6 py-2.5 text-xs font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                {emailLoading ? "Updating..." : "Update Email"}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {activeTab === "security" && (
-        <>
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6">
-            <div className="flex items-start gap-3 mb-6">
-              <div className="w-9 h-9 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center shrink-0">
-                <IconLock />
-              </div>
-              <div>
-                <h3 className="text-sm font-extrabold text-slate-900">Password</h3>
-                <p className="text-[11px] text-slate-400 font-medium mt-0.5">Ensure your account is using a long, random password</p>
-              </div>
-            </div>
-            
-            <form onSubmit={handleUpdatePassword} className="space-y-4">
-              <InputField id="currentPassword" label="Current Password" type="password" value={currentPassword} onChange={setCurrentPassword} />
-              <InputField id="newPassword" label="New Password" type="password" value={newPassword} onChange={setNewPassword} hint="Must be at least 8 characters" />
-              <InputField id="confirmPassword" label="Confirm New Password" type="password" value={confirmPassword} onChange={setConfirmPassword} />
+      <div className="flex flex-col md:flex-row gap-8 items-start">
+        
+        {/* Left Sidebar Menu */}
+        <div className="w-full md:w-64 shrink-0 bg-white border border-slate-200 rounded-2xl p-3 shadow-sm sticky top-6">
+          <div className="space-y-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
               
-              <div className="pt-2">
-                <button type="submit" disabled={passwordLoading || !currentPassword || !newPassword || !confirmPassword} className="rounded-full px-6 py-2.5 text-xs font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                  {passwordLoading ? "Updating..." : "Update Password"}
-                </button>
-              </div>
-            </form>
-          </div>
+              if (item.id === "danger") {
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-colors text-left mt-2 ${
+                      isActive 
+                        ? "bg-[#0b1120] text-white font-bold" 
+                        : "text-slate-600 font-semibold hover:bg-slate-50"
+                    }`}
+                  >
+                    <Icon className="w-[18px] h-[18px]" />
+                    {item.label}
+                  </button>
+                );
+              }
 
-          <div className="bg-white rounded-[2rem] p-6 sm:p-8 border border-red-100 shadow-xs mb-6 mt-12 relative overflow-hidden group">
-            <div className="flex flex-col sm:flex-row gap-8">
-              <div className="sm:w-1/3 shrink-0">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-red-50 text-red-500">
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-colors text-left ${
+                    isActive 
+                      ? "bg-[#0b1120] text-white font-bold" 
+                      : "text-slate-600 font-semibold hover:bg-slate-50"
+                  }`}
+                >
+                  <Icon className="w-[18px] h-[18px]" />
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 w-full min-w-0">
+          
+          {/* 1. Account Tab */}
+          {activeTab === "account" && (
+            <div className="space-y-6">
+              
+              {/* Tab Header Card */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-[#0b1120] text-white flex items-center justify-center shrink-0">
+                  <IconUser />
+                </div>
+                <div>
+                  <h2 className="text-lg font-black text-slate-900">Account</h2>
+                  <p className="text-xs font-semibold text-slate-500">Your name, contact info, and basic identity.</p>
+                </div>
+              </div>
+
+              {/* Profile Photo Card */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h3 className="text-sm font-bold text-slate-900 mb-1">Profile photo</h3>
+                <p className="text-xs font-medium text-slate-500 mb-6">A friendly face helps people recognize you.</p>
+                <div className="flex items-center gap-5 border-t border-slate-100 pt-6">
+                  <div className="w-16 h-16 rounded-full bg-[#059669] text-white flex items-center justify-center text-xl font-bold">
+                    AO
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button className="px-4 py-2 border border-slate-300 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors bg-white shadow-sm">
+                      Upload new
+                    </button>
+                    <button className="px-4 py-2 rounded-lg text-xs font-bold text-red-600 hover:bg-red-50 transition-colors bg-transparent">
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Personal Info Form */}
+              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+                <div className="p-6">
+                  <h3 className="text-sm font-bold text-slate-900 mb-6">Personal info</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-2">Full Name</label>
+                      <input type="text" defaultValue={userData.fullName || "Admin Operator"} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-2">Display Name</label>
+                      <input type="text" defaultValue={userData.fullName?.split(' ')[0] || "Admin"} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-2">Email</label>
+                      <div className="relative">
+                        <IconMail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input type="email" defaultValue={userData.email || "admin@va101.example"} className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                      </div>
+                      <p className="text-[10px] text-slate-400 font-medium mt-1.5">Used for sign-in and notifications.</p>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-2">Phone</label>
+                      <div className="relative">
+                        <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        <input type="tel" defaultValue="+1 (555) 123-4567" className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-2">Country</label>
+                      <div className="relative">
+                        <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                        <input type="text" defaultValue="Philippines" className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-2">Language</label>
+                      <div className="relative">
+                        <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+                        <input type="text" defaultValue="English" className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-2">Time Zone</label>
+                      <input type="text" defaultValue="EST (UTC-5)" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Actions Footer */}
+                <div className="border-t border-slate-100 p-6 flex justify-end gap-3 bg-slate-50/50 mt-4">
+                  <button className="px-5 py-2.5 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors">
+                    Cancel
+                  </button>
+                  <button className="px-5 py-2.5 rounded-full text-xs font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] shadow-sm transition-colors" onClick={() => showToast("Changes saved!", "success")}>
+                    Save changes
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 2. Security Tab */}
+          {activeTab === "security" && (
+            <div className="space-y-6">
+              
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-[#0b1120] text-white flex items-center justify-center shrink-0">
+                  <IconLock />
+                </div>
+                <div>
+                  <h2 className="text-lg font-black text-slate-900">Security</h2>
+                  <p className="text-xs font-semibold text-slate-500">Password, 2FA, and active sessions.</p>
+                </div>
+              </div>
+
+              {/* Change Password */}
+              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                <div className="p-6">
+                  <h3 className="text-sm font-bold text-slate-900 mb-6">Change password</h3>
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-2">Current Password</label>
+                      <input type="password" defaultValue="........" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-2">New Password</label>
+                        <input type="password" placeholder="At least 8 characters" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-2">Confirm New Password</label>
+                        <input type="password" placeholder="" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="border-t border-slate-100 p-6 flex justify-end gap-3 bg-slate-50/50 mt-2">
+                  <button className="px-5 py-2.5 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors">
+                    Cancel
+                  </button>
+                  <button className="px-5 py-2.5 rounded-full text-xs font-bold text-white bg-[#0b1120] hover:bg-slate-800 shadow-sm transition-colors" onClick={() => showToast("Password updated", "success")}>
+                    Update password
+                  </button>
+                </div>
+              </div>
+
+
+
+              {/* Active Sessions */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h3 className="text-sm font-bold text-slate-900 mb-1">Active sessions</h3>
+                <p className="text-xs font-medium text-slate-500 mb-6">You're signed in on these devices.</p>
+                
+                <div className="space-y-4 border-t border-slate-100 pt-6">
+                  
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-slate-200 rounded-xl bg-white gap-4">
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        MacBook Pro — Chrome 
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#dcfce7] text-[#166534]">This device</span>
+                      </h4>
+                      <p className="text-xs font-medium text-slate-500 mt-1">Manila, PH · Active now</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-slate-200 rounded-xl bg-white gap-4">
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900">iPhone 15 — Safari</h4>
+                      <p className="text-xs font-medium text-slate-500 mt-1">Manila, PH · 2 hours ago</p>
+                    </div>
+                    <button className="px-4 py-1.5 border border-slate-200 bg-white rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors shrink-0">
+                      Sign out
+                    </button>
+                  </div>
+
+                  <div className="pt-2">
+                    <button className="text-xs font-bold text-red-600 hover:text-red-700 transition-colors">
+                      Sign out of all other sessions
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* 3. Notifications Tab */}
+          {activeTab === "notifications" && (
+            <div className="space-y-6">
+              
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-[#0b1120] text-white flex items-center justify-center shrink-0">
+                  <IconBell />
+                </div>
+                <div>
+                  <h2 className="text-lg font-black text-slate-900">Notifications</h2>
+                  <p className="text-xs font-semibold text-slate-500">What you want to be notified about, and where.</p>
+                </div>
+              </div>
+
+              {/* Delivery Channels */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h3 className="text-sm font-bold text-slate-900 mb-1">Delivery channels</h3>
+                <p className="text-xs font-medium text-slate-500 mb-6">How we contact you when something changes.</p>
+                
+                <div className="space-y-3 border-t border-slate-100 pt-6">
+                  
+                  <div className="flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-white">
+                    <h4 className="text-sm font-bold text-slate-900">Email notifications</h4>
+                    <div className="w-10 h-6 bg-[#00897B] rounded-full flex items-center p-1 justify-end cursor-pointer">
+                      <div className="w-4 h-4 bg-white rounded-full shadow-sm"></div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-white">
+                    <h4 className="text-sm font-bold text-slate-900">In-app notifications</h4>
+                    <div className="w-10 h-6 bg-[#00897B] rounded-full flex items-center p-1 justify-end cursor-pointer">
+                      <div className="w-4 h-4 bg-white rounded-full shadow-sm"></div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-white">
+                    <h4 className="text-sm font-bold text-slate-900">SMS for time-sensitive events</h4>
+                    <div className="w-10 h-6 bg-slate-200 rounded-full flex items-center p-1 cursor-pointer">
+                      <div className="w-4 h-4 bg-white rounded-full shadow-sm"></div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Operations */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h3 className="text-sm font-bold text-slate-900 mb-6">Operations</h3>
+                
+                <div className="space-y-3">
+                  
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-slate-200 rounded-xl bg-white gap-4">
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900">New VA applications</h4>
+                      <p className="text-xs font-medium text-slate-500 mt-0.5">When a VA submits an application.</p>
+                    </div>
+                    <div className="w-10 h-6 bg-[#00897B] rounded-full flex items-center p-1 justify-end cursor-pointer shrink-0">
+                      <div className="w-4 h-4 bg-white rounded-full shadow-sm"></div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-slate-200 rounded-xl bg-white gap-4">
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900">Job posts pending review</h4>
+                      <p className="text-xs font-medium text-slate-500 mt-0.5">When clients post new jobs.</p>
+                    </div>
+                    <div className="w-10 h-6 bg-[#00897B] rounded-full flex items-center p-1 justify-end cursor-pointer shrink-0">
+                      <div className="w-4 h-4 bg-white rounded-full shadow-sm"></div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-slate-200 rounded-xl bg-white gap-4">
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900">Materials pending review</h4>
+                      <p className="text-xs font-medium text-slate-500 mt-0.5">When trainers upload material.</p>
+                    </div>
+                    <div className="w-10 h-6 bg-[#00897B] rounded-full flex items-center p-1 justify-end cursor-pointer shrink-0">
+                      <div className="w-4 h-4 bg-white rounded-full shadow-sm"></div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Quiet Hours Form */}
+              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+                <div className="p-6">
+                  <h3 className="text-sm font-bold text-slate-900 mb-1">Quiet hours</h3>
+                  <p className="text-xs font-medium text-slate-500 mb-6">Mute non-urgent notifications during these hours.</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 border-t border-slate-100 pt-6">
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-2">From</label>
+                      <div className="relative">
+                        <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <input type="text" defaultValue="10:00 PM" className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-2">To</label>
+                      <div className="relative">
+                        <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <input type="text" defaultValue="07:00 AM" className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Actions Footer */}
+                <div className="border-t border-slate-100 p-6 flex justify-end gap-3 bg-slate-50/50 mt-2">
+                  <button className="px-5 py-2.5 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors">
+                    Cancel
+                  </button>
+                  <button className="px-5 py-2.5 rounded-full text-xs font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] shadow-sm transition-colors" onClick={() => showToast("Notifications saved!", "success")}>
+                    Save changes
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          )}
+
+
+
+          {/* 5. Danger Zone Tab */}
+          {activeTab === "danger" && (
+            <div className="space-y-6">
+              
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-[#0b1120] text-white flex items-center justify-center shrink-0">
                   <IconTrash />
                 </div>
-                <h2 className="text-lg font-black tracking-tight mb-2 text-red-900">Delete Account</h2>
-                <p className="text-[11px] font-medium leading-relaxed text-slate-500">Permanently remove your VA101 account and all associated data.</p>
-              </div>
-              <div className="sm:w-2/3 flex flex-col justify-center">
-                <div className="bg-red-50/60 border border-red-200/40 rounded-2xl p-4 mb-5">
-                  <p className="text-[11px] text-red-600 font-semibold leading-relaxed">
-                    Once you delete your account, all job applications, saved jobs, contracts, and profile data will be <strong>permanently erased</strong>. This cannot be undone.
-                  </p>
+                <div>
+                  <h2 className="text-lg font-black text-slate-900">Danger zone</h2>
+                  <p className="text-xs font-semibold text-slate-500">Deactivate or delete your account.</p>
                 </div>
-                <button
-                  onClick={() => setShowDeleteModal(true)}
-                  className="w-full py-3 rounded-full text-xs font-bold text-red-600 border border-red-200 hover:bg-red-50 hover:border-red-300 transition-all cursor-pointer"
-                >
-                  Delete My Account
-                </button>
               </div>
+
+              {/* Danger Actions Area */}
+              <div className="bg-red-50/30 border border-red-200 rounded-2xl p-6 shadow-sm">
+                <h3 className="text-sm font-bold text-red-900 mb-1">Danger zone</h3>
+                <p className="text-xs font-medium text-red-600/80 mb-6">These actions are permanent. Please be careful.</p>
+                
+                <div className="space-y-4 border-t border-red-200/60 pt-6">
+                  
+                  <div className="flex flex-col md:flex-row md:items-center justify-between p-5 border border-red-200 rounded-xl bg-white gap-4">
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900">Pause account</h4>
+                      <p className="text-xs font-medium text-slate-500 mt-1">Temporarily hide your profile and stop notifications.</p>
+                    </div>
+                    <button className="px-5 py-2 border border-slate-300 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors bg-white shadow-sm shrink-0">
+                      Pause
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col md:flex-row md:items-center justify-between p-5 border border-red-200 rounded-xl bg-white gap-4">
+                    <div>
+                      <h4 className="text-sm font-bold text-red-700">Delete account</h4>
+                      <p className="text-xs font-medium text-slate-500 mt-1">Permanently delete your account, data, and history. This cannot be undone.</p>
+                    </div>
+                    <button className="px-5 py-2 rounded-full text-xs font-bold text-white bg-[#dc2626] hover:bg-[#b91c1c] transition-colors shadow-sm shrink-0">
+                      Delete account
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+
             </div>
-          </div>
-        </>
-      )}
+          )}
 
-      {showDeleteModal && (
-        <DeleteModal onClose={() => setShowDeleteModal(false)} onConfirm={handleDeleteAccount} />
-      )}
-
+        </div>
+      </div>
     </div>
   );
 }
 
-// Reusable Input Component
-function InputField({ id, label, type = "text", value, onChange, placeholder, hint }: any) {
-  const [showPw, setShowPw] = useState(false);
-  const isPassword = type === "password";
-  
+// Icon for Mail
+function IconMail({ className = "w-4 h-4" }) {
   return (
-    <div>
-      <label htmlFor={id} className="block text-xs font-bold text-slate-800 mb-1.5">{label}</label>
-      <div className="relative">
-        <input
-          id={id}
-          type={isPassword && showPw ? "text" : type}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="w-full border border-slate-200 rounded-xl p-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/40 focus:border-transparent transition-all bg-white text-slate-800"
-        />
-        {isPassword && (
-          <button
-            type="button"
-            onClick={() => setShowPw(p => !p)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
-          >
-            {showPw ? <IconEyeOff /> : <IconEye />}
-          </button>
-        )}
-      </div>
-      {hint && <p className="text-[10px] text-slate-400 font-medium mt-1">{hint}</p>}
-    </div>
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+      <polyline points="22,6 12,12 2,6" />
+    </svg>
   );
 }

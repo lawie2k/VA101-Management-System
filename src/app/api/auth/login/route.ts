@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   try {
     const ip = getClientIp(req);
 
-    // Rate Limit: Max 5 login attempts per minute per IP to prevent brute-force attacks
+    // Rate limit: 5 attempts per minute
     const limiter = rateLimit(ip, 5, 60 * 1000);
     if (!limiter.success) {
       return NextResponse.json(
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     const body = await req.json().catch(() => ({}));
     const { email, password } = body;
 
-    // 1. Sanitization & input validation
+    // 1. Validate input
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email and password are required" },
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2. Lookup user and retrieve roles (Prisma parameterizes inputs by default, blocking SQL injection)
+    // 2. Fetch user and roles
     const user = await db.users.findUnique({
       where: { email: email.toLowerCase().trim() },
       include: {
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
       },
     });
 
-    // Handle authentication failures with a generic error message (standard security practice)
+    // Generic error on failure
     if (!user) {
       return NextResponse.json(
         { error: "Invalid email or password" },
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 3. Verify Password
+    // 3. Check password
     const isValidPassword = await verifyPassword(password, user.password_hash);
     if (!isValidPassword) {
       return NextResponse.json(
@@ -72,10 +72,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // 4. Map active roles
+    // 4. Get role names
     const userRoles = user.user_roles.map((ur) => ur.roles.name);
 
-    // 5. Establish session cookie
+    // 5. Set session cookie
     const sessionUser = {
       id: user.id.toString(),
       email: user.email,

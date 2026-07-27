@@ -19,13 +19,30 @@ export async function GET() {
       return NextResponse.json({ authenticated: false, user: null });
     }
 
+    const responseUser = {
+      id: freshUser.id.toString(),
+      email: freshUser.email,
+      fullName: freshUser.full_name,
+      profilePhotoUrl: freshUser.profile_photo_url,
+      roles: session.user.roles,
+    };
+
+    // If client, fetch the client profile to check for signed contract
+    let hasSignedContract = false;
+    if (session.user.roles.includes("client")) {
+      const clientProfile = await db.client_profiles.findUnique({
+        where: { user_id: BigInt(session.user.id) }
+      });
+      if (clientProfile) {
+        hasSignedContract = clientProfile.has_signed_contract;
+      }
+    }
+
     return NextResponse.json({
       authenticated: true,
       user: {
-        id: freshUser.id.toString(),
-        email: freshUser.email,
-        fullName: freshUser.full_name,
-        profilePhotoUrl: freshUser.profile_photo_url,
+        ...responseUser,
+        hasSignedContract
       }
     });
   } catch (err) {

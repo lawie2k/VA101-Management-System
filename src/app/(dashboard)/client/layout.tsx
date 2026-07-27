@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import FormHeader from "../../../components/layout/FormHeader";
 import Footer from "../../../components/layout/Footer";
+import ContractSigningUI from "../../../components/client-dashboard-components/ContractSigningUI";
 
 const navItems = [
   { label: "Dashboard", href: "/client/dashboard" },
@@ -24,6 +25,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const [isScrolled, setIsScrolled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
 
   // Sync scroll detection to match standard FormHeader transparent transition threshold
   useEffect(() => {
@@ -42,6 +44,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         const data = await response.json();
         if (data.authenticated) {
           setIsAuthenticated(true);
+          setUserData(data.user);
         } else {
           router.push("/login");
         }
@@ -58,6 +61,13 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   // If they are on discovery-calls and NOT logged in, we render the page as guest (no tabs).
   const showNav = isAuthenticated || (loading && !pathname.includes("/client/discovery-calls"));
   const isSetupPage = pathname === "/client/profile/setup-profile-form";
+
+  const restrictedPaths = [
+    "/client/post-job",
+    "/client/jobs",
+    "/client/shortlisted-candidates",
+    "/client/interviews"
+  ];
 
   const renderContent = () => {
     if (loading) {
@@ -76,6 +86,21 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         </div>
       );
     }
+
+    // Global Contract Signing Enforcement
+    // If the user hasn't signed the contract, block all dashboard routes except setup-profile-form
+    if (userData && !userData.hasSignedContract && !isSetupPage) {
+      return (
+        <ContractSigningUI 
+          companyName="" 
+          onSignSuccess={() => {
+            setUserData({...userData, hasSignedContract: true});
+            window.location.reload();
+          }} 
+        />
+      );
+    }
+
     return children;
   };
 

@@ -9,41 +9,52 @@ import ClientRightSidebar from "../../../../components/client-dashboard-componen
 export default function ClientDashboardPage() {
   const router = useRouter();
   const [companyName, setCompanyName] = useState("");
+  const [hasSignedContract, setHasSignedContract] = useState(true); // Default true so it doesn't flash
+  const [isSigning, setIsSigning] = useState(false);
+  const [signature, setSignature] = useState("");
 
   useEffect(() => {
-    const saved = localStorage.getItem("client_profile_data");
-    if (saved) {
+    async function checkProfile() {
       try {
-        const data = JSON.parse(saved);
-        if (!data.companyName) {
+        const res = await fetch("/api/client/profile");
+        if (res.status === 404) {
           router.replace("/client/profile/setup-profile-form");
           return;
         }
-        setCompanyName(data.companyName || "");
-      } catch (e) {
-        console.error("Failed to parse client profile:", e);
+        const data = await res.json();
+        if (!data.companyName) {
+          router.replace("/client/profile/setup-profile-form");
+        } else {
+          setCompanyName(data.companyName);
+          setHasSignedContract(!!data.hasSignedContract);
+        }
+      } catch (err) {
+        console.error("Failed to load profile:", err);
       }
-    } else {
-      // Fallback API check if missing from local storage
-      fetch("/api/client/profile")
-        .then(res => {
-          if (res.status === 404) {
-            router.replace("/client/profile/setup-profile-form");
-            throw new Error("Profile not found");
-          }
-          return res.json();
-        })
-        .then(data => {
-          if (!data.companyName) {
-            router.replace("/client/profile/setup-profile-form");
-          } else {
-            localStorage.setItem("client_profile_data", JSON.stringify(data));
-            setCompanyName(data.companyName);
-          }
-        })
-        .catch(err => console.error(err));
     }
+    checkProfile();
   }, [router]);
+
+  const handleSignContract = async () => {
+    if (!signature.trim()) return;
+    try {
+      setIsSigning(true);
+      const res = await fetch("/api/client/sign-contract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ signature })
+      });
+      if (res.ok) {
+        setHasSignedContract(true);
+        // Force a page refresh to reset the auth session and fully unlock the layout wrapper
+        window.location.reload();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSigning(false);
+    }
+  };
 
   const [jobPosts, setJobPosts] = useState<any[]>([]);
   const [shortlistedCandidates, setShortlistedCandidates] = useState<any[]>([]);

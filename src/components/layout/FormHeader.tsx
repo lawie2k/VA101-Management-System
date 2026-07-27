@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import GlobalNotices from "../shared/GlobalNotices";
 
 interface FormHeaderProps {
   forceSolid?: boolean;
@@ -43,16 +44,19 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
     setMounted(true);
   }, []);
 
-  const isSetupPage = mounted && pathname.includes("/setup-profile-form");
-  
-  let basePath = "/va";
-  if (pathname.startsWith("/trainer")) basePath = "/trainer";
-  if (pathname.startsWith("/client")) basePath = "/client";
-  if (pathname.startsWith("/student")) basePath = "/student";
-
   const [profileImage, setProfileImage] = useState("");
   const [profileName, setProfileName] = useState("");
   const [profileEmail, setProfileEmail] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState("");
+
+  const isSetupPage = mounted && pathname.includes("/setup-profile-form");
+  
+  let basePath = userRole ? `/${userRole}` : "/va";
+  if (pathname.startsWith("/trainer")) basePath = "/trainer";
+  if (pathname.startsWith("/client")) basePath = "/client";
+  if (pathname.startsWith("/student")) basePath = "/student";
+  if (pathname.startsWith("/va")) basePath = "/va";
 
   const initials = profileName
     ? profileName.trim().split(" ").filter(Boolean).map(n => n[0]).join("").slice(0, 2).toUpperCase()
@@ -68,6 +72,8 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
           setProfileImage(data.avatar || "");
           if (data.fullName) setProfileName(data.fullName);
           if (data.email) setProfileEmail(data.email);
+          setIsAuthenticated(true);
+          setUserRole("va");
         } catch (e) {
           console.error(e);
         }
@@ -81,6 +87,8 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
           if (data.avatar) setProfileImage(data.avatar);
           if (data.companyName) setProfileName(data.companyName);
           if (data.billingEmail) setProfileEmail(data.billingEmail);
+          setIsAuthenticated(true);
+          setUserRole("client");
         } catch (e) {
           console.error(e);
         }
@@ -93,6 +101,8 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
           const data = JSON.parse(studentSaved);
           if (data.avatarUrl) setProfileImage(data.avatarUrl);
           if (data.fullName) setProfileName(data.fullName);
+          setIsAuthenticated(true);
+          setUserRole("student");
         } catch (e) {
           console.error(e);
         }
@@ -106,6 +116,8 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
           if (data.avatar) setProfileImage(data.avatar);
           if (data.fullName) setProfileName(data.fullName);
           if (data.email) setProfileEmail(data.email);
+          setIsAuthenticated(true);
+          setUserRole("trainer");
         } catch (e) {
           console.error(e);
         }
@@ -117,9 +129,17 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
         if (res.ok) {
           const session = await res.json();
           if (session.authenticated && session.user) {
+            setIsAuthenticated(true);
             const user = session.user;
             if (user.fullName) setProfileName(user.fullName);
             if (user.email) setProfileEmail(user.email);
+            if (user.roles && user.roles.length > 0) {
+              const role = user.roles[0].toLowerCase();
+              if (role.includes("va")) setUserRole("va");
+              else if (role.includes("client")) setUserRole("client");
+              else if (role.includes("student")) setUserRole("student");
+              else if (role.includes("trainer")) setUserRole("trainer");
+            }
             
             let avatar = "";
             if (user.profilePhotoUrl) {
@@ -137,6 +157,8 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
             // Only override avatar from server if it actually has a value
             // This prevents the API call from wiping a locally-set client avatar
             if (avatar) setProfileImage(avatar);
+          } else {
+            setIsAuthenticated(false);
           }
         }
       } catch (err) {
@@ -287,7 +309,7 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
 
         {/* Action Buttons / User Profile */}
         <div className="hidden md:flex items-center gap-4">
-          {isDashboard ? (
+          {isDashboard || isAuthenticated ? (
             /* Authenticated User Profile Dropdown */
             <>
               <a
@@ -296,6 +318,10 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
               >
                 Get started <span>↗</span>
               </a>
+              
+              {/* Notices Bell */}
+              <GlobalNotices />
+
               <div className="relative">
                 <button
                 onClick={() => toggleDropdown("profile")}
@@ -462,7 +488,7 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
           </a>
 
           <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-[#1C1C1E]">
-            {isDashboard ? (
+            {isDashboard || isAuthenticated ? (
               /* Mobile dashboard actions */
               <>
                 {isSetupPage ? (

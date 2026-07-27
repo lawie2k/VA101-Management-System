@@ -26,6 +26,7 @@ export async function GET(req: Request) {
       companySize: profile.company_size || "",
       companyWebsite: profile.company_website || "",
       companyDescription: profile.company_description || "",
+      hasSignedContract: profile.has_signed_contract || false,
     });
   } catch (error) {
     console.error("Failed to fetch client profile:", error);
