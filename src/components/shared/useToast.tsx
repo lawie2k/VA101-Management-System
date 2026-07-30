@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 type ToastState = {
   message: string;
@@ -19,10 +20,16 @@ export function useToast() {
 }
 
 export function Toast({ toast }: { toast: ToastState }) {
-  if (!toast) return null;
+  const [mounted, setMounted] = useState(false);
 
-  return (
-    <div className={`fixed bottom-8 right-8 z-50 flex items-center gap-2 px-5 py-3.5 rounded-2xl shadow-xl animate-in slide-in-from-bottom-5 fade-in duration-300 font-bold text-sm ${
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!toast || !mounted) return null;
+
+  return createPortal(
+    <div className={`fixed bottom-8 right-8 z-[9999] flex items-center gap-2 px-5 py-3.5 rounded-2xl shadow-xl animate-in slide-in-from-bottom-5 fade-in duration-300 font-bold text-sm ${
       toast.type === "success" ? "bg-emerald-600 text-white" : "bg-red-600 text-white"
     }`}>
       {toast.type === "success" && (
@@ -31,6 +38,7 @@ export function Toast({ toast }: { toast: ToastState }) {
         </svg>
       )}
       {toast.message}
-    </div>
+    </div>,
+    document.body
   );
 }

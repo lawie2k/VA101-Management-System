@@ -19,7 +19,8 @@ export async function GET(req: Request) {
     // Fetch shortlists for job posts belonging to this client
     const rawShortlists = await prisma.shortlists.findMany({
       where: {
-        client_profile_id: clientProfile.id
+        client_profile_id: clientProfile.id,
+        status: "shortlisted"
       },
       include: {
         job_applications: {
@@ -27,20 +28,24 @@ export async function GET(req: Request) {
             va_profiles: {
               include: {
                 users: {
-                  select: { full_name: true }
+                  select: { full_name: true, profile_photo_url: true }
                 },
                 va_skills: {
                   include: { skills: true }
+                },
+                va_feedback: {
+                  select: { rating: true }
                 }
               }
             },
             job_posts: {
-              select: { role_needed: true, job_title: true }
+              select: { role_needed: true, job_title: true, client_hourly_rate: true }
             }
           }
         }
       },
-      orderBy: { created_at: 'desc' }
+      orderBy: { created_at: 'desc' },
+      take: 50
     });
 
     // Serialize BigInts and format response
@@ -49,12 +54,19 @@ export async function GET(req: Request) {
       const jobPost = s.job_applications?.job_posts;
       return {
         id: s.id.toString(),
+        vaProfileId: vaProfile?.id?.toString() || null,
         candidateName: vaProfile?.users?.full_name || "Unknown Candidate",
         role: jobPost?.role_needed || jobPost?.job_title,
         experience: vaProfile?.experience_level ? `${vaProfile.experience_level} yrs exp` : "N/A",
         status: s.status,
         appliedDate: s.created_at ? s.created_at.toISOString().split('T')[0] : "N/A",
-        skills: vaProfile?.va_skills.map(skillLink => skillLink.skills.name).slice(0, 3) || []
+        skills: vaProfile?.va_skills.map(skillLink => skillLink.skills.name).slice(0, 3) || [],
+        avatar: vaProfile?.users?.profile_photo_url || null,
+        hourlyRate: jobPost?.client_hourly_rate ? Number(jobPost.client_hourly_rate) : 0,
+        location: vaProfile?.location || "Global",
+        rating: vaProfile?.va_feedback && vaProfile.va_feedback.length > 0
+          ? Math.round((vaProfile.va_feedback.reduce((sum: number, f: any) => sum + f.rating, 0) / vaProfile.va_feedback.length) * 10) / 10
+          : null
       };
     });
 

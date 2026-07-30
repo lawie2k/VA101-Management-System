@@ -9,7 +9,7 @@ import { requireRole } from "@/src/lib/auth";
 
 export async function GET(req: Request) {
   try {
-    await requireRole("admin");
+    await requireRole("admin", "employee");
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search") || "";
 
@@ -35,9 +35,10 @@ export async function GET(req: Request) {
       
       let displayStatus = "Draft";
       if (mat.status === "pending_review") displayStatus = "Pending Review";
-      else if (mat.status === "approved") displayStatus = "Approved";
+      else if (mat.status === "approved" || mat.status === "active") displayStatus = "Active";
       else if (mat.status === "revision_requested") displayStatus = "Revision Requested";
       else if (mat.status === "rejected") displayStatus = "Rejected";
+      else if (mat.status === "disabled") displayStatus = "Disabled";
 
       return {
         id: `CRS-${mat.id}`,
@@ -61,7 +62,7 @@ export async function GET(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    await requireRole("admin");
+    await requireRole("admin", "employee");
     const { materialId, status } = await req.json();
 
     if (!materialId || !status) {

@@ -9,7 +9,7 @@ import { requireRole } from "@/src/lib/auth";
 
 export async function GET() {
   try {
-    await requireRole("admin");
+    await requireRole("admin", "employee");
 
     const shortlists = await prisma.shortlists.findMany({
       orderBy: { created_at: "desc" },

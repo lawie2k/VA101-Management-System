@@ -38,7 +38,7 @@ export default function JobsRightSidebar() {
   const total   = jobs.reduce((acc, j) => acc + (j.applicants || 0), 0);
 
   return (
-    <aside className="lg:col-span-3 h-full overflow-y-auto scrollbar-none space-y-5 pb-12">
+    <aside className="lg:col-span-3 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-none space-y-5 pb-12">
 
       {/* Jobs Summary Analytics */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs">

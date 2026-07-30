@@ -84,6 +84,7 @@ export default function VAMyLearningPage() {
   const [profileState, setProfileState] = useState(DEFAULT_PROFILE);
   const [savedJobs, setSavedJobs] = useState<string[]>([]);
   const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
   const [courseProgress, setCourseProgress] = useState<Record<string, number>>({});
 
   // Interactive video modal player state
@@ -93,6 +94,18 @@ export default function VAMyLearningPage() {
 
   const getCourseInfo = (id: string | null) => {
     if (!id) return null;
+    const dynamicCourse = courses.find((c: any) => c.id === id);
+    if (dynamicCourse) {
+      return {
+        title: dynamicCourse.title,
+        category: dynamicCourse.category || "General",
+        lessons: ["Course Material Overview", "Full Video Lecture"],
+        invoice: `INV-${id.substring(0, 4)}`,
+        amount: dynamicCourse.price === 0 ? 0 : dynamicCourse.price || 0,
+        paymentDate: dynamicCourse.createdAt || new Date().toISOString(),
+        classStartDate: dynamicCourse.createdAt || new Date().toISOString()
+      };
+    }
     const key = !id.startsWith("c-") ? `c-${id}` : id;
     return COURSE_INFOS[key as keyof typeof COURSE_INFOS] || COURSE_INFOS["c-1"];
   };
@@ -152,6 +165,22 @@ export default function VAMyLearningPage() {
         console.error("Failed to load training purchases:", e);
       }
     }
+    
+    async function fetchCourses() {
+      try {
+        const res = await fetch("/api/va/training/materials");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setCourses(data);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load courses:", e);
+      }
+    }
+    
+    fetchCourses();
     fetchPurchases();
   }, []);
 
@@ -192,7 +221,7 @@ export default function VAMyLearningPage() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 h-[calc(100vh-144px)] overflow-hidden">
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 min-h-[calc(100vh-144px)] lg:h-[calc(100vh-144px)] overflow-visible lg:overflow-hidden">
       
       {/* Toast Alert Simulation */}
       {toastNotification && (
@@ -202,11 +231,12 @@ export default function VAMyLearningPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch h-full overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch h-full overflow-visible lg:overflow-hidden">
         
-        <VALeftSidebar />
+        <VALeftSidebar hideOnMobile={true} />
 
         <LearningMainFeed 
+          courses={courses}
           enrolledCourses={enrolledCourses}
           courseProgress={courseProgress}
           setActiveCourseId={setActiveCourseId}

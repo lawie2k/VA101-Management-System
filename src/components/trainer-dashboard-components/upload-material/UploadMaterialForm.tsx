@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useToast, Toast } from "../../shared/useToast";
 
 // ==========================================
 // ICONS
@@ -31,6 +32,7 @@ const CATEGORIES = [
 
 export default function UploadMaterialForm() {
   const router = useRouter();
+  const { toast, showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFree, setIsFree] = useState(false);
   const [formData, setFormData] = useState({
@@ -57,20 +59,23 @@ export default function UploadMaterialForm() {
           title: formData.title,
           category: formData.category,
           price: isFree ? 0 : parseFloat(formData.price),
-          description: formData.description
+          description: formData.description,
+          status: "pending_review"
         })
       });
 
       if (res.ok) {
-        alert("Material uploaded successfully! It will now be reviewed by our admins.");
-        router.push("/trainer/materials/my-materials");
+        showToast("Material uploaded successfully!", "success");
+        setTimeout(() => {
+          router.push("/trainer/materials/my-materials");
+        }, 1500);
       } else {
         const err = await res.json();
-        alert(`Error: ${err.error || "Failed to upload material"}`);
+        showToast(`Error: ${err.error || "Failed to upload material"}`, "error");
       }
     } catch (error) {
       console.error(error);
-      alert("An error occurred while uploading.");
+      showToast("An error occurred while uploading.", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -185,50 +190,38 @@ export default function UploadMaterialForm() {
           <div className="grid gap-6 md:grid-cols-2">
             
             {/* File Upload */}
-            <div>
+            <div className="flex flex-col">
               <label className="block text-xs font-bold text-slate-900 mb-1.5 uppercase tracking-wider">
                 Course File (PDF, MP4) <span className="text-[#E84E29]">*</span>
               </label>
-              <div className="mt-2 flex justify-center rounded-2xl border-2 border-dashed border-slate-300 px-6 py-10 hover:border-[#E84E29] hover:bg-orange-50/50 transition-colors cursor-pointer group">
+              <label htmlFor="file-upload" className="mt-2 flex-1 flex flex-col justify-center items-center rounded-2xl border-2 border-dashed border-slate-300 px-6 py-6 hover:border-[#E84E29] hover:bg-orange-50/50 transition-colors cursor-pointer group w-full">
                 <div className="text-center">
                   <UploadIcon className="mx-auto h-10 w-10 text-slate-400 group-hover:text-[#E84E29] transition-colors" />
-                  <div className="mt-4 flex text-sm leading-6 text-slate-600">
-                    <label
-                      htmlFor="file-upload"
-                      className="relative cursor-pointer rounded-md bg-transparent font-semibold text-[#E84E29] focus-within:outline-none focus-within:ring-2 focus-within:ring-[#E84E29] focus-within:ring-offset-2 hover:text-orange-500"
-                    >
-                      <span>Upload a file</span>
-                      <input id="file-upload" name="file-upload" type="file" className="sr-only" required />
-                    </label>
-                    <p className="pl-1">or drag and drop</p>
+                  <div className="mt-4 flex justify-center text-sm leading-6 text-slate-600">
+                    <span className="font-semibold text-[#E84E29] hover:text-orange-500">Upload a file</span>
+                    <input id="file-upload" name="file-upload" type="file" className="sr-only" required />
                   </div>
                   <p className="text-xs text-slate-500 mt-2">MP4, PDF, ZIP up to 500MB</p>
                 </div>
-              </div>
+              </label>
             </div>
 
             {/* Thumbnail Upload */}
-            <div>
+            <div className="flex flex-col">
               <label className="block text-xs font-bold text-slate-900 mb-1.5 uppercase tracking-wider">
                 Cover Thumbnail <span className="text-[#E84E29]">*</span>
               </label>
-              <div className="mt-2 flex justify-center rounded-2xl border-2 border-dashed border-slate-300 px-6 py-10 hover:border-[#E84E29] hover:bg-orange-50/50 transition-colors cursor-pointer group">
+              <label htmlFor="thumbnail-upload" className="mt-2 flex-1 flex flex-col justify-center items-center rounded-2xl border-2 border-dashed border-slate-300 px-6 py-6 hover:border-[#E84E29] hover:bg-orange-50/50 transition-colors cursor-pointer group w-full">
                 <div className="text-center">
                   <ImagePlaceholderIcon className="mx-auto h-10 w-10 text-slate-400 group-hover:text-[#E84E29] transition-colors" />
-                  <div className="mt-4 flex text-sm leading-6 text-slate-600">
-                    <label
-                      htmlFor="thumbnail-upload"
-                      className="relative cursor-pointer rounded-md bg-transparent font-semibold text-[#E84E29] focus-within:outline-none focus-within:ring-2 focus-within:ring-[#E84E29] focus-within:ring-offset-2 hover:text-orange-500"
-                    >
-                      <span>Upload an image</span>
-                      <input id="thumbnail-upload" name="thumbnail-upload" type="file" className="sr-only" accept="image/*" required />
-                    </label>
-                    <p className="pl-1">or drag and drop</p>
+                  <div className="mt-4 flex justify-center text-sm leading-6 text-slate-600">
+                    <span className="font-semibold text-[#E84E29] hover:text-orange-500">Upload an image</span>
+                    <input id="thumbnail-upload" name="thumbnail-upload" type="file" className="sr-only" accept="image/*" required />
                   </div>
                   <p className="text-xs text-slate-500 mt-2">PNG, JPG up to 10MB</p>
                   <p className="text-[10px] text-slate-400 mt-1">Recommended size: 1200 x 600px</p>
                 </div>
-              </div>
+              </label>
             </div>
             
           </div>
@@ -256,6 +249,7 @@ export default function UploadMaterialForm() {
         </div>
 
       </form>
+      <Toast toast={toast} />
     </>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import { SettingsPanel } from "../../../../components/shared/SettingsPanel";
+import { SettingsPanel } from "../../../../components/va-dashboard-components/settings/SettingsPanel";
 
 export default function StudentSettingsPage() {
   return (
@@ -11,7 +11,7 @@ export default function StudentSettingsPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#E84E29]"></div>
         </div>
       }>
-        <SettingsPanel role="student" />
+        <SettingsPanel />
       </Suspense>
     </div>
   );

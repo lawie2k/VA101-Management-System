@@ -10,10 +10,10 @@ export async function GET(req: Request) {
   try {
     await requireRole("admin");
 
-    const logs = await prisma.admin_logs.findMany({
+    const logs = await prisma.logs.findMany({
       orderBy: { created_at: "desc" },
       include: {
-        users: {
+        users_logs_created_byTousers: {
           select: {
             full_name: true,
             email: true,
@@ -23,7 +23,13 @@ export async function GET(req: Request) {
       take: 200 // limit to recent 200 logs for performance
     });
 
-    return NextResponse.json({ logs });
+    // Map the relation to `users` to match frontend expectations
+    const mappedLogs = logs.map(log => ({
+      ...log,
+      users: log.users_logs_created_byTousers
+    }));
+
+    return NextResponse.json({ logs: mappedLogs });
   } catch (error) {
     console.error("Error fetching admin logs:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

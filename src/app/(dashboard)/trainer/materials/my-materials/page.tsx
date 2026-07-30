@@ -4,8 +4,8 @@ import TrainerMaterialsList from "../../../../../components/trainer-dashboard-co
 
 export default function TrainerMaterialsPage() {
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-144px)] overflow-hidden">
-      <div className="h-full overflow-y-auto scrollbar-none pb-12 space-y-6">
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[calc(100vh-144px)] lg:h-[calc(100vh-144px)] overflow-visible lg:overflow-hidden">
+      <div className="h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-none pb-12 space-y-6">
         <TrainerMaterialsList />
       </div>
     </div>

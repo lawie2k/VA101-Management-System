@@ -9,7 +9,8 @@ export async function GET(req: Request) {
 
     const methods = await prisma.payout_methods.findMany({
       where: { user_id: BigInt(userId) },
-      orderBy: { created_at: 'desc' }
+      orderBy: { created_at: 'desc' },
+      take: 10
     });
 
     const formattedMethods = methods.map(m => ({

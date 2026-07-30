@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast, Toast } from "../../../../components/shared/useToast";
 
 // ==========================================
 // 1. Static Configuration / Mock Constants
@@ -86,6 +87,7 @@ function SplitRow({ label, value, tone }: { label: string; value: string; tone?:
 
 export default function PostJobPage() {
   const router = useRouter();
+  const { toast, showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -98,8 +100,8 @@ export default function PostJobPage() {
     workDaysEnd: "Friday",
     workHoursStart: "09:00",
     workHoursStartPeriod: "AM",
-    workHoursEnd: "05:00",
     workHoursEndPeriod: "PM",
+    jobType: "Full-time",
     description: "",
     timezone: "EST",
   });
@@ -141,7 +143,7 @@ export default function PostJobPage() {
       jobTitle: formData.title,
       roleNeeded: formData.roleNeeded,
       jobDescription: formData.description,
-      workSchedule: `${formData.workDaysStart} - ${formData.workDaysEnd}, ${formData.workHoursStart} ${formData.workHoursStartPeriod} - ${formData.workHoursEnd} ${formData.workHoursEndPeriod} ${formData.timezone}`,
+      workSchedule: `${formData.jobType} | ${formData.workDaysStart} - ${formData.workDaysEnd}, ${formData.workHoursStart} ${formData.workHoursStartPeriod} - ${formData.workHoursEnd} ${formData.workHoursEndPeriod} ${formData.timezone}`,
       workShift: "flexible", // Hardcoded or omitted as this is mock
       timezone: formData.timezone,
       clientHourlyRate: rate,
@@ -162,17 +164,18 @@ export default function PostJobPage() {
       
       if (res.ok) {
         setIsSuccess(true);
+        showToast("Job posted successfully!", "success");
         window.scrollTo({ top: 0, behavior: "smooth" });
         setTimeout(() => {
           router.push("/client/jobs");
         }, 2500);
       } else {
         const err = await res.json();
-        alert(`Failed to post job: ${err.error}`);
+        showToast(`Failed to post job: ${err.error}`, "error");
         setLoading(false);
       }
     } catch (err: any) {
-      alert(err.message || "An unexpected error occurred.");
+      showToast(err.message || "An unexpected error occurred.", "error");
       setLoading(false);
     }
   };
@@ -218,20 +221,38 @@ export default function PostJobPage() {
               />
             </div>
 
-            <div>
-              <label htmlFor="roleNeeded" className="block text-xs font-bold text-slate-900 mb-1.5">
-                Role Needed <span className="text-red-500">*</span>
-              </label>
-              <input 
-                id="roleNeeded"
-                name="roleNeeded"
-                type="text"
-                required
-                placeholder="e.g. VA / EA / Bookkeeper / Social Media VA"
-                value={formData.roleNeeded}
-                onChange={handleInputChange}
-                className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all shadow-xs"
-              />
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div>
+                <label htmlFor="roleNeeded" className="block text-xs font-bold text-slate-900 mb-1.5">
+                  Role Needed <span className="text-red-500">*</span>
+                </label>
+                <input 
+                  id="roleNeeded"
+                  name="roleNeeded"
+                  type="text"
+                  required
+                  placeholder="e.g. VA / EA / Bookkeeper / Social Media VA"
+                  value={formData.roleNeeded}
+                  onChange={handleInputChange}
+                  className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all shadow-xs"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="jobType" className="block text-xs font-bold text-slate-900 mb-1.5">
+                  Job Type <span className="text-red-500">*</span>
+                </label>
+                <select 
+                  id="jobType"
+                  name="jobType"
+                  value={formData.jobType}
+                  onChange={handleInputChange}
+                  className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all bg-white text-slate-800 font-medium"
+                >
+                  <option value="Full-time">Full-time</option>
+                  <option value="Part-time">Part-time</option>
+                </select>
+              </div>
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2">
@@ -254,16 +275,16 @@ export default function PostJobPage() {
                 <label className="block text-xs font-bold text-slate-900 mb-1.5">
                   Work Days
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
                   <select 
                     name="workDaysStart"
                     value={formData.workDaysStart}
                     onChange={handleInputChange}
-                    className="flex-1 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all bg-white text-slate-800 font-medium"
+                    className="flex-1 w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all bg-white text-slate-800 font-medium"
                   >
                     {DAY_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
-                  <span className="flex items-center text-slate-400 font-bold">-</span>
+                  <span className="hidden sm:flex items-center text-slate-400 font-bold">-</span>
                   <select 
                     name="workDaysEnd"
                     value={formData.workDaysEnd}
@@ -279,8 +300,8 @@ export default function PostJobPage() {
                 <label className="block text-xs font-bold text-slate-900 mb-1.5">
                   Work Hours & Timezone
                 </label>
-                <div className="flex gap-2">
-                  <div className="flex flex-1 gap-1.5">
+                <div className="flex flex-col xl:flex-row gap-2 xl:items-center">
+                  <div className="flex flex-1 gap-1.5 w-full">
                     <select 
                       name="workHoursStart"
                       value={formData.workHoursStart}
@@ -299,8 +320,8 @@ export default function PostJobPage() {
                       <option value="PM">PM</option>
                     </select>
                   </div>
-                  <span className="flex items-center text-slate-400 font-bold">-</span>
-                  <div className="flex flex-1 gap-1.5">
+                  <span className="hidden xl:flex items-center text-slate-400 font-bold">-</span>
+                  <div className="flex flex-1 gap-1.5 w-full">
                     <select 
                       name="workHoursEnd"
                       value={formData.workHoursEnd}
@@ -323,7 +344,7 @@ export default function PostJobPage() {
                     name="timezone"
                     value={formData.timezone}
                     onChange={handleInputChange}
-                    className="w-28 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all bg-white text-slate-800 font-medium"
+                    className="w-full xl:w-28 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 focus:border-transparent transition-all bg-white text-slate-800 font-medium"
                   >
                     {TIMEZONE_OPTIONS.map(tz => <option key={tz} value={tz}>{tz}</option>)}
                   </select>
@@ -470,6 +491,7 @@ export default function PostJobPage() {
         </aside>
 
       </form>
+      <Toast toast={toast} />
     </div>
   );
 }

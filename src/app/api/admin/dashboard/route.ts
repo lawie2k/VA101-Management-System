@@ -4,7 +4,7 @@ import { requireRole } from "@/src/lib/auth";
 
 export async function GET(req: Request) {
   try {
-    await requireRole("admin");
+    await requireRole("admin", "employee");
 
     // --- METRICS (COUNTS) ---
     

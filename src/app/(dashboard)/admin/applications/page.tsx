@@ -19,6 +19,8 @@ export default function VAApplicationsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeInterviewApp, setActiveInterviewApp] = useState<string | null>(null);
+  const [meetingLink, setMeetingLink] = useState("");
   
   const { toast, showToast } = useToast();
 
@@ -54,7 +56,14 @@ export default function VAApplicationsPage() {
     setCurrentPage(totalPages);
   }
 
-  const handleScheduleInterview = async (applicationId: string) => {
+  const handleScheduleInterview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeInterviewApp) return;
+
+    const applicationId = activeInterviewApp;
+    setActiveInterviewApp(null);
+    setMeetingLink("");
+
     // Optimistic UI Update
     setApplications(prev => prev.map(app => 
       app.id === applicationId ? { ...app, status: "Initial Interview Scheduled" } : app
@@ -64,7 +73,7 @@ export default function VAApplicationsPage() {
       const res = await fetch("/api/admin/applications", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ applicationId, status: "initial_interview_scheduled" })
+        body: JSON.stringify({ applicationId, status: "initial_interview_scheduled", meetingLink })
       });
       
       if (!res.ok) {
@@ -102,7 +111,7 @@ export default function VAApplicationsPage() {
 
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden text-sm flex-1 flex flex-col">
           <div className="overflow-x-auto flex-1">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse mobile-card-table">
               <thead className="sticky top-0 z-10 bg-white">
                 <tr className="border-b border-slate-200">
                   <th className="px-6 py-4 font-bold text-slate-600 w-[15%]">VA</th>
@@ -131,7 +140,7 @@ export default function VAApplicationsPage() {
                     <td className="px-6 py-3 text-right">
                       {app.status === "Applied" || app.status === "Under Business Review" ? (
                         <button 
-                          onClick={() => handleScheduleInterview(app.id)}
+                          onClick={() => setActiveInterviewApp(app.id)}
                           className="px-4 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg transition-colors whitespace-nowrap shadow-sm"
                         >
                           Schedule interview
@@ -157,6 +166,48 @@ export default function VAApplicationsPage() {
         </div>
       </div>
       
+      {/* Schedule Interview Modal */}
+      {activeInterviewApp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xl animate-in zoom-in-95 duration-250">
+            <div className="h-2 bg-[#E84E29]" />
+            <div className="p-6">
+              <h3 className="text-lg font-black text-slate-900 leading-tight mb-4">Schedule Interview</h3>
+              <form onSubmit={handleScheduleInterview} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Meeting Link (Zoom / GMeet) <span className="text-red-500">*</span></label>
+                  <input
+                    type="url"
+                    required
+                    value={meetingLink}
+                    onChange={(e) => setMeetingLink(e.target.value)}
+                    placeholder="https://zoom.us/j/123456789"
+                    className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E84E29]/50 transition-all font-semibold"
+                  />
+                </div>
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-2">
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setActiveInterviewApp(null);
+                      setMeetingLink("");
+                    }}
+                    className="px-5 py-2.5 rounded-full border border-slate-200 bg-white text-slate-700 text-xs font-bold transition-all cursor-pointer hover:bg-slate-50"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    className="px-5 py-2.5 rounded-full text-xs font-bold text-white bg-[#E84E29] hover:bg-[#D54522] transition-all cursor-pointer shadow-xs"
+                  >
+                    Confirm Schedule
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

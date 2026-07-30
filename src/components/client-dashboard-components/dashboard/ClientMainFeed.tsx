@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
+import ClientVAProfileModal from "../ClientVAProfileModal";
 
 /* ─── Inline SVG Icons ─── */
 
@@ -72,7 +73,7 @@ interface ShortlistedCandidate {
   name: string;
   title: string;
   location: string;
-  rating: number;
+  rating: number | null;
   skills: string[];
   hourlyRate: number;
   avatar: string | null;
@@ -103,8 +104,11 @@ function JobStatusBadge({ status }: { status: string }) {
 /* ─── Component ─── */
 
 export default function ClientMainFeed({ companyName, jobPosts, shortlistedCandidates }: ClientMainFeedProps) {
+  const [selectedCandidate, setSelectedCandidate] = useState<ShortlistedCandidate | null>(null);
+  const [openInScheduleMode, setOpenInScheduleMode] = useState(false);
+
   return (
-    <main className="lg:col-span-6 h-full overflow-y-auto scrollbar-none space-y-6 pb-6">
+    <main className="lg:col-span-6 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-none space-y-6 pb-6">
 
       {/* Welcome Banner */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs bg-gradient-to-br from-[#E84E29]/5 via-white to-amber-50/40">
@@ -196,7 +200,7 @@ export default function ClientMainFeed({ companyName, jobPosts, shortlistedCandi
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-base font-black text-slate-800">${job.rate.toFixed(2)}</p>
+                  <p className="text-base font-black text-slate-800">${(job.rate || 0).toFixed(2)}</p>
                   <p className="text-[10px] font-semibold text-slate-400">/hr</p>
                 </div>
               </div>
@@ -269,12 +273,16 @@ export default function ClientMainFeed({ companyName, jobPosts, shortlistedCandi
                       <IconMapPin className="w-3 h-3" />
                       {candidate.location}
                     </span>
-                    <span className="flex items-center gap-0.5 text-amber-500 font-bold">
-                      <IconStar className="w-3 h-3" />
-                      {candidate.rating.toFixed(1)}
-                    </span>
+                    {candidate.rating !== null ? (
+                      <span className="flex items-center gap-0.5 text-amber-500 font-bold">
+                        <IconStar className="w-3 h-3" />
+                        {candidate.rating.toFixed(1)}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 font-semibold">No ratings</span>
+                    )}
                     <span className="font-bold text-slate-700">
-                      ${candidate.hourlyRate.toFixed(2)}/hr
+                      ${(candidate.hourlyRate || 0).toFixed(2)}/hr
                     </span>
                   </div>
 
@@ -296,11 +304,23 @@ export default function ClientMainFeed({ companyName, jobPosts, shortlistedCandi
 
               {/* Action Buttons */}
               <div className="flex items-center gap-2 mt-4 pt-3 border-t border-slate-100">
-                <button className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] transition-all shadow-xs cursor-pointer">
+                <button 
+                  onClick={() => {
+                    setSelectedCandidate(candidate);
+                    setOpenInScheduleMode(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] transition-all shadow-xs cursor-pointer"
+                >
                   <IconCalendar className="w-3 h-3" />
                   Schedule Interview
                 </button>
-                <button className="inline-flex items-center gap-1 px-4 py-2 rounded-full text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all cursor-pointer">
+                <button 
+                  onClick={() => {
+                    setSelectedCandidate(candidate);
+                    setOpenInScheduleMode(false);
+                  }}
+                  className="inline-flex items-center gap-1 px-4 py-2 rounded-full text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all cursor-pointer"
+                >
                   View Profile
                 </button>
               </div>
@@ -308,6 +328,20 @@ export default function ClientMainFeed({ companyName, jobPosts, shortlistedCandi
           ))
         )}
       </div>
+
+      {/* View Candidate Profile Modal */}
+      {selectedCandidate && selectedCandidate.vaProfileId && (
+        <ClientVAProfileModal 
+          vaProfileId={selectedCandidate.vaProfileId} 
+          shortlistId={selectedCandidate.id}
+          defaultScheduleForm={openInScheduleMode}
+          onClose={() => {
+            setSelectedCandidate(null);
+            setOpenInScheduleMode(false);
+          }} 
+        />
+      )}
+
     </main>
   );
 }

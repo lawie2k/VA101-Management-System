@@ -22,8 +22,9 @@ export async function middleware(request: NextRequest) {
         let destination = "/va/dashboard";
         if (roles.includes("client")) destination = "/client/dashboard";
         else if (roles.includes("admin")) destination = "/admin/dashboard";
+        else if (roles.includes("employee")) destination = "/admin/dashboard";
         else if (roles.includes("trainer")) destination = "/trainer/dashboard";
-        else if (roles.includes("finance")) destination = "/finance/dashboard";
+        else if (roles.includes("finance")) destination = "/admin/dashboard";
 
         const url = request.nextUrl.clone();
         url.pathname = destination;
@@ -65,7 +66,7 @@ export async function middleware(request: NextRequest) {
         url.pathname = "/login";
         return NextResponse.redirect(url);
       }
-      if (pathname.startsWith("/admin") && !roles.includes("admin")) {
+      if (pathname.startsWith("/admin") && !roles.includes("admin") && !roles.includes("finance") && !roles.includes("employee")) {
         const url = request.nextUrl.clone();
         url.pathname = "/login";
         return NextResponse.redirect(url);

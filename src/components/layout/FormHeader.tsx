@@ -31,7 +31,7 @@ const servicesItems = [
   { label: "Web Design Services", href: "https://www.virtualassistant101.com/p/web-design-services.html" },
 ];
 
-export default function FormHeader({ forceSolid = false, isDashboard = false }: FormHeaderProps) {
+export default function FormHeader({ forceSolid = false, isDashboard = false, navItems }: FormHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [activeDropdown, setActiveDropdown] = useState<"about" | "services" | "profile" | null>(null);
@@ -237,8 +237,8 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
         <a href="https://www.virtualassistant101.com/" className="flex items-center">
           <img 
             alt="VA 101 Logo" 
-            src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiP96kTcTyhmHwJa22OPsARosGQ-HM4ngHtwXt8eoEcM9mYmYXs5n_iOA4mMc4XTzwuew0V57H3wi77AQ4tmp5FpFguXibxs02ZfY5S0MyKyLQWf5tSYOBWg24ClpFiA7JO-Oqa6p63H6_SRlaay-CayDW_gpmhHlRTeYGndWref8gxNIwxL73pqCHhoC4/s993/received_1356092126542779-removebg-preview.png"
-            className="h-10 md:h-12 w-auto"
+            src="/logo/VA101%20logo1.svg"
+            className="h-12 md:h-16 w-auto object-contain"
           />
         </a>
 
@@ -308,27 +308,24 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
         </nav>
 
         {/* Action Buttons / User Profile */}
-        <div className="hidden md:flex items-center gap-4">
-          {isDashboard || isAuthenticated ? (
-            /* Authenticated User Profile Dropdown */
-            <>
-              <a
-                href="/discovery-calls"
-                className="bg-[#E84E29] hover:bg-[#DA431E] text-white font-bold text-xs tracking-wider rounded-full px-5 py-2 transition-all flex items-center gap-1"
-              >
-                Get started <span>↗</span>
-              </a>
-              
-              {/* Notices Bell */}
+        <div className="flex items-center gap-2 md:gap-4">
+          
+          {/* Always show Notices Bell on Desktop & Mobile if authenticated */}
+          {(isDashboard || isAuthenticated) && (
+            <div className="flex items-center">
               <GlobalNotices />
+            </div>
+          )}
 
-              <div className="relative">
-                <button
+          {/* Profile Dropdown is now visible on mobile & desktop */}
+          {(isDashboard || isAuthenticated) && (
+            <div className="relative">
+              <button
                 onClick={() => toggleDropdown("profile")}
                 onBlur={() => setTimeout(() => setActiveDropdown(null), 150)}
                 className="flex items-center gap-2 focus:outline-none cursor-pointer group"
               >
-                <div className="w-9 h-9 rounded-full border border-[#E84E29] overflow-hidden transition-all group-hover:border-[#DA431E] shadow-sm flex items-center justify-center bg-slate-850">
+                <div className="w-8 h-8 md:w-9 md:h-9 rounded-full border border-[#E84E29] overflow-hidden transition-all group-hover:border-[#DA431E] shadow-sm flex items-center justify-center bg-slate-850">
                   {profileImage ? (
                     <img
                       src={profileImage}
@@ -350,36 +347,43 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
                       {profileEmail}
                     </p>
                   </div>
-                  {isSetupPage ? (
-                    <span
-                      className="px-3 py-2 text-slate-500 cursor-not-allowed text-[11px] font-bold rounded-lg"
-                      title="Please complete your profile setup first"
-                    >
-                      Dashboard
-                    </span>
+                  
+                  {/* Dynamic Nav Items or Fallback */}
+                  {navItems ? (
+                    navItems.map((item) => (
+                      isSetupPage ? (
+                        <span
+                          key={item.href}
+                          className="px-3 py-2 text-slate-500 cursor-not-allowed text-[11px] font-bold rounded-lg"
+                          title="Please complete your profile setup first"
+                        >
+                          {item.label}
+                        </span>
+                      ) : (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className="px-3 py-2 text-gray-300 hover:text-white hover:bg-slate-900/50 text-[11px] font-bold rounded-lg transition-all"
+                        >
+                          {item.label}
+                        </Link>
+                      )
+                    ))
                   ) : (
-                    <Link
-                      href={`${basePath}/dashboard`}
-                      className="px-3 py-2 text-gray-300 hover:text-white hover:bg-slate-900/50 text-[11px] font-bold rounded-lg transition-all"
-                    >
-                      Dashboard
-                    </Link>
+                    <>
+                      {isSetupPage ? (
+                        <span className="px-3 py-2 text-slate-500 cursor-not-allowed text-[11px] font-bold rounded-lg" title="Please complete your profile setup first">Dashboard</span>
+                      ) : (
+                        <Link href={`${basePath}/dashboard`} className="px-3 py-2 text-gray-300 hover:text-white hover:bg-slate-900/50 text-[11px] font-bold rounded-lg transition-all">Dashboard</Link>
+                      )}
+                      {isSetupPage ? (
+                        <span className="px-3 py-2 text-slate-500 cursor-not-allowed text-[11px] font-bold rounded-lg" title="Please complete your profile setup first">My Profile</span>
+                      ) : (
+                        <Link href={`${basePath}/profile`} className="px-3 py-2 text-gray-300 hover:text-white hover:bg-slate-900/50 text-[11px] font-bold rounded-lg transition-all">My Profile</Link>
+                      )}
+                    </>
                   )}
-                  {isSetupPage ? (
-                    <span
-                      className="px-3 py-2 text-slate-500 cursor-not-allowed text-[11px] font-bold rounded-lg"
-                      title="Please complete your profile setup first"
-                    >
-                      My Profile
-                    </span>
-                  ) : (
-                    <Link
-                      href={`${basePath}/profile`}
-                      className="px-3 py-2 text-gray-300 hover:text-white hover:bg-slate-900/50 text-[11px] font-bold rounded-lg transition-all"
-                    >
-                      My Profile
-                    </Link>
-                  )}
+                  
                   <div className="border-t border-[#1c1c1e] my-1.5" />
                   <button
                     onClick={handleSignOut}
@@ -390,36 +394,50 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
                 </div>
               )}
             </div>
-            </>
-          ) : (
-            /* Public Sign In & Get Started actions */
-            <>
-              <Link
-                href="/login"
-                className="text-gray-300 hover:text-white font-medium text-xs tracking-wider hover:border-gray-600 rounded-full px-5 py-2 transition-all"
-              >
-                Sign in
-              </Link>
-              <a
-                href="/discovery-calls"
-                className="bg-[#E84E29] hover:bg-[#DA431E] text-white font-bold text-xs tracking-wider rounded-full px-5 py-3 transition-all flex items-center gap-1"
-              >
-                Get started <span>↗</span>
-              </a>
-            </>
           )}
-        </div>
 
-        {/* Hamburger Menu (Mobile) */}
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden flex flex-col gap-1.5 justify-center items-center h-8 w-8 cursor-pointer"
-          aria-label="Toggle Menu"
-        >
-          <span className={`h-0.5 w-6 bg-white transition-all ${mobileMenuOpen ? "rotate-45 translate-y-2" : ""}`} />
-          <span className={`h-0.5 w-6 bg-white transition-all ${mobileMenuOpen ? "opacity-0" : ""}`} />
-          <span className={`h-0.5 w-6 bg-white transition-all ${mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
-        </button>
+          <div className="hidden md:flex items-center gap-4">
+            {isDashboard || isAuthenticated ? (
+              /* Authenticated User Profile Dropdown */
+              <>
+                <a
+                  href="/discovery-calls"
+                  className="bg-[#E84E29] hover:bg-[#DA431E] text-white font-bold text-xs tracking-wider rounded-full px-5 py-2 transition-all flex items-center gap-1"
+                >
+                  Get started <span>↗</span>
+                </a>
+                
+              </>
+            ) : (
+              /* Public Sign In & Get Started actions */
+              <>
+                <Link
+                  href="/login"
+                  className="text-gray-300 hover:text-white font-medium text-xs tracking-wider hover:border-gray-600 rounded-full px-5 py-2 transition-all"
+                >
+                  Sign in
+                </Link>
+                <a
+                  href="/discovery-calls"
+                  className="bg-[#E84E29] hover:bg-[#DA431E] text-white font-bold text-xs tracking-wider rounded-full px-5 py-3 transition-all flex items-center gap-1"
+                >
+                  Get started <span>↗</span>
+                </a>
+              </>
+            )}
+          </div>
+
+          {/* Hamburger Menu (Mobile) */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden flex flex-col gap-1.5 justify-center items-center h-8 w-8 cursor-pointer pl-2"
+            aria-label="Toggle Menu"
+          >
+            <span className={`h-0.5 w-6 bg-white transition-all ${mobileMenuOpen ? "rotate-45 translate-y-2" : ""}`} />
+            <span className={`h-0.5 w-6 bg-white transition-all ${mobileMenuOpen ? "opacity-0" : ""}`} />
+            <span className={`h-0.5 w-6 bg-white transition-all ${mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+          </button>
+        </div>
       </div>
 
       {/* Mobile Drawer Menu */}
@@ -491,51 +509,13 @@ export default function FormHeader({ forceSolid = false, isDashboard = false }: 
             {isDashboard || isAuthenticated ? (
               /* Mobile dashboard actions */
               <>
-                {isSetupPage ? (
-                  <span
-                    className="w-full text-center text-slate-500 font-bold text-sm tracking-wider border border-[#1c1c1e] rounded-full py-2.5 cursor-not-allowed opacity-50 bg-[#1c1c1e]/10"
-                  >
-                    Dashboard
-                  </span>
-                ) : (
-                  <Link
-                    href={`${basePath}/dashboard`}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="w-full text-center text-gray-300 hover:text-white font-bold text-sm tracking-wider border border-[#1c1c1e] rounded-full py-2.5"
-                  >
-                    Dashboard
-                  </Link>
-                )}
-                {isSetupPage ? (
-                  <span
-                    className="w-full text-center text-slate-500 font-bold text-sm tracking-wider border border-[#1c1c1e] rounded-full py-2.5 cursor-not-allowed opacity-50 bg-[#1c1c1e]/10"
-                  >
-                    My Profile
-                  </span>
-                ) : (
-                  <Link
-                    href={`${basePath}/profile`}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="w-full text-center text-gray-300 hover:text-white font-bold text-sm tracking-wider border border-[#1c1c1e] rounded-full py-2.5"
-                  >
-                    My Profile
-                  </Link>
-                )}
+                {/* Remove Dashboard & Profile links from mobile drawer since they are in profile dropdown */}
                 <a
                   href="/discovery-calls"
                   className="w-full text-center bg-[#E84E29] hover:bg-[#DA431E] text-white font-bold text-sm tracking-wider rounded-full py-2.5"
                 >
                   Get started ↗
                 </a>
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    handleSignOut();
-                  }}
-                  className="w-full text-center border border-[#1c1c1e] text-gray-300 hover:text-white hover:bg-[#1c1c1e] font-bold text-sm tracking-wider rounded-full py-2.5 cursor-pointer"
-                >
-                  Sign out
-                </button>
               </>
             ) : (
               /* Mobile public actions */

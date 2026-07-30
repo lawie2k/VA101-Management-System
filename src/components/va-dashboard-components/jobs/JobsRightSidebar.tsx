@@ -24,7 +24,7 @@ export default function JobsRightSidebar({
   const savedItems = jobs.filter(j => savedJobs.includes(j.id));
 
   return (
-    <aside className="lg:col-span-3 h-full overflow-y-auto scrollbar-none space-y-6 pb-6">
+    <aside className="lg:col-span-3 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-none space-y-6 pb-6">
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-4">
         <div>
           <h3 className="font-extrabold text-slate-900 text-sm">Saved Jobs</h3>

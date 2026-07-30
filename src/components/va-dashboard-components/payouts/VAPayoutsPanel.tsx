@@ -72,7 +72,7 @@ export function VAPayoutsPanel() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse mobile-card-table">
               <thead>
                 <tr className="border-b border-slate-100 text-xs text-slate-400 uppercase tracking-wider font-extrabold">
                   <th className="pb-3 font-semibold">Pay Period</th>

@@ -80,17 +80,17 @@ export default function ContractsPage() {
     <div className="h-full flex flex-col max-w-7xl mx-auto animate-in fade-in duration-500">
       
       {/* Header Section */}
-      <div className="mb-6 flex-shrink-0 flex items-center justify-between">
+      <div className="mb-6 flex-shrink-0 flex flex-col items-start gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">Contracts</h1>
         </div>
-        <div className="relative w-72">
+        <div className="relative w-full sm:w-72">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <SearchIcon className="h-4 w-4 text-slate-400" />
           </div>
           <input
             type="text"
-            className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm shadow-sm transition-all"
+            className="block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm shadow-sm transition-all"
             placeholder="Search VA or Client..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

@@ -17,6 +17,7 @@ const COURSE_INFOS = {
 };
 
 interface LearningMainFeedProps {
+  courses?: any[];
   enrolledCourses: string[];
   courseProgress: Record<string, number>;
   setActiveCourseId: (id: string | null) => void;
@@ -24,6 +25,7 @@ interface LearningMainFeedProps {
 }
 
 export default function LearningMainFeed({
+  courses = [],
   enrolledCourses,
   courseProgress,
   setActiveCourseId,
@@ -34,7 +36,7 @@ export default function LearningMainFeed({
       onScroll={(e) => {
         window.dispatchEvent(new CustomEvent("feedScroll", { detail: { scrollTop: e.currentTarget.scrollTop } }));
       }}
-      className="lg:col-span-6 h-full overflow-y-auto scrollbar-none space-y-6 pb-6"
+      className="lg:col-span-6 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-none space-y-6 pb-6"
     >
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs">
         <h2 className="text-xl font-black text-slate-900 tracking-tight">My Learning Portal</h2>
@@ -44,7 +46,22 @@ export default function LearningMainFeed({
       <div className="space-y-4">
         {enrolledCourses.length > 0 ? (
           enrolledCourses.map((id) => {
-            const info = COURSE_INFOS[id as keyof typeof COURSE_INFOS];
+            let info = null;
+            const dynamicCourse = courses.find(c => c.id === id);
+            if (dynamicCourse) {
+              info = {
+                title: dynamicCourse.title,
+                category: dynamicCourse.category || "General",
+                lessons: ["Course Material Overview", "Full Video Lecture"],
+                invoice: `INV-${id.substring(0, 4)}`,
+                amount: dynamicCourse.price === 0 ? 0 : dynamicCourse.price || 0,
+                paymentDate: dynamicCourse.createdAt || new Date().toISOString(),
+                classStartDate: dynamicCourse.createdAt || new Date().toISOString()
+              };
+            } else {
+              const key = !id.startsWith("c-") ? `c-${id}` : id;
+              info = COURSE_INFOS[key as keyof typeof COURSE_INFOS];
+            }
             if (!info) return null;
             
             const progress = courseProgress[id] || 0;

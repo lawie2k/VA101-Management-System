@@ -65,7 +65,7 @@ export default function UsersAndRolesPage() {
                 <div className="w-8 h-8 border-4 border-slate-200 border-t-[#E84E29] rounded-full animate-spin"></div>
               </div>
             )}
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse mobile-card-table">
               <thead className="sticky top-0 z-10 bg-white">
                 <tr className="border-b border-slate-200">
                   <th className="px-6 py-4 font-bold text-slate-600 w-1/4">Name</th>

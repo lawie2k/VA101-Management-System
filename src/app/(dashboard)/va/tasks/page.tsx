@@ -11,7 +11,7 @@ export default function VATasksPage() {
         {/* Left Sidebar (3 cols) */}
         <div className="md:col-span-3">
           <div className="sticky top-8">
-            <VALeftSidebar />
+            <VALeftSidebar hideOnMobile={true} />
           </div>
         </div>
 

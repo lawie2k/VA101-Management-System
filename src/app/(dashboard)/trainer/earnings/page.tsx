@@ -11,7 +11,7 @@ export default function TrainerEarningsPage() {
         {/* Left Sidebar (3 cols) */}
         <div className="md:col-span-3">
           <div className="sticky top-8">
-            <TrainerLeftSidebar />
+            <TrainerLeftSidebar hideOnMobile={true} />
           </div>
         </div>
 

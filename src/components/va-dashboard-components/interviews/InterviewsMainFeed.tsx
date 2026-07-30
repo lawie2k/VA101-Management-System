@@ -24,6 +24,12 @@ const IconChevronRight = ({ className = "w-4 h-4" }) => (
   </svg>
 );
 
+const IconMessage = ({ className = "w-4 h-4" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+  </svg>
+);
+
 interface Interview {
   id: string;
   type: string;
@@ -32,6 +38,7 @@ interface Interview {
   interviewer: string;
   scheduledAt: string;
   platform: string;
+  meetingLink?: string;
 }
 
 interface InterviewsMainFeedProps {
@@ -54,7 +61,7 @@ export default function InterviewsMainFeed({
       onScroll={(e) => {
         window.dispatchEvent(new CustomEvent("feedScroll", { detail: { scrollTop: e.currentTarget.scrollTop } }));
       }}
-      className="lg:col-span-6 h-full overflow-y-auto scrollbar-none space-y-6 pb-6"
+      className="lg:col-span-6 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-none space-y-6 pb-6"
     >
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs">
         <h2 className="text-xl font-black text-slate-900 tracking-tight">Interviews & Calls</h2>
@@ -68,12 +75,14 @@ export default function InterviewsMainFeed({
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <span className="text-[9px] font-extrabold uppercase tracking-widest text-orange-650 bg-orange-50 border border-orange-100 rounded px-1.5 py-0.5">
-                    {item.type === "initial_interview" ? "HR Recruiter call" : "Client discovery meeting"}
+                    {item.type === "initial" || item.type === "initial_interview" ? "Initial Interview" : "Final Interview"}
                   </span>
                   <h3 className="font-extrabold text-slate-900 text-lg leading-snug mt-2.5">{item.jobTitle}</h3>
                   <p className="text-xs text-slate-555 font-semibold">{item.company} • Meet with <strong className="text-slate-800">{item.interviewer}</strong></p>
                 </div>
-                <span className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500 font-bold shrink-0">💬</span>
+                <span className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 font-bold shrink-0">
+                  <IconMessage className="w-4 h-4" />
+                </span>
               </div>
 
               <div className="p-4 bg-slate-50 border border-slate-150 rounded-2xl grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-650 font-bold">
@@ -95,7 +104,13 @@ export default function InterviewsMainFeed({
                   Reschedule
                 </button>
                 <button 
-                  onClick={() => triggerMeetingLaunch(item.platform)}
+                  onClick={() => {
+                    if (item.meetingLink) {
+                      window.open(item.meetingLink, "_blank");
+                    } else {
+                      triggerMeetingLaunch(item.platform);
+                    }
+                  }}
                   className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 transition-all cursor-pointer shadow-xs"
                 >
                   Join Meeting <IconChevronRight className="w-3.5 h-3.5" />

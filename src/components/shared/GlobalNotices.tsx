@@ -84,7 +84,7 @@ export default function GlobalNotices({ theme = "dark" }: { theme?: "light" | "d
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-3 w-80 max-h-[400px] overflow-y-auto bg-white border border-slate-200 rounded-2xl shadow-xl z-50 flex flex-col scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+        <div className="absolute top-full right-[-60px] md:right-0 mt-3 w-[260px] md:w-80 max-h-[300px] md:max-h-[400px] overflow-y-auto bg-white border border-slate-200 rounded-2xl shadow-xl z-50 flex flex-col scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
           <div className="p-4 border-b border-slate-100 sticky top-0 bg-white z-10 flex items-center justify-between">
             <h3 className="text-sm font-black text-slate-900 tracking-tight">Notifications</h3>
             {notices.length > 0 && (

@@ -41,7 +41,7 @@ interface ClientProfile {
   coverImage?: string | null;
 }
 
-export default function ClientLeftSidebar() {
+export default function ClientLeftSidebar({ hideOnMobile = false }: { hideOnMobile?: boolean } = {}) {
   const [profile, setProfile] = useState<ClientProfile | null>(null);
   const [completion, setCompletion] = useState(0);
   const [stats, setStats] = useState({ jobsPosted: 0, vasHired: 0, interviews: 0, contracts: 0 });
@@ -104,7 +104,7 @@ export default function ClientLeftSidebar() {
     : "CO";
 
   return (
-    <aside className="lg:col-span-3 h-full overflow-y-auto scrollbar-none space-y-6 pb-6">
+    <aside className={`lg:col-span-3 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-none space-y-6 pb-6 ${hideOnMobile ? "hidden lg:block" : ""}`}>
       {/* Company Profile Card */}
       <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xs">
         {/* Cover Banner */}

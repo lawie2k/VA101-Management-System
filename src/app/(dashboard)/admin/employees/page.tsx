@@ -138,7 +138,7 @@ export default function EmployeeManagementPage() {
           )}
 
           <div className="overflow-x-auto flex-1">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse mobile-card-table">
               <thead className="sticky top-0 z-10 bg-white">
                 <tr className="border-b border-slate-200">
                   <th className="px-6 py-4 font-bold text-slate-600 w-1/4">Name</th>

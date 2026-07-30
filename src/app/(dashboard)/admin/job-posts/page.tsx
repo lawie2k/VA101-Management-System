@@ -80,7 +80,7 @@ export default function AdminJobPostsPage() {
   const currentJobs = filteredJobs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-144px)] overflow-hidden flex flex-col">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[calc(100vh-144px)] lg:h-[calc(100vh-144px)] overflow-visible lg:overflow-hidden flex flex-col">
       <div className="mb-6 shrink-0">
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">Job Posts Management</h1>
         <p className="text-sm font-medium text-slate-500 mt-1">Review, enable, or disable client job postings.</p>
@@ -88,7 +88,7 @@ export default function AdminJobPostsPage() {
 
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col flex-1 overflow-hidden">
         {/* Header & Search */}
-        <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 shrink-0 bg-slate-50/50">
+        <div className="p-5 border-b border-slate-100 flex flex-col items-start gap-4 shrink-0 bg-slate-50/50">
           <div className="relative w-full sm:w-96">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400">
               <circle cx="11" cy="11" r="8"></circle>
@@ -109,7 +109,7 @@ export default function AdminJobPostsPage() {
 
         {/* Table */}
         <div className="flex-1 overflow-auto">
-          <table className="w-full text-left text-sm whitespace-nowrap">
+          <table className="w-full text-left text-sm whitespace-nowrap mobile-card-table">
             <thead className="bg-slate-50 text-slate-500 sticky top-0 z-10 border-b border-slate-100">
               <tr>
                 <th className="px-6 py-4 font-semibold">Job Title</th>

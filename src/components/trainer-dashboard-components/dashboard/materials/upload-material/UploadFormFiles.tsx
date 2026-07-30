@@ -20,7 +20,6 @@ export default function UploadFormFiles() {
                   <span>Upload a file</span>
                   <input id="file-upload" name="file-upload" type="file" className="sr-only" required />
                 </label>
-                <p className="pl-1">or drag and drop</p>
               </div>
               <p className="text-xs text-slate-500 mt-2">MP4, PDF, ZIP up to 500MB</p>
             </div>
@@ -43,7 +42,6 @@ export default function UploadFormFiles() {
                   <span>Upload an image</span>
                   <input id="thumbnail-upload" name="thumbnail-upload" type="file" className="sr-only" accept="image/*" required />
                 </label>
-                <p className="pl-1">or drag and drop</p>
               </div>
               <p className="text-xs text-slate-500 mt-2">PNG, JPG up to 10MB</p>
               <p className="text-[10px] text-slate-400 mt-1">Recommended size: 1200 x 600px</p>

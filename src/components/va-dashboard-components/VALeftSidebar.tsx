@@ -18,7 +18,7 @@ const IconStar = ({ className = "w-4 h-4" }) => (
 
 const DEFAULT_COVER = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&h=300&q=80";
 
-export default function DashboardLeftSidebar() {
+export default function DashboardLeftSidebar({ hideOnMobile = false }: { hideOnMobile?: boolean } = {}) {
   const [profile, setProfile] = useState({
     fullName: "",
     title: "",
@@ -116,7 +116,7 @@ export default function DashboardLeftSidebar() {
   }, []);
 
   return (
-    <aside className="lg:col-span-3 h-full overflow-y-auto scrollbar-none space-y-6 pb-6">
+    <aside className={`lg:col-span-3 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-none space-y-6 pb-6 ${hideOnMobile ? "hidden lg:block" : ""}`}>
       <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xs">
         {/* Cover Banner */}
         <div 

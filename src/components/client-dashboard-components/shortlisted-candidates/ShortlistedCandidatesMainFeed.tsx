@@ -2,11 +2,18 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import ClientVAProfileModal from "../ClientVAProfileModal";
 
 const IconUser = ({ className = "w-4 h-4" }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
     <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+
+const IconMapPin = ({ className = "w-4 h-4" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
   </svg>
 );
 
@@ -32,9 +39,11 @@ const IconStar = ({ className = "w-4 h-4" }) => (
   </svg>
 );
 
-export default function ShortlistedCandidatesMainFeed() {
-  const [candidates, setCandidates] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function ShortlistedCandidatesMainFeed({ initialCandidates }: { initialCandidates?: any[] }) {
+  const [candidates, setCandidates] = useState<any[]>(initialCandidates || []);
+  const [loading, setLoading] = useState(!initialCandidates);
+  const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
+  const [openInScheduleMode, setOpenInScheduleMode] = useState(false);
 
   useEffect(() => {
     async function loadShortlists() {
@@ -50,11 +59,13 @@ export default function ShortlistedCandidatesMainFeed() {
         setLoading(false);
       }
     }
-    loadShortlists();
-  }, []);
+    if (!initialCandidates) {
+      loadShortlists();
+    }
+  }, [initialCandidates]);
 
   return (
-    <main className="lg:col-span-6 h-full overflow-y-auto scrollbar-none space-y-5 pb-12">
+    <main className="lg:col-span-6 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-none space-y-5 pb-12">
       {/* Header */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs bg-gradient-to-br from-indigo-50/50 to-white">
         <h1 className="text-xl font-black text-slate-900 tracking-tight">Shortlisted Candidates</h1>
@@ -68,8 +79,12 @@ export default function ShortlistedCandidatesMainFeed() {
         {candidates.map(candidate => (
           <div key={candidate.id} className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs hover:shadow-sm transition-all group">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
-                <IconUser className="w-6 h-6" />
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
+                {candidate.avatar ? (
+                  <img src={candidate.avatar} alt={candidate.candidateName} className="w-full h-full object-cover" />
+                ) : (
+                  <IconUser className="w-6 h-6" />
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start">
@@ -90,14 +105,27 @@ export default function ShortlistedCandidatesMainFeed() {
                   ))}
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+                <div className="pt-4 mt-auto flex items-center justify-between border-t border-slate-100">
                   <span className="text-[10px] font-semibold text-slate-400">Applied {candidate.appliedDate}</span>
                   <div className="flex gap-2">
-                    <button className="px-4 py-2 rounded-full text-[11px] font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-all cursor-pointer">
+                    <button 
+                      onClick={() => {
+                        setSelectedCandidate(candidate);
+                        setOpenInScheduleMode(false);
+                      }}
+                      className="text-[11px] font-bold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                    >
                       View Profile
                     </button>
-                    <button className="px-4 py-2 rounded-full text-[11px] font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] shadow-sm transition-all cursor-pointer">
-                      Invite to Interview
+                    <button 
+                      onClick={() => {
+                        setSelectedCandidate(candidate);
+                        setOpenInScheduleMode(true);
+                      }}
+                      className="inline-flex items-center gap-1 px-4 py-2 rounded-full text-[11px] font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] shadow-sm transition-all cursor-pointer"
+                    >
+                      <IconCalendar className="w-3 h-3" />
+                      Schedule Interview
                     </button>
                   </div>
                 </div>
@@ -106,6 +134,19 @@ export default function ShortlistedCandidatesMainFeed() {
           </div>
         ))}
       </div>
+
+      {/* View Candidate Profile Modal */}
+      {selectedCandidate && selectedCandidate.vaProfileId && (
+        <ClientVAProfileModal 
+          vaProfileId={selectedCandidate.vaProfileId} 
+          shortlistId={selectedCandidate.id}
+          defaultScheduleForm={openInScheduleMode}
+          onClose={() => {
+            setSelectedCandidate(null);
+            setOpenInScheduleMode(false);
+          }} 
+        />
+      )}
     </main>
   );
 }

@@ -4,7 +4,7 @@ import { requireRole } from "@/src/lib/auth";
 
 export async function GET(req: Request) {
   try {
-    await requireRole("admin");
+    await requireRole("admin", "employee");
 
     const jobsRaw = await prisma.job_posts.findMany({
       where: {
@@ -54,7 +54,7 @@ export async function GET(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    await requireRole("admin");
+    await requireRole("admin", "employee");
     const { jobId, status } = await req.json();
 
     if (!jobId || !status) {

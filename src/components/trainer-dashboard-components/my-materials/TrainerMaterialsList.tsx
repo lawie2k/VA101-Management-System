@@ -40,13 +40,25 @@ const CameraIcon = ({ className = "w-4 h-4" }) => (
   </svg>
 );
 
+const CATEGORIES = [
+  "Operations",
+  "Sales",
+  "Admin",
+  "Marketing",
+  "Customer Support",
+  "Finance",
+  "Tech & Software",
+  "Design"
+];
+
 // ==========================================
 // COMPONENTS
 // ==========================================
 function StatusBadge({ status }: { status: string }) {
-  if (status === "approved") return <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 rounded-full border border-emerald-200">Approved</span>;
-  if (status === "pending_review") return <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-100 rounded-full border border-amber-200">Pending</span>;
-  if (status === "needs_revision") return <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-700 bg-red-100 rounded-full border border-red-200">Needs Revision</span>;
+  if (status === "approved" || status === "active") return <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 rounded-full border border-emerald-200">Active</span>;
+  if (status === "pending_review" || status === "draft") return <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-100 rounded-full border border-amber-200">Pending</span>;
+  if (status === "needs_revision" || status === "declined" || status === "rejected") return <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-700 bg-red-100 rounded-full border border-red-200">Declined</span>;
+  if (status === "disabled") return <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-700 bg-slate-100 rounded-full border border-slate-300">Disabled</span>;
   if (status === "archived") return <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-700 bg-slate-200 rounded-full border border-slate-300">Archived</span>;
   return <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 rounded-full border border-slate-200">Draft</span>;
 }
@@ -64,7 +76,9 @@ function Cell({ k, v, tone }: { k: string; v: React.ReactNode; tone?: "teal" | "
 export default function TrainerMaterialsList() {
   const [materials, setMaterials] = React.useState<any[]>([]);
   const [editingMaterial, setEditingMaterial] = React.useState<any>(null);
+  const [isEditFree, setIsEditFree] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [activeTab, setActiveTab] = React.useState<"all" | "active" | "pending" | "declined">("all");
 
   React.useEffect(() => {
     async function loadMaterials() {
@@ -82,21 +96,6 @@ export default function TrainerMaterialsList() {
     }
     loadMaterials();
   }, []);
-
-  const handleSubmitReview = async (id: number) => {
-    try {
-      const res = await fetch(`/api/trainer/materials/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "pending_review" })
-      });
-      if (res.ok) {
-        setMaterials(prev => prev.map(m => m.id === id ? { ...m, status: "pending_review" } : m));
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
 
   const handleArchive = async (id: number) => {
     if (confirm("Are you sure you want to archive this material? It will no longer be visible in the marketplace.")) {
@@ -126,7 +125,7 @@ export default function TrainerMaterialsList() {
         body: JSON.stringify({
           title: editingMaterial.title,
           category: editingMaterial.category,
-          price: editingMaterial.price
+          price: isEditFree ? 0 : editingMaterial.price
         })
       });
       
@@ -145,8 +144,15 @@ export default function TrainerMaterialsList() {
   const isEditFormValid = editingMaterial && 
                           editingMaterial.title.trim() !== "" && 
                           editingMaterial.category.trim() !== "" && 
-                          String(editingMaterial.price).trim() !== "" && 
-                          editingMaterial.price >= 0;
+                          (isEditFree || (String(editingMaterial.price).trim() !== "" && editingMaterial.price >= 0));
+
+  const filteredMaterials = materials.filter(m => {
+    if (activeTab === "all") return true;
+    if (activeTab === "active") return m.status === "approved" || m.status === "active";
+    if (activeTab === "pending") return m.status === "pending_review" || m.status === "draft" || m.status === "disabled";
+    if (activeTab === "declined") return ["needs_revision", "rejected", "declined"].includes(m.status);
+    return true;
+  });
 
   return (
     <>
@@ -168,10 +174,36 @@ export default function TrainerMaterialsList() {
 
       {/* Cards Grid */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs">
-        <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider mb-6">All Materials</h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider">All Materials</h2>
+          
+          <div className="flex gap-2 bg-slate-100/50 p-1 rounded-full">
+            {(["all", "active", "pending", "declined"] as const).map((tab) => {
+              const count = tab === "all" ? materials.length : materials.filter(m => {
+                if (tab === "active") return m.status === "approved" || m.status === "active";
+                if (tab === "pending") return m.status === "pending_review" || m.status === "draft" || m.status === "disabled";
+                if (tab === "declined") return ["needs_revision", "rejected", "declined"].includes(m.status);
+                return true;
+              }).length;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-4 py-1.5 rounded-full text-[11px] font-bold transition-all capitalize ${
+                    activeTab === tab 
+                      ? "bg-white text-slate-900 shadow-sm border border-slate-200/60" 
+                      : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/30"
+                  }`}
+                >
+                  {tab} <span className="opacity-60 ml-1">({count})</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
         
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {materials.map((m) => (
+          {filteredMaterials.map((m) => (
             <article key={m.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all hover:shadow-md hover:border-slate-300 group flex flex-col">
               {/* Thumbnail Image */}
               <div className="h-32 bg-slate-100 border-b border-slate-100 relative group-hover:opacity-90 transition-opacity">
@@ -198,20 +230,14 @@ export default function TrainerMaterialsList() {
                 
                 <div className="mt-4 flex flex-wrap gap-2 pt-4 border-t border-slate-100">
                   <button 
-                    onClick={() => setEditingMaterial(m)}
+                    onClick={() => {
+                      setEditingMaterial(m);
+                      setIsEditFree(m.price === 0);
+                    }}
                     className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-700 transition-colors"
                   >
                     <PencilIcon /> Edit
                   </button>
-                  
-                  {(m.status === "draft" || m.status === "needs_revision") && (
-                    <button 
-                      onClick={() => handleSubmitReview(m.id)}
-                      className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-black text-[11px] font-bold text-white transition-colors"
-                    >
-                      <SendIcon /> Submit
-                    </button>
-                  )}
                   
                   {m.status === "approved" && (
                     <button 
@@ -254,25 +280,36 @@ export default function TrainerMaterialsList() {
               <div className="grid grid-cols-2 gap-5">
                 <div>
                   <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">Category</label>
-                  <input
-                    type="text"
+                  <select
                     value={editingMaterial.category}
                     onChange={(e) => setEditingMaterial({ ...editingMaterial, category: e.target.value })}
                     required
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:border-[#E84E29] focus:ring-4 focus:ring-[#E84E29]/10 transition-all"
-                  />
+                  >
+                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
                 </div>
-                <div>
+                <div className="flex flex-col gap-2">
                   <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">Price ($)</label>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
-                    value={editingMaterial.price}
+                    disabled={isEditFree}
+                    value={isEditFree ? "" : editingMaterial.price}
                     onChange={(e) => setEditingMaterial({ ...editingMaterial, price: parseFloat(e.target.value) })}
-                    required
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:border-[#E84E29] focus:ring-4 focus:ring-[#E84E29]/10 transition-all"
+                    required={!isEditFree}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:border-[#E84E29] focus:ring-4 focus:ring-[#E84E29]/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   />
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={isEditFree}
+                      onChange={(e) => setIsEditFree(e.target.checked)}
+                      className="w-4 h-4 rounded text-[#E84E29] focus:ring-[#E84E29] border-slate-300"
+                    />
+                    <span className="text-xs font-bold text-slate-700">Make this course free</span>
+                  </label>
                 </div>
               </div>
 

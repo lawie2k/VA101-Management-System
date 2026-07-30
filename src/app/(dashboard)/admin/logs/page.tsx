@@ -71,7 +71,7 @@ export default function LogsPage() {
 
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden text-sm flex-1 flex flex-col">
           <div className="overflow-x-auto flex-1">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse mobile-card-table">
               <thead className="sticky top-0 z-10 bg-white">
                 <tr className="border-b border-slate-200">
                   <th className="px-6 py-4 font-bold text-slate-600 w-[20%]">Timestamp</th>

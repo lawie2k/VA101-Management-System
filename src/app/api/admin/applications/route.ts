@@ -4,7 +4,7 @@ import { requireRole } from "@/src/lib/auth";
 
 export async function GET(req: Request) {
   try {
-    await requireRole("admin");
+    await requireRole("admin", "employee");
 
     const appsRaw = await prisma.job_applications.findMany({
       include: {
@@ -53,8 +53,8 @@ export async function GET(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    await requireRole("admin");
-    const { applicationId, status } = await req.json();
+    await requireRole("admin", "employee");
+    const { applicationId, status, meetingLink } = await req.json();
 
     if (!applicationId || !status) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -73,6 +73,7 @@ export async function PATCH(req: Request) {
           scheduled_at: new Date(Date.now() + 24 * 60 * 60 * 1000), // Default to tomorrow
           status: "Scheduled",
           result: "Pending",
+          meeting_link: meetingLink || null
         }
       });
     }

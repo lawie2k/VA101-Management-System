@@ -8,7 +8,7 @@ import { requireRole } from "@/src/lib/auth";
 
 export async function GET(req: Request) {
   try {
-    await requireRole("admin");
+    await requireRole("admin", "employee");
 
     const discoveryCalls = await prisma.discovery_calls.findMany({
       include: {
@@ -36,7 +36,7 @@ export async function GET(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    await requireRole("admin");
+    await requireRole("admin", "employee");
 
     const body = await req.json();
     const { id, status } = body;

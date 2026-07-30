@@ -44,7 +44,8 @@ export async function GET(req: Request) {
     // Fetch up to 3 most recent shortlists
     const rawShortlists = await prisma.shortlists.findMany({
       where: {
-        client_profile_id: clientProfile.id
+        client_profile_id: clientProfile.id,
+        status: "shortlisted"
       },
       include: {
         job_applications: {
@@ -52,7 +53,8 @@ export async function GET(req: Request) {
             va_profiles: {
               include: {
                 users: { select: { full_name: true, profile_photo_url: true } },
-                va_skills: { include: { skills: true } }
+                va_skills: { include: { skills: true } },
+                va_feedback: { select: { rating: true } }
               }
             },
             job_posts: { select: { role_needed: true, job_title: true, client_hourly_rate: true } }
@@ -68,12 +70,16 @@ export async function GET(req: Request) {
       const jobPost = s.job_applications?.job_posts;
       return {
         id: s.id.toString(),
+        vaProfileId: vaProfile?.id?.toString() || null,
         name: vaProfile?.users?.full_name || "Unknown Candidate",
         title: jobPost?.role_needed || jobPost?.job_title,
         location: vaProfile?.location || "Global",
-        skills: vaProfile?.va_skills.map(skillLink => skillLink.skills.name).slice(0, 3) || [],
+        skills: vaProfile?.va_skills?.map((skillLink: any) => skillLink.skills.name).slice(0, 3) || [],
         hourlyRate: jobPost?.client_hourly_rate ? Number(jobPost.client_hourly_rate) : 0,
         avatar: vaProfile?.users?.profile_photo_url || null,
+        rating: vaProfile?.va_feedback && vaProfile.va_feedback.length > 0
+          ? Math.round((vaProfile.va_feedback.reduce((sum: number, f: any) => sum + f.rating, 0) / vaProfile.va_feedback.length) * 10) / 10
+          : null
       };
     });
 

@@ -9,7 +9,7 @@ import { requireRole } from "@/src/lib/auth";
 
 export async function GET() {
   try {
-    await requireRole("admin");
+    await requireRole("admin", "employee");
 
     const interviews = await prisma.interviews.findMany({
       where: { interview_type: "initial" },
@@ -62,7 +62,7 @@ export async function GET() {
 
 export async function PATCH(req: Request) {
   try {
-    await requireRole("admin");
+    await requireRole("admin", "employee");
     const { interviewId, result } = await req.json();
 
     if (!interviewId || !result) {

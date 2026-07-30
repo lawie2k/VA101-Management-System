@@ -59,6 +59,16 @@ const IconX = ({ className = "w-4 h-4" }) => (
   </svg>
 );
 
+const TIME_SLOTS = [
+  { value: "09:00", label: "9:00 AM" },
+  { value: "10:00", label: "10:00 AM" },
+  { value: "11:00", label: "11:00 AM" },
+  { value: "13:00", label: "1:00 PM" },
+  { value: "14:00", label: "2:00 PM" },
+  { value: "15:00", label: "3:00 PM" },
+  { value: "16:00", label: "4:00 PM" },
+];
+
 // ==========================================
 // 2. Mock Databases
 // ==========================================
@@ -107,11 +117,31 @@ export default function VAInterviewsPage() {
   // Reschedule state
   const [rescheduleItem, setRescheduleItem] = useState<any | null>(null);
   const [proposedTime, setProposedTime] = useState("");
+  const [scheduledDate, setScheduledDate] = useState("");
+  const [scheduledTime, setScheduledTime] = useState("");
+  const [nextDays, setNextDays] = useState<any[]>([]);
   const [rescheduleMessage, setRescheduleMessage] = useState("");
   const [rescheduleSuccess, setRescheduleSuccess] = useState(false);
 
   // Sync profile details and bookmarks on mount
   useEffect(() => {
+    const days = [];
+    const date = new Date();
+    for (let i = 0; i < 9; i++) {
+      date.setDate(date.getDate() + (i === 0 ? 1 : 1));
+      if (date.getDay() !== 0) { // Skip Sundays
+        days.push({
+          fullDate: date.toISOString().split("T")[0],
+          dayName: date.toLocaleDateString("en-US", { weekday: "short" }),
+          dateNum: date.getDate(),
+          monthName: date.toLocaleDateString("en-US", { month: "short" }),
+        });
+      }
+      if (days.length === 7) break;
+    }
+    setNextDays(days);
+    if (days.length > 0) setScheduledDate(days[0].fullDate);
+
     const savedProfile = localStorage.getItem("va_profile_data");
     if (savedProfile) {
       try {
@@ -176,7 +206,14 @@ export default function VAInterviewsPage() {
 
   const handleRescheduleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!scheduledDate || !scheduledTime) {
+      alert("Please select a date and time.");
+      return;
+    }
+    
     setRescheduleSuccess(true);
+
+    const proposedTimeStr = `${scheduledDate} at ${TIME_SLOTS.find(t => t.value === scheduledTime)?.label || scheduledTime}`;
 
     try {
       const res = await fetch("/api/va/interviews", {
@@ -184,7 +221,7 @@ export default function VAInterviewsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           interviewId: rescheduleItem.id,
-          proposedTime,
+          proposedTime: proposedTimeStr,
           message: rescheduleMessage
         })
       });
@@ -214,7 +251,7 @@ export default function VAInterviewsPage() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 h-[calc(100vh-144px)] overflow-hidden">
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 min-h-[calc(100vh-144px)] lg:h-[calc(100vh-144px)] overflow-visible lg:overflow-hidden">
       
       {/* Toast Alert Simulation */}
       {meetingUrlToast && (
@@ -224,9 +261,9 @@ export default function VAInterviewsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch h-full overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch h-full overflow-visible lg:overflow-hidden">
         
-        <VALeftSidebar />
+        <VALeftSidebar hideOnMobile={true} />
 
         <InterviewsMainFeed 
           interviews={interviews}
@@ -247,7 +284,7 @@ export default function VAInterviewsPage() {
           ========================================== */}
       {rescheduleItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-300">
-          <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xl animate-in zoom-in-95 duration-300">
+          <div className="w-full max-w-lg bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xl animate-in zoom-in-95 duration-300">
             <div className="h-2 bg-[#E84E29]" />
             <div className="p-6">
               
@@ -286,15 +323,50 @@ export default function VAInterviewsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Proposed New Date & Time</label>
-                    <input 
-                      type="text" 
-                      required
-                      placeholder="e.g. July 5, 2026 at 3:00 PM PHT"
-                      value={proposedTime}
-                      onChange={e => setProposedTime(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-semibold"
-                    />
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Select Date</label>
+                    <div className="grid grid-cols-7 gap-1.5">
+                      {nextDays.map((day) => {
+                        const isActive = scheduledDate === day.fullDate;
+                        return (
+                          <button
+                            key={day.fullDate}
+                            type="button"
+                            onClick={() => setScheduledDate(day.fullDate)}
+                            className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border text-center transition-all cursor-pointer ${
+                              isActive 
+                                ? "bg-slate-900 border-slate-900 text-white shadow-xs" 
+                                : "bg-white border-slate-200 text-slate-650 hover:border-slate-350 hover:bg-slate-50/50"
+                            }`}
+                          >
+                            <span className="text-[9px] font-extrabold uppercase tracking-wide opacity-60">{day.dayName}</span>
+                            <span className="text-sm font-black leading-none mt-0.5">{day.dateNum}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Select Time (EST)</label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {TIME_SLOTS.map((slot) => {
+                        const isActive = scheduledTime === slot.value;
+                        return (
+                          <button
+                            key={slot.value}
+                            type="button"
+                            onClick={() => setScheduledTime(slot.value)}
+                            className={`px-3 py-1.5 rounded-full border text-[11px] font-extrabold transition-all cursor-pointer ${
+                              isActive 
+                                ? "bg-[#E84E29] border-[#E84E29] text-white shadow-sm" 
+                                : "bg-white border-slate-200 text-slate-650 hover:border-slate-300 hover:bg-slate-50/50"
+                            }`}
+                          >
+                            {slot.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   <div>

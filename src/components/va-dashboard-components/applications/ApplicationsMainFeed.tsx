@@ -32,7 +32,7 @@ export default function ApplicationsMainFeed({
       onScroll={(e) => {
         window.dispatchEvent(new CustomEvent("feedScroll", { detail: { scrollTop: e.currentTarget.scrollTop } }));
       }}
-      className="lg:col-span-6 h-full overflow-y-auto scrollbar-none space-y-6 pb-6"
+      className="lg:col-span-6 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-none space-y-6 pb-6"
     >
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs">
         <h2 className="text-xl font-black text-slate-900 tracking-tight">Active Applications</h2>

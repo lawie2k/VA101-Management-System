@@ -11,6 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState("admin");
   const [fullName, setFullName] = useState("Admin User");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     async function checkAuth() {
@@ -56,12 +57,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-slate-50 flex">
       {/* Sidebar */}
-      <AdminLeftSidebar role={role} />
+      <AdminLeftSidebar role={role} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
       {/* Main Content Area */}
-      <div className="flex-1 ml-64 flex flex-col h-screen overflow-hidden">
+      <div className="flex-1 lg:ml-64 flex flex-col h-screen overflow-hidden w-full">
         {/* Header */}
-        <AdminHeader role={role} fullName={fullName} />
+        <AdminHeader role={role} fullName={fullName} setSidebarOpen={setSidebarOpen} />
 
         {/* Scrollable Content */}
         <main className="flex-1 overflow-y-auto p-8 scrollbar-none">

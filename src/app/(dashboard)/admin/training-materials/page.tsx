@@ -92,7 +92,7 @@ export default function TrainingMaterialsPage() {
       <Toast toast={toast} />
       
       {/* Header Section */}
-      <div className="mb-6 flex-shrink-0 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="mb-6 flex-shrink-0 flex flex-col items-start gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">Training materials</h1>
           <p className="text-sm font-semibold text-slate-500 mt-1">Review and approve uploaded courses.</p>
@@ -125,7 +125,7 @@ export default function TrainingMaterialsPage() {
 
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden text-sm flex-1 flex flex-col">
           <div className="overflow-x-auto flex-1">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse mobile-card-table">
               <thead className="sticky top-0 z-10 bg-white">
                 <tr className="border-b border-slate-200">
                   <th className="px-6 py-4 font-bold text-slate-600 w-[15%]">ID</th>

@@ -63,7 +63,7 @@ export default function StudentDashboardPage() {
         {/* Left Sidebar (3 cols) */}
         <div className="md:col-span-3">
           <div className="sticky top-8">
-            <StudentLeftSidebar />
+            <StudentLeftSidebar hideOnMobile={true} />
           </div>
         </div>
 

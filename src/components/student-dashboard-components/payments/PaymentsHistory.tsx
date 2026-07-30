@@ -51,7 +51,7 @@ export function PaymentsHistory() {
           <div className="text-center py-12 text-slate-500 text-sm font-medium">You have no payment history yet.</div>
         ) : (
           payments.map((payment) => (
-            <div key={payment.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl border border-slate-200 hover:border-slate-300 transition-colors bg-slate-50/50">
+            <div key={payment.id} className="flex flex-col items-start gap-4 mb-6 p-5 rounded-2xl border border-slate-200 hover:border-slate-300 transition-colors bg-slate-50/50">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center shrink-0">
                   <IconReceipt className="w-5 h-5 text-slate-600" />

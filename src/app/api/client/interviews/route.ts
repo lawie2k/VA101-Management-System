@@ -19,6 +19,8 @@ export async function GET(req: Request) {
     // Fetch interviews linked to job_applications -> job_posts belonging to this client
     const rawInterviews = await prisma.interviews.findMany({
       where: {
+        interview_type: "client",
+        status: { notIn: ["hired", "rejected"] },
         job_applications: {
           job_posts: {
             client_profile_id: clientProfile.id
@@ -37,7 +39,8 @@ export async function GET(req: Request) {
           }
         }
       },
-      orderBy: { scheduled_at: 'asc' }
+      orderBy: { scheduled_at: 'asc' },
+      take: 50
     });
 
     const formatted = rawInterviews.map(i => ({

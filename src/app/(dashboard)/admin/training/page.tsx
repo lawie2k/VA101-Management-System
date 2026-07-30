@@ -79,10 +79,8 @@ export default function TrainingPage() {
 
   const handleUpdateStatus = async (materialId: string, newStatus: string) => {
     try {
-      // Optimistic update
-      setCourses(prev => prev.map(c => 
-        c.rawId === materialId ? { ...c, rawStatus: newStatus, status: newStatus === "approved" ? "Approved" : newStatus === "rejected" ? "Rejected" : "Revision Requested" } : c
-      ));
+      // Optimistic update: instantly remove the box since it's been processed
+      setCourses(prev => prev.filter(c => c.rawId !== materialId));
 
       const res = await fetch("/api/admin/training-materials", {
         method: "PATCH",
@@ -94,7 +92,7 @@ export default function TrainingPage() {
         showToast("Failed to update status", "error");
         fetchCourses();
       } else {
-        const actionStr = newStatus === "approved" ? "approved" : newStatus === "rejected" ? "rejected" : "returned for revision";
+        const actionStr = newStatus === "active" ? "approved" : newStatus === "rejected" ? "rejected" : "returned for revision";
         showToast(`Material ${actionStr} successfully`, "success");
       }
     } catch (err) {
@@ -108,11 +106,11 @@ export default function TrainingPage() {
       <Toast toast={toast} />
       
       {/* Header Section */}
-      <div className="mb-6 flex-shrink-0 flex items-center justify-between">
+      <div className="mb-6 flex-shrink-0 flex flex-col items-start gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">Training material review</h1>
         </div>
-        <div className="relative w-72">
+        <div className="relative w-full sm:w-72">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <SearchIcon className="h-4 w-4 text-slate-400" />
           </div>
@@ -162,7 +160,7 @@ export default function TrainingPage() {
                   {(course.rawStatus === "pending_review" || course.rawStatus === "draft" || course.rawStatus === "revision_requested") && (
                     <>
                       <button 
-                        onClick={() => handleUpdateStatus(course.rawId, "approved")}
+                        onClick={() => handleUpdateStatus(course.rawId, "active")}
                         className="px-4 py-1.5 bg-[#22c55e] hover:bg-[#16a34a] text-white text-xs font-bold rounded-lg transition-colors">
                         Approve
                       </button>

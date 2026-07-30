@@ -100,7 +100,7 @@ export function BrowseTrainingRightSidebar() {
   };
 
   return (
-    <aside className="lg:col-span-3 h-full overflow-y-auto scrollbar-none space-y-6 pb-6">
+    <aside className="lg:col-span-3 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-none space-y-6 pb-6">
       
       {pendingPurchases.length > 0 && (
         <div className="bg-white border border-[#E84E29]/20 rounded-3xl p-6 shadow-xs space-y-4">

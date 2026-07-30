@@ -96,10 +96,10 @@ export default function NoticesPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col sm:flex-row gap-6 overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-visible lg:overflow-hidden">
         
         {/* Left Column: Form */}
-        <form onSubmit={handleSubmit} className="w-full sm:w-1/3 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-4 flex-shrink-0 self-start">
+        <form onSubmit={handleSubmit} className="w-full lg:w-1/3 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-4 flex-shrink-0 self-start">
           
           <div>
             <label className="block text-xs font-bold text-slate-900 mb-2">Title</label>
@@ -168,7 +168,7 @@ export default function NoticesPage() {
         </form>
 
         {/* Right Column: Recent Notices List */}
-        <div className="w-full sm:w-2/3 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col min-h-0 overflow-y-auto relative">
+        <div className="w-full lg:w-2/3 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col min-h-[400px] lg:min-h-0 overflow-visible lg:overflow-y-auto relative">
           <h2 className="text-base font-black text-slate-900 mb-6 shrink-0">Recent notices</h2>
           
           {loading && (

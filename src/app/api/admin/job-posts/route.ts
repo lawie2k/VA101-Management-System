@@ -10,7 +10,7 @@ import { requireRole } from "@/src/lib/auth";
 export async function GET(req: Request) {
   try {
     // Only admins can view all job posts
-    await requireRole("admin");
+    await requireRole("admin", "employee");
 
     const jobPosts = await prisma.job_posts.findMany({
       where: {
@@ -44,7 +44,7 @@ export async function GET(req: Request) {
 export async function PATCH(req: Request) {
   try {
     // Only admins can change status of any job post
-    await requireRole("admin");
+    await requireRole("admin", "employee");
 
     const body = await req.json();
     const { id, status } = body;

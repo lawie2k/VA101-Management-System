@@ -36,7 +36,8 @@ export async function GET() {
       where: {
         job_applications: {
           va_profile_id: profile.id
-        }
+        },
+        status: { not: "completed" }
       },
       include: {
         job_applications: {

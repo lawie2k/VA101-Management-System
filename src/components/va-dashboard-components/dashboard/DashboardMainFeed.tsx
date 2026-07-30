@@ -85,7 +85,7 @@ export default function DashboardMainFeed({
       onScroll={(e) => {
         window.dispatchEvent(new CustomEvent("feedScroll", { detail: { scrollTop: e.currentTarget.scrollTop } }));
       }}
-      className="lg:col-span-6 h-full overflow-y-auto scrollbar-none space-y-6 pb-6"
+      className="lg:col-span-6 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-none space-y-6 pb-6"
     >
       
       {/* Timeline Progress Tracker */}

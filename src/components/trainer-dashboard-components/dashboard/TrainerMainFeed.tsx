@@ -122,7 +122,7 @@ export default function TrainerMainFeed() {
   }
 
   return (
-    <main className="lg:col-span-6 h-full overflow-y-auto scrollbar-none space-y-6 pb-6">
+    <main className="lg:col-span-6 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-none space-y-6 pb-6">
       
       {/* Welcome Card */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xs relative overflow-hidden group">

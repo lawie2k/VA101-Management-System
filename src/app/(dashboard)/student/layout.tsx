@@ -74,14 +74,11 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
       {/* Dynamic transparent-to-solid FormHeader */}
-      <FormHeader isDashboard={true} />
+      <FormHeader isDashboard={true} navItems={navItems} />
 
-      {/* 
-        Secondary role tab navigation bar (positioned directly underneath the header).
-        Height matches FormHeader top offsets.
-      */}
+      {/* Secondary navigation bar */}
       {!isSetupPage && (
-        <div className={`fixed top-[72px] md:top-[80px] left-0 w-screen z-40 py-2.5 transition-all duration-300 ${
+        <div className={`hidden md:block fixed top-[80px] md:top-[96px] left-0 w-screen z-40 py-2.5 transition-all duration-300 ${
           isScrolled 
             ? "border-b border-[#1c1c1e]" 
             : "border-b border-slate-200"
@@ -102,7 +99,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wide transition-all ${
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wide whitespace-nowrap shrink-0 transition-all ${
                     isActive 
                       ? "bg-[#E84E29] text-white" // Capsule active highlight
                       : isScrolled

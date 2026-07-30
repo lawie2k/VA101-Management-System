@@ -14,7 +14,7 @@ interface StudentProfile {
   coverImage?: string;
 }
 
-export default function StudentLeftSidebar() {
+export default function StudentLeftSidebar({ hideOnMobile = false }: { hideOnMobile?: boolean } = {}) {
   const pathname = usePathname();
   const [profile, setProfile] = useState<StudentProfile>({
     fullName: "Loading...",
@@ -58,7 +58,7 @@ export default function StudentLeftSidebar() {
   const strength = computeCompletion(profile);
 
   return (
-    <aside className="lg:col-span-3 h-full overflow-y-auto scrollbar-none space-y-6 pb-6">
+    <aside className={`lg:col-span-3 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-none space-y-6 pb-6 ${hideOnMobile ? "hidden lg:block" : ""}`}>
       <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xs">
         {/* Cover Banner */}
         <div 

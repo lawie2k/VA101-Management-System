@@ -89,7 +89,7 @@ export default function PaymentsMainFeed() {
   };
 
   return (
-    <main className="lg:col-span-6 h-full overflow-y-auto scrollbar-none space-y-5 pb-12">
+    <main className="lg:col-span-6 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-none space-y-5 pb-12">
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs bg-gradient-to-br from-purple-50/50 to-white">
         <h1 className="text-xl font-black text-slate-900 tracking-tight">Billing & Invoices</h1>
         <p className="text-xs text-slate-500 font-medium mt-1">

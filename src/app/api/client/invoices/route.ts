@@ -20,7 +20,8 @@ export async function GET(req: Request) {
       where: {
         client_profile_id: clientProfile.id
       },
-      orderBy: { created_at: 'desc' }
+      orderBy: { created_at: 'desc' },
+      take: 50
     });
 
     const formatted = rawInvoices.map(inv => ({

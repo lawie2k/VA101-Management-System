@@ -24,6 +24,11 @@ export async function GET() {
       email: freshUser.email,
       fullName: freshUser.full_name,
       profilePhotoUrl: freshUser.profile_photo_url,
+      phone: freshUser.phone,
+      country: freshUser.country,
+      language: freshUser.language,
+      timezone: freshUser.timezone,
+      notificationPrefs: freshUser.notification_prefs,
       roles: session.user.roles,
     };
 

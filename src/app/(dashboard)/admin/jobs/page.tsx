@@ -56,10 +56,8 @@ export default function AdminJobsPage() {
   }
 
   const handleUpdateStatus = async (jobId: string, newStatus: string, displayStatus: string) => {
-    // Optimistic UI Update
-    setJobs(prev => prev.map(job => 
-      job.id === jobId ? { ...job, status: displayStatus } : job
-    ));
+    // Optimistic UI Update: instantly remove the box since it's no longer pending
+    setJobs(prev => prev.filter(job => job.id !== jobId));
 
     try {
       const res = await fetch("/api/admin/jobs", {
@@ -128,7 +126,7 @@ export default function AdminJobsPage() {
               {/* Actions */}
               <div className="mt-5 flex items-center gap-3">
                 <button 
-                  onClick={() => handleUpdateStatus(job.id, "approved", "Approved")}
+                  onClick={() => handleUpdateStatus(job.id, "active", "Approved")}
                   className="px-4 py-1.5 bg-[#22c55e] hover:bg-[#16a34a] text-white text-xs font-bold rounded-lg transition-colors"
                 >
                   Approve

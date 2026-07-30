@@ -34,13 +34,15 @@ export async function GET(req: Request) {
                 job_title: true, 
                 role_needed: true,
                 client_hourly_rate: true,
+                va_hourly_rate: true,
                 work_schedule: true
               }
             }
           }
         }
       },
-      orderBy: { created_at: 'desc' }
+      orderBy: { created_at: 'desc' },
+      take: 50
     });
 
     // Serialize BigInts and format response
@@ -49,7 +51,7 @@ export async function GET(req: Request) {
       vaProfileId: c.va_profile_id.toString(),
       vaName: c.va_profiles.users?.full_name || "Unknown VA",
       role: c.assignments?.job_posts.role_needed || c.assignments?.job_posts.job_title || "Virtual Assistant",
-      rate: c.assignments?.job_posts.client_hourly_rate ? `$${c.assignments.job_posts.client_hourly_rate}/hr` : "TBD",
+      rate: c.assignments?.job_posts.va_hourly_rate ? `$${c.assignments.job_posts.va_hourly_rate}/hr` : "TBD",
       hours: c.assignments?.job_posts.work_schedule || "Full-time",
       startDate: c.assignments?.start_date ? c.assignments.start_date.toISOString().split('T')[0] : (c.created_at ? c.created_at.toISOString().split('T')[0] : "TBD"),
       status: c.status || "draft",

@@ -8,7 +8,7 @@ import { requireRole } from "@/src/lib/auth";
 
 export async function GET(req: Request) {
   try {
-    await requireRole("admin");
+    await requireRole("admin", "employee");
 
     const interviews = await prisma.interviews.findMany({
       where: {
@@ -37,7 +37,7 @@ export async function GET(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    await requireRole("admin");
+    await requireRole("admin", "employee");
 
     const body = await req.json();
     const { id, status, result, meeting_link, remarks } = body;

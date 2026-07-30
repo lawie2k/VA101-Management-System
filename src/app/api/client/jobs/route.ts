@@ -25,15 +25,16 @@ export async function GET(req: Request) {
           select: { job_applications: true }
         }
       },
-      orderBy: { created_at: 'desc' }
+      orderBy: { created_at: 'desc' },
+      take: 50
     });
 
     const formatted = rawJobs.map(job => ({
       id: job.id.toString(),
       title: job.job_title,
       type: job.work_schedule || "Full-time",
-      rate: job.client_hourly_rate ? `$${job.client_hourly_rate}/hr` : "TBD",
-      status: job.status === "active" ? "Active" : (job.status === "pending_review" ? "Draft" : "Closed"),
+      rate: job.client_hourly_rate ? parseFloat(job.client_hourly_rate.toString()) : 0,
+      status: job.status === "active" ? "Active" : (job.status === "pending_review" ? "Pending" : "Declined"),
       applicants: job._count.job_applications,
       postedDate: job.created_at ? job.created_at.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Recently",
     }));

@@ -77,11 +77,11 @@ export default function TrainerLayout({ children }: { children: React.ReactNode 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
       {/* Dynamic transparent-to-solid FormHeader */}
-      <FormHeader isDashboard={true} />
+      <FormHeader isDashboard={true} navItems={navItems} />
 
       {/* Secondary navigation bar */}
       {showNav && !isSetupPage && (
-        <div className={`fixed top-[72px] md:top-[80px] left-0 w-screen z-40 py-2.5 transition-all duration-300 ${
+        <div className={`hidden md:block fixed top-[80px] md:top-[96px] left-0 w-screen z-40 py-2.5 transition-all duration-300 ${
           isScrolled 
             ? "border-b border-[#1c1c1e]" 
             : "border-b border-slate-200"
@@ -100,9 +100,9 @@ export default function TrainerLayout({ children }: { children: React.ReactNode 
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wide transition-all shrink-0 ${
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wide transition-all whitespace-nowrap shrink-0 ${
                     isActive 
-                      ? "bg-[#E84E29] text-white animate-fade-in"
+                      ? "bg-[#E84E29] text-white" 
                       : isScrolled
                         ? "text-slate-400 hover:text-white"
                         : "text-slate-600 hover:text-black"

@@ -32,11 +32,20 @@ export async function POST(req: Request) {
       }
     });
 
-    // We can also update the linked payment record if needed
+// We can also update the linked payment record if needed
     if (purchase.payment_id) {
       await db.payments.update({
         where: { id: purchase.payment_id },
-        data: { status: "under_review" } // Usually would store receipt URL in a new field, but payments schema doesn't have it natively here
+        data: { status: "under_review" } 
+      });
+
+      // Insert the receipt into payment_proofs so Finance Admin can see it
+      await db.payment_proofs.create({
+        data: {
+          payment_id: purchase.payment_id,
+          file_url: receiptUrl,
+          uploaded_by: BigInt(currentUser.id)
+        }
       });
     }
 

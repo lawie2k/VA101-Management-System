@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { EditJobModal } from "./EditJobModal";
 
 // ==========================================
 // Shared Types
@@ -12,7 +13,7 @@ export interface Job {
   title: string;
   type: string;
   rate: number;
-  status: "active" | "draft" | "closed";
+  status: "Active" | "Pending" | "Declined" | "Draft";
   applicants: number;
   postedDate: string;
   schedule?: string;
@@ -60,14 +61,16 @@ const IconUsers = ({ className = "w-4 h-4" }) => (
 // ==========================================
 
 function JobStatusBadge({ status }: { status: string }) {
+  const statusLower = status.toLowerCase();
   const styles: Record<string, string> = {
     active: "text-emerald-700 bg-emerald-500/10 border-emerald-500/25",
     draft:  "text-amber-700 bg-amber-500/10 border-amber-500/25",
-    closed: "text-slate-500 bg-slate-200/60 border-slate-300/50",
+    pending: "text-amber-700 bg-amber-500/10 border-amber-500/25",
+    declined: "text-slate-500 bg-slate-200/60 border-slate-300/50",
   };
   return (
-    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border capitalize ${styles[status] || styles.draft}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${status === "active" ? "bg-emerald-500 animate-pulse" : status === "draft" ? "bg-amber-500" : "bg-slate-400"}`} />
+    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border capitalize ${styles[statusLower] || styles.pending}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${statusLower === "active" ? "bg-emerald-500 animate-pulse" : (statusLower === "draft" || statusLower === "pending") ? "bg-amber-500" : "bg-slate-400"}`} />
       {status}
     </span>
   );
@@ -79,29 +82,44 @@ function JobStatusBadge({ status }: { status: string }) {
 
 export default function JobsMainFeed() {
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [activeTab, setActiveTab] = useState<"all" | "active" | "draft" | "closed">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "active" | "pending" | "declined">("all");
   const [isLoaded, setIsLoaded] = useState(false);
+  const [editingJobId, setEditingJobId] = useState<string | null>(null);
+
+  async function loadJobs() {
+    try {
+      const res = await fetch("/api/client/jobs");
+      if (res.ok) {
+        const data = await res.json();
+        setJobs(data);
+      }
+    } catch (e) {
+      console.error("Failed to load jobs", e);
+    } finally {
+      setIsLoaded(true);
+    }
+  }
 
   useEffect(() => {
-    async function loadJobs() {
-      try {
-        const res = await fetch("/api/client/jobs");
-        if (res.ok) {
-          const data = await res.json();
-          setJobs(data);
-        }
-      } catch (e) {
-        console.error("Failed to load jobs", e);
-      } finally {
-        setIsLoaded(true);
-      }
-    }
     loadJobs();
   }, []);
 
-  const handleToggleStatus = (id: string, next: "active" | "closed") => {
-    // API endpoint for toggling status not yet implemented
-    alert("Status toggling will be connected to the backend soon!");
+  const handleToggleStatus = async (id: string, next: "active" | "closed") => {
+    try {
+      const res = await fetch(`/api/client/jobs/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: next })
+      });
+      if (res.ok) {
+        loadJobs();
+      } else {
+        alert("Failed to update status");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error connecting to server");
+    }
   };
 
   const filtered = jobs.filter(j => activeTab === "all" || j.status.toLowerCase() === activeTab);
@@ -115,7 +133,7 @@ export default function JobsMainFeed() {
   }
 
   return (
-    <main className="lg:col-span-6 h-full overflow-y-auto scrollbar-none space-y-5 pb-12">
+    <main className="lg:col-span-6 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-none space-y-5 pb-12">
 
       {/* Header Card */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs bg-gradient-to-br from-[#E84E29]/5 via-white to-amber-50/20">
@@ -137,8 +155,8 @@ export default function JobsMainFeed() {
 
         {/* Filter Tabs */}
         <div className="flex gap-2.5 mt-5 border-t border-slate-100 pt-4">
-          {(["all", "active", "draft", "closed"] as const).map((tab) => {
-            const count = tab === "all" ? jobs.length : jobs.filter(j => j.status === tab).length;
+          {(["all", "active", "pending", "declined"] as const).map((tab) => {
+            const count = tab === "all" ? jobs.length : jobs.filter(j => j.status.toLowerCase() === tab).length;
             return (
               <button
                 key={tab}
@@ -193,7 +211,9 @@ export default function JobsMainFeed() {
                   </h4>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 text-[11px] text-slate-500 font-medium">
                     <span className="flex items-center gap-1"><IconBriefcase className="w-3 h-3 text-slate-400" />{job.type}</span>
-                    <span className="flex items-center gap-1"><IconUsers className="w-3.5 h-3.5 text-slate-400" />{job.applicants} applicant{job.applicants !== 1 ? "s" : ""}</span>
+                    {job.status.toLowerCase() === "active" && (
+                      <span className="flex items-center gap-1"><IconUsers className="w-3.5 h-3.5 text-slate-400" />{job.applicants} applicant{job.applicants !== 1 ? "s" : ""}</span>
+                    )}
                     {job.schedule && <span className="flex items-center gap-1"><IconClock className="w-3 h-3 text-slate-400" />{job.schedule}</span>}
                   </div>
                 </div>
@@ -205,29 +225,31 @@ export default function JobsMainFeed() {
 
               <div className="flex items-center justify-between gap-2 mt-4 pt-3.5 border-t border-slate-100">
                 <div className="flex items-center gap-2">
-                  <Link
-                    href="/client/shortlisted-candidates"
-                    className="inline-flex items-center gap-1 px-4 py-2 rounded-full text-[11px] font-bold text-white bg-slate-900 hover:bg-slate-800 transition-all shadow-xs"
-                  >
-                    View Applicants <IconArrowRight className="w-3 h-3" />
-                  </Link>
-                  <Link
-                    href="/client/post-job"
-                    className="inline-flex items-center gap-1 px-4 py-2 rounded-full text-[11px] font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-all"
+                  {job.status.toLowerCase() === "active" && (
+                    <Link
+                      href="/client/shortlisted-candidates"
+                      className="inline-flex items-center gap-1 px-4 py-2 rounded-full text-[11px] font-bold text-white bg-slate-900 hover:bg-slate-800 transition-all shadow-xs"
+                    >
+                      View Applicants <IconArrowRight className="w-3 h-3" />
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => setEditingJobId(job.id)}
+                    className="inline-flex items-center gap-1 px-4 py-2 rounded-full text-[11px] font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-all cursor-pointer"
                   >
                     Edit
-                  </Link>
+                  </button>
                 </div>
                 <div>
-                  {job.status === "active" && (
+                  {job.status.toLowerCase() === "active" && (
                     <button
                       onClick={() => handleToggleStatus(job.id, "closed")}
                       className="px-3.5 py-1.5 rounded-full text-[10px] font-bold text-red-600 hover:bg-red-50 transition-all cursor-pointer"
                     >
-                      Close Job
+                      Decline Job
                     </button>
                   )}
-                  {job.status === "closed" && (
+                  {job.status.toLowerCase() === "declined" && (
                     <button
                       onClick={() => handleToggleStatus(job.id, "active")}
                       className="px-3.5 py-1.5 rounded-full text-[10px] font-bold text-emerald-600 hover:bg-emerald-50 transition-all cursor-pointer"
@@ -241,6 +263,16 @@ export default function JobsMainFeed() {
           ))
         )}
       </div>
+
+      {editingJobId && (
+        <EditJobModal 
+          jobId={editingJobId} 
+          onClose={() => setEditingJobId(null)} 
+          onSuccess={() => {
+            loadJobs();
+          }} 
+        />
+      )}
     </main>
   );
 }

@@ -4,7 +4,7 @@ import TrainerProfileForm from "../../../../components/trainer-dashboard-compone
 
 export default function TrainerProfilePage() {
   return (
-    <div className="w-full h-full overflow-y-auto scrollbar-none bg-slate-50/50">
+    <div className="w-full h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-none bg-slate-50/50">
       <TrainerProfileForm />
     </div>
   );
