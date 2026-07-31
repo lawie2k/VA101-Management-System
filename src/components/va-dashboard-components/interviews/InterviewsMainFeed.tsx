@@ -49,6 +49,20 @@ interface InterviewsMainFeedProps {
   triggerMeetingLaunch: (platform: string) => void;
 }
 
+const isMeetingTime = (scheduledIsoStr: string | null) => {
+  if (!scheduledIsoStr) return false;
+  try {
+    const meetingDate = new Date(scheduledIsoStr);
+    const now = new Date();
+    const diffInMinutes = (meetingDate.getTime() - now.getTime()) / 60000;
+    
+    // Allow joining up to 10 minutes early
+    return diffInMinutes <= 10;
+  } catch (e) {
+    return false;
+  }
+};
+
 export default function InterviewsMainFeed({
   interviews,
   setRescheduleItem,
@@ -104,14 +118,23 @@ export default function InterviewsMainFeed({
                   Reschedule
                 </button>
                 <button 
-                  onClick={() => {
+                  onClick={(e) => {
+                    if (!isMeetingTime(item.scheduledAt)) {
+                      e.preventDefault();
+                      alert("It's not time for this meeting yet!");
+                      return;
+                    }
                     if (item.meetingLink) {
                       window.open(item.meetingLink, "_blank");
                     } else {
                       triggerMeetingLaunch(item.platform);
                     }
                   }}
-                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 transition-all cursor-pointer shadow-xs"
+                  className={`inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer shadow-xs ${
+                    isMeetingTime(item.scheduledAt) 
+                      ? "text-white bg-slate-900 hover:bg-slate-800" 
+                      : "text-slate-400 bg-slate-200 cursor-not-allowed"
+                  }`}
                 >
                   Join Meeting <IconChevronRight className="w-3.5 h-3.5" />
                 </button>

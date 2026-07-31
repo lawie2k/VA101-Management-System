@@ -98,7 +98,7 @@ export default function AdminDashboardPage() {
       case "needs_revision":
         return "bg-amber-100 text-amber-700 border-amber-200";
       default:
-        return "bg-blue-100 text-blue-700 border-blue-200";
+        return "bg-[#fff0ed] text-[#DA431E] border-[#ffcdbd]";
     }
   };
 
@@ -163,8 +163,8 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const paginate = (arr, page) => arr.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
-  const totalPages = (arr) => Math.ceil(arr.length / ITEMS_PER_PAGE) || 1;
+  const paginate = (arr: any[], page: number) => arr.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+  const totalPages = (arr: any[]) => Math.ceil(arr.length / ITEMS_PER_PAGE) || 1;
 
   // -------------------------------------------------------------
   // FINANCE DASHBOARD VIEW

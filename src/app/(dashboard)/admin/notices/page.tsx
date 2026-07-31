@@ -108,7 +108,7 @@ export default function NoticesPage() {
               placeholder="Subject" 
               value={title}
               onChange={e => setTitle(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-medium transition-all"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-[#E84E29] focus:ring-2 focus:ring-[#E84E29]/20 outline-none text-sm font-medium transition-all"
             />
           </div>
 
@@ -117,7 +117,7 @@ export default function NoticesPage() {
             <select 
               value={audience}
               onChange={e => setAudience(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-medium transition-all bg-white appearance-none cursor-pointer"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-[#E84E29] focus:ring-2 focus:ring-[#E84E29]/20 outline-none text-sm font-medium transition-all bg-white appearance-none cursor-pointer"
             >
               {[
                 { id: "All users", label: "All users" },
@@ -139,7 +139,7 @@ export default function NoticesPage() {
             <select 
               value={priority}
               onChange={e => setPriority(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-medium transition-all bg-white appearance-none cursor-pointer"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-[#E84E29] focus:ring-2 focus:ring-[#E84E29]/20 outline-none text-sm font-medium transition-all bg-white appearance-none cursor-pointer"
             >
               <option value="normal">Normal</option>
               <option value="high">High</option>
@@ -153,7 +153,7 @@ export default function NoticesPage() {
               rows={6}
               value={message}
               onChange={e => setMessage(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-medium transition-all resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#E84E29] focus:ring-2 focus:ring-[#E84E29]/20 outline-none text-sm font-medium transition-all resize-none"
             ></textarea>
           </div>
 
@@ -173,7 +173,7 @@ export default function NoticesPage() {
           
           {loading && (
             <div className="absolute inset-0 z-10 bg-white/50 flex items-center justify-center">
-              <div className="w-6 h-6 border-2 border-slate-200 border-t-blue-500 rounded-full animate-spin"></div>
+              <div className="w-6 h-6 border-2 border-slate-200 border-t-[#E84E29] rounded-full animate-spin"></div>
             </div>
           )}
 

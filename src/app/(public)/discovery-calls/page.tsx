@@ -216,8 +216,8 @@ export default function DiscoveryCallsPage() {
         time: selectedTime,
         fullName: session ? session.fullName : formData.fullName,
         companyName: formData.companyName,
-        meetingLink: "meet.google.com/cvy-uqns-pxo",
-        host: "Erika Santos — Lead Success Partner",
+        meetingLink: "meet.google.com/va101-admin",
+        host: "VA101 Management Team",
       });
 
       setIsBooked(true);
@@ -344,40 +344,28 @@ export default function DiscoveryCallsPage() {
                 </span>
                 <div className="min-w-0">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Google Meet Link</p>
-                  <a 
-                    href={`https://${bookedDetails.meetingLink}`} 
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block text-xs font-extrabold text-[#E84E29] hover:text-[#DA431E] truncate hover:underline mt-0.5"
-                  >
-                    {bookedDetails.meetingLink}
-                  </a>
+                  <p className="block text-xs font-extrabold text-slate-600 truncate mt-0.5">
+                    To be provided via email
+                  </p>
                 </div>
               </div>
             </div>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-2 justify-center">
-              <button 
-                className="px-5 py-2.5 rounded-full text-xs font-bold text-slate-700 border border-slate-200 bg-white hover:bg-slate-50 transition-all cursor-pointer"
-                onClick={() => {
-                  alert("Google Calendar integration placeholder: Calendar event added!");
-                }}
+              <a 
+                href={`https://calendar.google.com/calendar/r/eventedit?text=VA101+Discovery+Call&dates=${bookedDetails.date.replace(/-/g, '')}T${bookedDetails.time.replace(':', '')}00/${bookedDetails.date.replace(/-/g, '')}T${String((parseInt(bookedDetails.time.split(':')[0]) + Math.floor((parseInt(bookedDetails.time.split(':')[1]) + 30) / 60))).padStart(2, '0')}${String((parseInt(bookedDetails.time.split(':')[1]) + 30) % 60).padStart(2, '0')}00&details=Host:+${encodeURIComponent(bookedDetails.host)}%0AMeeting+Link:+To+be+provided+by+Admin&location=To+be+provided+by+Admin&ctz=America/New_York`}
+                target="_blank"
+                rel="noreferrer"
+                className="px-5 py-2.5 rounded-full text-xs font-bold text-slate-700 border border-slate-200 bg-white hover:bg-slate-50 transition-all cursor-pointer inline-flex items-center justify-center"
               >
                 📅 Add to Google Calendar
-              </button>
-              {session ? (
+              </a>
+              {session && (
                 <Link 
                   href="/client/dashboard" 
                   className="px-6 py-2.5 rounded-full text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 transition-all shadow-sm text-center"
                 >
                   Return to Dashboard
-                </Link>
-              ) : (
-                <Link 
-                  href="/login" 
-                  className="px-6 py-2.5 rounded-full text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 transition-all shadow-sm text-center"
-                >
-                  Sign In to Check Progress
                 </Link>
               )}
             </div>

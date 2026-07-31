@@ -37,7 +37,7 @@ export async function GET() {
         job_applications: {
           va_profile_id: profile.id
         },
-        status: { not: "completed" }
+        status: { notIn: ["completed", "hired", "rejected", "client_rejected"] }
       },
       include: {
         job_applications: {

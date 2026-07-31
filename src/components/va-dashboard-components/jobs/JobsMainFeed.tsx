@@ -69,7 +69,6 @@ interface JobsMainFeedProps {
   savedJobs: string[];
   appliedJobs: string[];
   toggleSaveJob: (id: string) => void;
-  toggleSaveJob: (id: string) => void;
   openApplyModal: (job: Job) => void;
 }
 
@@ -232,7 +231,7 @@ export default function JobsMainFeed({
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-2 flex items-center gap-1 shrink-0">
             <IconFilter className="w-3.5 h-3.5" /> Filter:
           </span>
-          {["All", "Full-time", "Part-time", "Contract"].map((type) => {
+          {["All", "Full-time", "Part-time", "Contractual"].map((type) => {
             const isActive = selectedType === type;
             return (
               <button

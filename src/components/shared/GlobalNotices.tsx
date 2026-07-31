@@ -98,22 +98,29 @@ export default function GlobalNotices({ theme = "dark" }: { theme?: "light" | "d
                 No notifications right now.
               </div>
             ) : (
-              notices.map((notice, idx) => (
-                <div 
-                  key={notice.id} 
-                  className={`p-4 transition-colors hover:bg-slate-50 ${idx !== notices.length - 1 ? 'border-b border-slate-100' : ''}`}
-                >
-                  <div className="flex justify-between items-start mb-1 gap-2">
-                    <h4 className="text-xs font-bold text-slate-900">{notice.title}</h4>
-                    {notice.priority === 'urgent' && <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-red-100 text-red-700 text-[9px] font-black uppercase">Urgent</span>}
-                    {notice.priority === 'high' && <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-orange-100 text-orange-700 text-[9px] font-black uppercase">High</span>}
+              <>
+                {notices.slice(0, 3).map((notice, idx, arr) => (
+                  <div 
+                    key={notice.id} 
+                    className={`p-4 transition-colors hover:bg-slate-50 ${idx !== arr.length - 1 ? 'border-b border-slate-100' : ''}`}
+                  >
+                    <div className="flex justify-between items-start mb-1 gap-2">
+                      <h4 className="text-xs font-bold text-slate-900">{notice.title}</h4>
+                      {notice.priority === 'urgent' && <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-red-100 text-red-700 text-[9px] font-black uppercase">Urgent</span>}
+                      {notice.priority === 'high' && <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-orange-100 text-orange-700 text-[9px] font-black uppercase">High</span>}
+                    </div>
+                    <p className="text-[11px] text-slate-600 whitespace-pre-wrap mt-2">{notice.message}</p>
+                    <p className="text-[9px] font-semibold text-slate-400 mt-3 uppercase tracking-wider">
+                      {new Date(notice.created_at).toLocaleDateString()}
+                    </p>
                   </div>
-                  <p className="text-[11px] text-slate-600 whitespace-pre-wrap mt-2">{notice.message}</p>
-                  <p className="text-[9px] font-semibold text-slate-400 mt-3 uppercase tracking-wider">
-                    {new Date(notice.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              ))
+                ))}
+                {notices.length > 3 && (
+                  <div className="p-3 text-center border-t border-slate-100">
+                    <span className="text-[10px] font-bold text-slate-400">+{notices.length - 3} older notifications hidden</span>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

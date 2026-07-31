@@ -49,6 +49,7 @@ export async function GET(req: Request) {
       role: i.job_applications?.job_posts?.role_needed || i.job_applications?.job_posts?.job_title || "Role",
       date: i.scheduled_at ? i.scheduled_at.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "TBD",
       time: i.scheduled_at ? i.scheduled_at.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : "TBD",
+      raw_scheduled_at: i.scheduled_at ? i.scheduled_at.toISOString() : null,
       status: i.status === "completed" ? "Completed" : "Upcoming",
       meetLink: i.meeting_link || "",
     }));

@@ -77,6 +77,7 @@ interface ShortlistedCandidate {
   skills: string[];
   hourlyRate: number;
   avatar: string | null;
+  vaProfileId?: string;
 }
 
 interface ClientMainFeedProps {

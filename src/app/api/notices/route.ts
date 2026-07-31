@@ -41,7 +41,47 @@ export async function GET(req: Request) {
       take: 20
     });
 
-    return NextResponse.json({ notices });
+    let finalNotices: any[] = [...notices];
+
+    // Inject personal hired notices for VAs
+    if (userRoles.includes("va")) {
+      const vaProfile = await prisma.va_profiles.findUnique({
+        where: { user_id: BigInt(session.user.id) }
+      });
+
+      if (vaProfile) {
+        const hiredApps = await prisma.job_applications.findMany({
+          where: {
+            va_profile_id: vaProfile.id,
+            status: "hired"
+          },
+          include: {
+            job_posts: {
+              include: { client_profiles: true }
+            }
+          },
+          orderBy: { updated_at: "desc" },
+          take: 5
+        });
+
+        const hiredNotices = hiredApps.map((app: any) => ({
+          id: `hired-${app.id.toString()}`,
+          title: "🎉 Congratulations! You've been Hired!",
+          message: `You are hired for the ${app.job_posts?.job_title} role at ${app.job_posts?.client_profiles?.company_name || "a client"}. Check your Tasks and Contracts!`,
+          audience_type: "Personal",
+          priority: "normal",
+          created_at: app.updated_at || app.applied_at || new Date()
+        }));
+
+        // Put hired notices at the top
+        finalNotices = [...hiredNotices, ...finalNotices];
+      }
+    }
+
+    // Sort combined array by created_at desc
+    finalNotices.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    return NextResponse.json({ notices: finalNotices });
   } catch (error) {
     console.error("Error fetching global notices:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

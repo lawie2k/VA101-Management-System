@@ -73,7 +73,8 @@ export default function DashboardMainFeed({
       case "screening": return 2;
       case "interview": return 3;
       case "offered":
-      case "contracted": return 4;
+      case "contracted": 
+      case "hired": return 4;
       default: return 0;
     }
   };
@@ -87,7 +88,6 @@ export default function DashboardMainFeed({
       }}
       className="lg:col-span-6 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-none space-y-6 pb-6"
     >
-      
       {/* Timeline Progress Tracker */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs">
         <div className="flex items-center justify-between mb-4">
@@ -111,7 +111,7 @@ export default function DashboardMainFeed({
             <div className="mt-5 grid grid-cols-4 gap-2 relative">
               {/* Applied Step */}
               <div className="text-center relative">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto mb-1 transition-all ${activeStep >= 1 ? "bg-[#E84E29] text-white animate-pulse" : "bg-slate-200 text-slate-500 border border-slate-300"}`}>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto mb-1 transition-all ${activeStep >= 1 ? "bg-[#E84E29] text-white" : "bg-slate-200 text-slate-500 border border-slate-300"}`}>
                   {activeStep >= 1 ? <IconCheckCircle className="w-3.5 h-3.5" /> : <span className="text-[9px] font-bold">1</span>}
                 </div>
                 <span className={`text-[9px] font-bold ${activeStep >= 1 ? "text-slate-800" : "text-slate-400"}`}>Applied</span>
@@ -138,7 +138,7 @@ export default function DashboardMainFeed({
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto mb-1 transition-all ${activeStep >= 4 ? "bg-[#E84E29] text-white" : "bg-slate-200 text-slate-500 border border-slate-300"}`}>
                   {activeStep >= 4 ? <IconCheckCircle className="w-3.5 h-3.5" /> : <span className="text-[9px] font-bold">4</span>}
                 </div>
-                <span className={`text-[9px] font-bold ${activeStep >= 4 ? "text-slate-800" : "text-slate-400"}`}>Contract</span>
+                <span className={`text-[9px] font-bold ${activeStep >= 4 ? "text-slate-800" : "text-slate-400"}`}>Hired</span>
               </div>
             </div>
           ) : (

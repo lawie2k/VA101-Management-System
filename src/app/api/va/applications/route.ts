@@ -33,7 +33,10 @@ export async function GET() {
     }
 
     const applications = await db.job_applications.findMany({
-      where: { va_profile_id: profile.id },
+      where: { 
+        va_profile_id: profile.id,
+        status: { not: "withdrawn" }
+      },
       include: {
         job_posts: {
           include: { client_profiles: true }

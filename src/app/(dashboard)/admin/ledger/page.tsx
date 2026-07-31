@@ -11,6 +11,7 @@ export default function FinanceLedgerPage() {
   const { toast, showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemsPerPage = useDynamicPagination(containerRef, 65, 40, 6);
@@ -34,6 +35,17 @@ export default function FinanceLedgerPage() {
 
   if (loading) return null;
 
+  const query = searchQuery.toLowerCase();
+  const filteredData = data.filter((log) => {
+    if (!query) return true;
+    return (
+      (log.actor && log.actor.toLowerCase().includes(query)) ||
+      (log.type && log.type.toLowerCase().includes(query)) ||
+      (log.title && log.title.toLowerCase().includes(query)) ||
+      (log.id && log.id.toString().includes(query))
+    );
+  });
+
   return (
     <div className="max-w-7xl mx-auto animate-fade-in h-[calc(100vh-100px)] flex flex-col">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 shrink-0">
@@ -44,8 +56,10 @@ export default function FinanceLedgerPage() {
         <div className="flex items-center gap-3">
           <input 
             type="text" 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search transactions..." 
-            className="w-64 px-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-emerald-300 focus:ring-1 focus:ring-emerald-300 bg-white"
+            className="w-64 px-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-[#E84E29] focus:ring-1 focus:ring-[#E84E29] bg-white"
           />
           <button 
             onClick={() => showToast("Exporting ledger data...", "success")}
@@ -70,13 +84,13 @@ export default function FinanceLedgerPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {data.length === 0 ? (
+              {filteredData.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center text-sm text-slate-500 p-5">
                     No ledger entries found.
                   </td>
                 </tr>
-              ) : data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((log: any) => (
+              ) : filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((log: any) => (
                 <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap text-slate-500 font-medium">
                     {log.date ? new Date(log.date).toLocaleString() : "N/A"}
@@ -112,7 +126,7 @@ export default function FinanceLedgerPage() {
       <div className="shrink-0 pt-4">
         <Pagination 
           currentPage={currentPage}
-          totalPages={Math.ceil(data.length / itemsPerPage) || 1}
+          totalPages={Math.ceil(filteredData.length / itemsPerPage) || 1}
           onPageChange={setCurrentPage}
         />
       </div>

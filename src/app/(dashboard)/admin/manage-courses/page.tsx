@@ -158,7 +158,7 @@ export default function AdminManageCoursesPage() {
                           <button
                             onClick={() => handleUpdateStatus(course.rawId, "disabled", "Disabled")}
                             disabled={updatingId === course.rawId}
-                            className="px-3 py-1.5 text-xs font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors disabled:opacity-50"
+                            className="px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50"
                           >
                             Disable
                           </button>

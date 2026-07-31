@@ -162,7 +162,7 @@ export default function EmployeeManagementPage() {
                       <select 
                         value={user.role} 
                         onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                        className="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 outline-none cursor-pointer"
+                        className="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-lg focus:ring-[#E84E29] focus:border-[#E84E29] block w-full p-2 outline-none cursor-pointer"
                       >
                         {ROLES.map(role => (
                           <option key={role.value} value={role.value}>{role.label}</option>
@@ -222,7 +222,7 @@ export default function EmployeeManagementPage() {
                   type="text" required
                   value={inviteForm.name}
                   onChange={e => setInviteForm(f => ({ ...f, name: e.target.value }))}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#E84E29] focus:ring-1 focus:ring-[#E84E29] transition-all"
                   placeholder="e.g. Jane Doe"
                 />
               </div>
@@ -233,7 +233,7 @@ export default function EmployeeManagementPage() {
                   type="email" required
                   value={inviteForm.email}
                   onChange={e => setInviteForm(f => ({ ...f, email: e.target.value }))}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#E84E29] focus:ring-1 focus:ring-[#E84E29] transition-all"
                   placeholder="jane@va101.com"
                 />
               </div>
@@ -243,7 +243,7 @@ export default function EmployeeManagementPage() {
                 <select
                   value={inviteForm.roleName}
                   onChange={e => setInviteForm(f => ({ ...f, roleName: e.target.value }))}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#E84E29] focus:ring-1 focus:ring-[#E84E29] transition-all"
                 >
                   {ROLES.map(r => (
                     <option key={r.value} value={r.value}>{r.label}</option>

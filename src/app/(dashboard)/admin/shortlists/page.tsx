@@ -70,7 +70,7 @@ export default function ShortlistsPage() {
           <div className="grid grid-cols-2 gap-4 pb-2 relative">
             {loading && shortlists.length === 0 ? (
               <div className="col-span-2 absolute inset-0 flex items-center justify-center bg-white/50 z-10 min-h-[200px]">
-                <div className="w-6 h-6 border-2 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
+                <div className="w-6 h-6 border-2 border-slate-200 border-t-[#DA431E] rounded-full animate-spin"></div>
               </div>
             ) : currentShortlists.length === 0 ? (
               <div className="col-span-2 py-10 text-center text-slate-500 font-medium">No shortlists found.</div>

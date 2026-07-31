@@ -36,7 +36,7 @@ export default function FinanceLeftSidebar({ isOpen, setIsOpen }: { isOpen?: boo
               className="h-16 w-auto object-contain"
             />
           </Link>
-          <p className="mt-8 text-[10px] font-black text-emerald-500 uppercase tracking-widest px-2">
+          <p className="mt-8 text-[10px] font-black text-[#E84E29] uppercase tracking-widest px-2">
             FINANCE ADMIN
           </p>
         </div>
@@ -56,7 +56,7 @@ export default function FinanceLeftSidebar({ isOpen, setIsOpen }: { isOpen?: boo
                 }`}
                 onClick={() => setIsOpen?.(false)}
               >
-                <div className={`${isActive ? "text-emerald-500" : "text-slate-500"}`}>
+                <div className={`${isActive ? "text-[#E84E29]" : "text-slate-500"}`}>
                   {link.icon}
                 </div>
                 {link.label}

@@ -132,6 +132,31 @@ export default function MyApplicationsPage() {
     fetchApplications();
   }, []);
 
+  const handleWithdrawApplication = async (id: string) => {
+    try {
+      const res = await fetch(`/api/va/applications/${id}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        setApplications(prev => prev.filter(app => app.id !== id));
+        // Also remove from appliedJobs localStorage
+        const savedApplications = localStorage.getItem("va_applied_jobs");
+        if (savedApplications) {
+          const parsed = JSON.parse(savedApplications);
+          const updated = parsed.filter((jobId: string) => jobId !== id);
+          localStorage.setItem("va_applied_jobs", JSON.stringify(updated));
+          setAppliedJobs(updated);
+        }
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to withdraw application.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("An error occurred while withdrawing.");
+    }
+  };
+
   const toggleSaveJob = (id: string) => {
     const updated = savedJobs.includes(id) 
       ? savedJobs.filter(item => item !== id) 
@@ -146,7 +171,8 @@ export default function MyApplicationsPage() {
       case "applied": return 1;
       case "screening": return 2;
       case "interview": return 3;
-      case "offered": return 4;
+      case "offered": 
+      case "hired": return 4;
       default: return 1;
     }
   };
@@ -160,6 +186,7 @@ export default function MyApplicationsPage() {
         <ApplicationsMainFeed 
           applications={applications}
           getStepNumber={getStepNumber}
+          onWithdrawApplication={handleWithdrawApplication}
         />
 
         <ApplicationsRightSidebar 

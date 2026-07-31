@@ -21,11 +21,13 @@ interface Application {
 interface ApplicationsMainFeedProps {
   applications: Application[];
   getStepNumber: (status: string) => number;
+  onWithdrawApplication: (id: string) => void;
 }
 
 export default function ApplicationsMainFeed({
   applications,
   getStepNumber,
+  onWithdrawApplication,
 }: ApplicationsMainFeedProps) {
   return (
     <main 
@@ -93,16 +95,31 @@ export default function ApplicationsMainFeed({
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto mb-1 font-bold text-[10px] ${
                         currentStep >= 4 ? "bg-[#E84E29] text-white" : "bg-slate-200 text-slate-500 border border-slate-300"
                       }`}>
-                        4
+                        {currentStep >= 4 ? "✓" : "4"}
                       </div>
-                      <span className="text-[9px] font-bold text-slate-800">Offered</span>
+                      <span className="text-[9px] font-bold text-slate-800">Hired</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[10px] text-slate-400 font-bold">
-                  <span className="flex items-center gap-1"><IconInfo className="w-3.5 h-3.5" /> Client will respond within 3 working days.</span>
-                  <button className="text-[#E84E29] hover:underline hover:text-[#DA431E]">Withdraw Application</button>
+                  {currentStep >= 4 ? (
+                    <span className="flex items-center gap-1 text-emerald-600"><IconInfo className="w-3.5 h-3.5" /> You have been hired for this role! Check your Assigned Tasks.</span>
+                  ) : (
+                    <>
+                      <span className="flex items-center gap-1"><IconInfo className="w-3.5 h-3.5" /> Client will respond within 3 working days.</span>
+                      <button 
+                        onClick={() => {
+                          if (confirm("Are you sure you want to withdraw this application? This action cannot be undone.")) {
+                            onWithdrawApplication(app.id);
+                          }
+                        }}
+                        className="text-[#E84E29] hover:underline hover:text-[#DA431E] cursor-pointer"
+                      >
+                        Withdraw Application
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             );

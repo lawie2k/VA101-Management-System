@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useDynamicPagination } from "../../../../hooks/useDynamicPagination";
 import Pagination from "../../../../components/shared/Pagination";
 import { StatusBadge } from "../../../../components/shared/StatusBadge";
+import UploadContractModal from "../../../../components/admin-dashboard-components/UploadContractModal";
 
 // Simple Search SVG Icon component to avoid external dependencies
 const SearchIcon = ({ className }: { className?: string }) => (
@@ -33,6 +34,9 @@ export default function ContractsPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const rowsPerPage = useDynamicPagination(containerRef, 146, 200, 4);
   const itemsPerPage = rowsPerPage * 2; 
+
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
 
   // Debounce search typing
   useEffect(() => {
@@ -74,6 +78,26 @@ export default function ContractsPage() {
     setCurrentPage(totalPages);
   }
 
+  const openUploadModal = (contractId: string) => {
+    setSelectedContractId(contractId);
+    setIsUploadModalOpen(true);
+  };
+
+  const handleUploadSubmit = async (contractId: string, url: string) => {
+    const res = await fetch("/api/admin/contracts", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contractId, fileUrl: url }),
+    });
+    
+    if (res.ok) {
+      // Trigger a re-fetch of the contracts to get the updated status
+      await fetchContracts();
+    } else {
+      throw new Error("Failed to upload contract.");
+    }
+  };
+
 
 
   return (
@@ -90,7 +114,7 @@ export default function ContractsPage() {
           </div>
           <input
             type="text"
-            className="block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm shadow-sm transition-all"
+            className="block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E84E29] focus:border-[#E84E29] text-sm shadow-sm transition-all"
             placeholder="Search VA or Client..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -104,7 +128,7 @@ export default function ContractsPage() {
           <div className="grid grid-cols-2 gap-4 pb-2 relative">
             {loading && contracts.length === 0 ? (
               <div className="col-span-2 absolute inset-0 flex items-center justify-center bg-white/50 z-10 min-h-[200px]">
-                <div className="w-6 h-6 border-2 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
+                <div className="w-6 h-6 border-2 border-slate-200 border-t-[#E84E29] rounded-full animate-spin"></div>
               </div>
             ) : currentContracts.length === 0 ? (
               <div className="col-span-2 py-10 text-center text-slate-500 font-medium">No contracts found.</div>
@@ -126,21 +150,29 @@ export default function ContractsPage() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-3 mt-2">
-                  <button 
-                    onClick={() => {
-                      if (contract.fileUrl) window.open(contract.fileUrl, '_blank');
-                    }}
-                    disabled={!contract.fileUrl}
-                    className="px-3 py-1 bg-white border border-slate-300 hover:bg-slate-50 disabled:opacity-50 text-slate-700 text-xs font-bold rounded-lg transition-colors shadow-sm">
-                    Open
-                  </button>
+                  {(contract.status === "Draft" || contract.fileUrl === "pending_admin_upload") ? (
+                    <button 
+                      onClick={() => openUploadModal(contract.id)}
+                      className="px-3 py-1 bg-[#fff0ed] border border-[#ffcdbd] hover:bg-[#ffe1d6] text-[#DA431E] text-xs font-bold rounded-lg transition-colors shadow-sm cursor-pointer">
+                      Upload Contract
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => {
+                        if (contract.fileUrl) window.open(contract.fileUrl, '_blank');
+                      }}
+                      disabled={!contract.fileUrl}
+                      className="px-3 py-1 bg-white border border-slate-300 hover:bg-slate-50 disabled:opacity-50 text-slate-700 text-xs font-bold rounded-lg transition-colors shadow-sm cursor-pointer">
+                      Open Draft
+                    </button>
+                  )}
                   <button 
                     onClick={() => {
                       if (contract.signedFileUrl) window.open(contract.signedFileUrl, '_blank');
                     }}
                     disabled={!contract.signedFileUrl}
                     title={!contract.signedFileUrl ? "No signed PDF available" : ""}
-                    className="px-3 py-1 bg-transparent hover:bg-slate-100 disabled:opacity-30 text-slate-600 text-xs font-bold rounded-lg transition-colors">
+                    className="px-3 py-1 bg-transparent hover:bg-slate-100 disabled:opacity-30 text-slate-600 text-xs font-bold rounded-lg transition-colors cursor-pointer">
                     Signed PDF
                   </button>
                 </div>
@@ -160,6 +192,12 @@ export default function ContractsPage() {
         </div>
       </div>
       
+      <UploadContractModal
+        isOpen={isUploadModalOpen}
+        contractId={selectedContractId}
+        onClose={() => setIsUploadModalOpen(false)}
+        onSubmit={handleUploadSubmit}
+      />
     </div>
   );
 }

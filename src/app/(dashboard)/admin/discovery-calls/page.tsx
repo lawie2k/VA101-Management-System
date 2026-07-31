@@ -7,7 +7,10 @@ import { useToast, Toast } from "../../../../components/shared/useToast";
 
 type DiscoveryCall = {
   id: string;
-  client_profile_id: string;
+  client_profile_id: string | null;
+  guest_name: string | null;
+  guest_email: string | null;
+  guest_company: string | null;
   requested_date: string;
   requested_time: string;
   scheduled_at: string;
@@ -23,17 +26,36 @@ type DiscoveryCall = {
   } | null;
 };
 
+const isMeetingTime = (dateStr: string, timeStr: string) => {
+  if (!dateStr || !timeStr) return false;
+  try {
+    const meetingDate = new Date(dateStr);
+    const timeParts = new Date(timeStr);
+    meetingDate.setHours(timeParts.getHours(), timeParts.getMinutes(), 0, 0);
+    
+    const now = new Date();
+    const diffInMinutes = (meetingDate.getTime() - now.getTime()) / 60000;
+    
+    // Allow joining up to 10 minutes early
+    return diffInMinutes <= 10;
+  } catch (e) {
+    return false;
+  }
+};
+
 export default function DiscoveryCallsPage() {
   const [calls, setCalls] = useState<DiscoveryCall[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [meetingLink, setMeetingLink] = useState("");
   const { toast, showToast } = useToast();
   
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Approximate height of one discovery call card (with margin) is around 90px
+  // Approximate height of one discovery call card (with margin) is around 100px
   // Offset includes header and pagination padding (approx 160px)
-  const itemsPerPage = useDynamicPagination(containerRef, 90, 160, 6);
+  const itemsPerPage = useDynamicPagination(containerRef, 100, 160, 6);
   
   const fetchCalls = async () => {
     setLoading(true);
@@ -62,21 +84,23 @@ export default function DiscoveryCallsPage() {
     setCurrentPage(totalPages);
   }
 
-  const handleUpdateStatus = async (id: string, newStatus: string) => {
+  const handleUpdateStatus = async (id: string, newStatus: string, link?: string) => {
     // Optimistic update
-    setCalls(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c));
+    setCalls(prev => prev.map(c => c.id === id ? { ...c, status: newStatus, meeting_link: link || c.meeting_link } : c));
     
     try {
       const res = await fetch("/api/admin/discovery-calls", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status: newStatus }),
+        body: JSON.stringify({ id, status: newStatus, meeting_link: link }),
       });
       if (!res.ok) {
         showToast("Failed to update status", "error");
         fetchCalls();
       } else {
         showToast(`Call marked as ${newStatus}`, "success");
+        setConfirmingId(null);
+        setMeetingLink("");
       }
     } catch (err) {
       showToast("Network error", "error");
@@ -117,15 +141,19 @@ export default function DiscoveryCallsPage() {
           )}
 
           {currentCalls.map((call) => (
-            <div key={call.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm relative group transition-all hover:shadow-md flex items-center justify-between h-[90px]">
+            <div key={call.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm relative group transition-all hover:shadow-md flex items-center justify-between h-[100px]">
               
               {/* Info */}
               <div>
                 <p className="text-[11px] font-bold text-slate-400 mb-1">DC-{call.id.toString()}</p>
                 <h3 className="text-base font-black text-slate-900 mb-0.5">
-                  {call.client_profiles?.company_name || call.client_profiles?.users?.full_name || "Unknown Client"}
+                  {call.client_profiles?.company_name || call.guest_company || "Unknown Company"}
+                  {(!call.client_profile_id) && <span className="ml-2 px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[9px] uppercase tracking-wider font-extrabold align-middle">Guest</span>}
                 </h3>
-                <p className="text-xs font-medium text-slate-500">
+                <p className="text-[11px] text-slate-600 font-semibold mb-1">
+                  {call.client_profiles?.users?.full_name || call.guest_name || "Unknown Name"} &bull; {call.client_profiles?.users?.email || call.guest_email || "No Email"}
+                </p>
+                <p className="text-xs font-medium text-slate-400">
                   {call.scheduled_at ? new Date(call.scheduled_at).toLocaleString() : (call.requested_date ? new Date(call.requested_date).toLocaleDateString() : "No date set")} 
                   {call.notes ? ` · ${call.notes}` : ""}
                 </p>
@@ -138,20 +166,69 @@ export default function DiscoveryCallsPage() {
                 </span>
                 
                 {(!call.status || call.status.toLowerCase() === "requested") && (
-                  <button 
-                    onClick={() => handleUpdateStatus(call.id, "confirmed")}
-                    className="px-4 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg transition-colors shadow-sm"
-                  >
-                    Confirm
-                  </button>
+                  confirmingId === call.id ? (
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="url" 
+                        placeholder="https://meet.google.com/..."
+                        value={meetingLink}
+                        onChange={(e) => setMeetingLink(e.target.value)}
+                        className="px-3 py-1.5 border border-slate-300 rounded-lg text-xs w-48"
+                      />
+                      <button 
+                        onClick={() => handleUpdateStatus(call.id, "confirmed", meetingLink)}
+                        className="px-3 py-1.5 bg-[#E84E29] hover:bg-[#DA431E] text-white text-xs font-bold rounded-lg transition-colors shadow-sm"
+                      >
+                        Save
+                      </button>
+                      <button 
+                        onClick={() => setConfirmingId(null)}
+                        className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg transition-colors shadow-sm"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={() => { setConfirmingId(call.id); setMeetingLink(""); }}
+                      className="px-4 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg transition-colors shadow-sm"
+                    >
+                      Confirm
+                    </button>
+                  )
                 )}
                 {call.status?.toLowerCase() === "confirmed" && (
-                  <button 
-                    onClick={() => handleUpdateStatus(call.id, "completed")}
-                    className="px-4 py-1.5 bg-[#22c55e] hover:bg-[#16a34a] text-white text-xs font-bold rounded-lg transition-colors shadow-sm"
-                  >
-                    Complete
-                  </button>
+                  <>
+                    <a 
+                      href={isMeetingTime(call.requested_date, call.requested_time) ? call.meeting_link || "#" : "#"}
+                      target={isMeetingTime(call.requested_date, call.requested_time) ? "_blank" : undefined}
+                      rel="noreferrer"
+                      className={`px-4 py-1.5 text-white text-xs font-bold rounded-lg transition-colors shadow-sm ${
+                        isMeetingTime(call.requested_date, call.requested_time) 
+                          ? "bg-blue-500 hover:bg-blue-600" 
+                          : "bg-slate-300 cursor-not-allowed"
+                      }`}
+                      onClick={(e) => {
+                        if (!isMeetingTime(call.requested_date, call.requested_time)) {
+                          e.preventDefault();
+                          showToast("It's not time for this meeting yet!", "error");
+                        }
+                      }}
+                    >
+                      Join Meeting
+                    </a>
+                    <button 
+                      onClick={() => handleUpdateStatus(call.id, "completed")}
+                      disabled={!isMeetingTime(call.requested_date, call.requested_time)}
+                      className={`px-4 py-1.5 text-white text-xs font-bold rounded-lg transition-colors shadow-sm ${
+                        isMeetingTime(call.requested_date, call.requested_time)
+                          ? "bg-[#22c55e] hover:bg-[#16a34a]"
+                          : "bg-slate-300 cursor-not-allowed"
+                      }`}
+                    >
+                      Complete
+                    </button>
+                  </>
                 )}
               </div>
 

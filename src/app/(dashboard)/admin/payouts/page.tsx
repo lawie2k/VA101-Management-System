@@ -50,19 +50,19 @@ export default function FinancePayoutsPage() {
       <div className="flex items-center gap-2 mb-6 border-b border-slate-200 shrink-0">
         <button 
           onClick={() => setActiveTab("vas")}
-          className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === "vas" ? "border-emerald-500 text-emerald-600" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
+          className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === "vas" ? "border-[#E84E29] text-[#DA431E]" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
         >
           Virtual Assistants
         </button>
         <button 
           onClick={() => setActiveTab("employees")}
-          className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === "employees" ? "border-emerald-500 text-emerald-600" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
+          className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === "employees" ? "border-[#E84E29] text-[#DA431E]" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
         >
           Internal Employees
         </button>
         <button 
           onClick={() => setActiveTab("trainers")}
-          className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === "trainers" ? "border-emerald-500 text-emerald-600" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
+          className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === "trainers" ? "border-[#E84E29] text-[#DA431E]" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
         >
           Trainers (Course Sales)
         </button>
@@ -103,7 +103,7 @@ export default function FinancePayoutsPage() {
                 <button onClick={() => pay.payslipUrl ? window.open(pay.payslipUrl, "_blank") : showToast("No receipt uploaded.", "error")} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors border border-slate-200">
                   View Payslip details
                 </button>
-                <button onClick={() => setProcessPayoutId(pay.id)} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm flex items-center gap-2">
+                <button onClick={() => setProcessPayoutId(pay.id)} className="px-4 py-2 bg-[#DA431E] hover:bg-[#DA431E] text-white text-xs font-bold rounded-lg transition-colors shadow-sm flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                   Upload Receipt & Mark Paid
                 </button>

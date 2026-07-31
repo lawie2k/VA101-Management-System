@@ -130,7 +130,7 @@ export function SettingsPanel({ role }: { role: string }) {
     { id: "account", label: "Account", icon: IconUser },
     { id: "security", label: "Security", icon: IconLock },
     { id: "notifications", label: "Notifications", icon: IconBell },
-    { id: "danger", label: "Danger zone", icon: IconTrash },
+    { id: "danger", label: "Account Management", icon: IconTrash },
   ] as const;
 
   const handleAccountSubmit = async () => {
@@ -666,14 +666,14 @@ export function SettingsPanel({ role }: { role: string }) {
                   <IconTrash />
                 </div>
                 <div>
-                  <h2 className="text-lg font-black text-slate-900">Danger zone</h2>
+                  <h2 className="text-lg font-black text-slate-900">Account Management</h2>
                   <p className="text-xs font-semibold text-slate-500">Deactivate or delete your account.</p>
                 </div>
               </div>
 
               {/* Danger Actions Area */}
               <div className="bg-red-50/30 border border-red-200 rounded-2xl p-6 shadow-sm">
-                <h3 className="text-sm font-bold text-red-900 mb-1">Danger zone</h3>
+                <h3 className="text-sm font-bold text-red-900 mb-1">Deactivation & Deletion</h3>
                 <p className="text-xs font-medium text-red-600/80 mb-6">These actions are permanent. Please be careful.</p>
                 
                 <div className="space-y-4 border-t border-red-200/60 pt-6">

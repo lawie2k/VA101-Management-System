@@ -57,3 +57,32 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+
+export async function PATCH(req: Request) {
+  try {
+    const currentUser = await requireRole("admin");
+    const { contractId, fileUrl } = await req.json();
+
+    if (!contractId || !fileUrl) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // Extract the numeric ID from CTR-xxx
+    const numericId = contractId.toString().replace('CTR-', '');
+
+    await prisma.contracts.update({
+      where: { id: BigInt(numericId) },
+      data: {
+        file_url: fileUrl,
+        status: "pending_signature", // Update status since it's now uploaded
+        uploaded_by: BigInt(currentUser.id)
+      }
+    });
+
+    return NextResponse.json({ success: true });
+
+  } catch (error) {
+    console.error("Failed to update contract:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}

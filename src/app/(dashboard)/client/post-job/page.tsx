@@ -100,6 +100,7 @@ export default function PostJobPage() {
     workDaysEnd: "Friday",
     workHoursStart: "09:00",
     workHoursStartPeriod: "AM",
+    workHoursEnd: "05:00",
     workHoursEndPeriod: "PM",
     jobType: "Full-time",
     description: "",
@@ -251,6 +252,7 @@ export default function PostJobPage() {
                 >
                   <option value="Full-time">Full-time</option>
                   <option value="Part-time">Part-time</option>
+                  <option value="Contractual">Contractual</option>
                 </select>
               </div>
             </div>

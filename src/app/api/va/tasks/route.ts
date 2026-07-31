@@ -39,7 +39,19 @@ export async function GET(req: Request) {
       orderBy: { created_at: 'desc' }
     });
 
-    return NextResponse.json({ success: true, data: serializeBigInt(tasks) });
+    const assignments = await prisma.assignments.findMany({
+      where: { va_profile_id: vaProfile.id, status: 'active' },
+      include: {
+        client_profiles: {
+          include: { users: { select: { full_name: true, profile_photo_url: true } } }
+        },
+        job_posts: {
+          select: { job_title: true }
+        }
+      }
+    });
+
+    return NextResponse.json({ success: true, data: serializeBigInt(tasks), assignments: serializeBigInt(assignments) });
   } catch (err) {
     console.error("Failed to fetch VA tasks:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

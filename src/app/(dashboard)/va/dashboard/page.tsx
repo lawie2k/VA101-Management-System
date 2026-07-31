@@ -220,16 +220,19 @@ export default function Page() {
     status: "none"
   };
 
-  // Map first 3 database jobs as recommended jobs
-  const recommendedJobs = jobs.map((job: any) => ({
-    id: job.id.toString(),
-    title: job.title || "",
-    company: job.company || "Enterprise Client",
-    type: job.type || "Full-time",
-    description: job.description || "",
-    skills: job.skills || [],
-    rate: job.rate || 0
-  })).slice(0, 3);
+  // Map first 3 database jobs as recommended jobs, excluding those already applied/hired
+  const appliedJobIds = applications.map(app => app.jobId);
+  const recommendedJobs = jobs
+    .filter((job: any) => !appliedJobIds.includes(job.id.toString()))
+    .map((job: any) => ({
+      id: job.id.toString(),
+      title: job.title || "",
+      company: job.company || "Enterprise Client",
+      type: job.type || "Full-time",
+      description: job.description || "",
+      skills: job.skills || [],
+      rate: job.rate || 0
+    })).slice(0, 3);
 
   // Map first 2 database courses as recommended courses
   const recommendedCourses = courses.map((course: any) => ({
@@ -249,12 +252,14 @@ export default function Page() {
   }));
 
   // Map database jobs list for bookmark checks in sidebar
-  const mappedJobs = jobs.map((job: any) => ({
-    id: job.id.toString(),
-    title: job.title || "",
-    company: job.company || "Enterprise Client",
-    rate: job.rate || 0
-  }));
+  const mappedJobs = jobs
+    .filter((job: any) => !appliedJobIds.includes(job.id.toString()))
+    .map((job: any) => ({
+      id: job.id.toString(),
+      title: job.title || "",
+      company: job.company || "Enterprise Client",
+      rate: job.rate || 0
+    }));
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 min-h-[calc(100vh-144px)] lg:h-[calc(100vh-144px)] overflow-visible lg:overflow-hidden">

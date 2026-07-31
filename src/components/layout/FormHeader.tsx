@@ -8,6 +8,7 @@ import GlobalNotices from "../shared/GlobalNotices";
 interface FormHeaderProps {
   forceSolid?: boolean;
   isDashboard?: boolean;
+  navItems?: { label: string; href: string }[];
 }
 
 const aboutItems = [

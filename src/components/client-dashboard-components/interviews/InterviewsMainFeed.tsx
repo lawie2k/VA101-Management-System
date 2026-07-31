@@ -49,6 +49,20 @@ const IconUserX = ({ className = "w-4 h-4" }) => (
   </svg>
 );
 
+const isMeetingTime = (scheduledIsoStr: string | null) => {
+  if (!scheduledIsoStr) return false;
+  try {
+    const meetingDate = new Date(scheduledIsoStr);
+    const now = new Date();
+    const diffInMinutes = (meetingDate.getTime() - now.getTime()) / 60000;
+    
+    // Allow joining up to 10 minutes early
+    return diffInMinutes <= 10;
+  } catch (e) {
+    return false;
+  }
+};
+
 export default function InterviewsMainFeed() {
   const [interviews, setInterviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -161,10 +175,20 @@ export default function InterviewsMainFeed() {
             {interview.status === "Upcoming" && (
               <div className="flex items-center justify-between pt-2">
                 <a 
-                  href={interview.meetLink} 
-                  target="_blank" 
+                  href={isMeetingTime(interview.raw_scheduled_at) ? interview.meetLink || "#" : "#"} 
+                  target={isMeetingTime(interview.raw_scheduled_at) ? "_blank" : undefined} 
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full text-xs font-bold text-white bg-[#E84E29] hover:bg-[#DA431E] shadow-sm transition-all"
+                  onClick={(e) => {
+                    if (!isMeetingTime(interview.raw_scheduled_at)) {
+                      e.preventDefault();
+                      alert("It's not time for this meeting yet!");
+                    }
+                  }}
+                  className={`inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full text-xs font-bold shadow-sm transition-all ${
+                    isMeetingTime(interview.raw_scheduled_at)
+                      ? "text-white bg-[#E84E29] hover:bg-[#DA431E]"
+                      : "text-slate-400 bg-slate-200 cursor-not-allowed"
+                  }`}
                 >
                   <IconVideo className="w-4 h-4" /> Join Meeting
                 </a>

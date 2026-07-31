@@ -78,7 +78,7 @@ export default function ClientInterviewsPage() {
 
   const getStatusBadge = (status: string) => {
     const s = status?.toLowerCase() || "";
-    if (s.includes("scheduled")) return "bg-blue-100 text-blue-800";
+    if (s.includes("scheduled")) return "bg-[#fff0ed] text-[#DA431E]";
     if (s.includes("completed")) return "bg-[#dcfce7] text-[#166534]";
     if (s.includes("cancelled")) return "bg-slate-200 text-slate-800";
     return "bg-slate-100 text-slate-800";
@@ -138,7 +138,7 @@ export default function ClientInterviewsPage() {
                     <td className="px-6 py-3 font-medium text-slate-700">
                       {interview.meeting_platform || "TBD"}
                       {interview.meeting_link && (
-                        <a href={interview.meeting_link} target="_blank" rel="noreferrer" className="block text-[11px] text-blue-500 hover:underline">Join Link</a>
+                        <a href={interview.meeting_link} target="_blank" rel="noreferrer" className="block text-[11px] text-[#E84E29] hover:underline">Join Link</a>
                       )}
                     </td>
                     <td className="px-6 py-3 font-medium text-slate-700">

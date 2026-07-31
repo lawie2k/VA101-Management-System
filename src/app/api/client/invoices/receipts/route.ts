@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { db as prisma } from "@/src/lib/db";
 import { requireRole } from "@/src/lib/auth";
-import { promises as fs } from "fs";
-import path from "path";
+import { uploadToS3, getSignedFileUrl } from "@/src/lib/s3";
 
 export async function POST(req: Request) {
   try {
@@ -34,29 +33,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invoice not found or unauthorized" }, { status: 404 });
     }
 
-    // Process file upload locally
+    // Upload file to S3 (Private folder since receipts are sensitive)
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Generate unique filename
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const originalExt = path.extname(file.name) || ".png";
-    const filename = `receipt-${invoiceIdStr}-${uniqueSuffix}${originalExt}`;
+    const s3Key = await uploadToS3({
+      fileBuffer: buffer,
+      fileName: file.name,
+      contentType: file.type || "application/octet-stream",
+      isPublic: false
+    });
 
-    // Ensure directory exists
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "receipts");
-    await fs.mkdir(uploadDir, { recursive: true });
-
-    const filePath = path.join(uploadDir, filename);
-    await fs.writeFile(filePath, buffer);
-
-    const fileUrl = `/uploads/receipts/${filename}`;
+    // Generate a signed URL for immediate access in the client response
+    const fileUrl = await getSignedFileUrl(s3Key);
 
     // Create receipt record
     await prisma.invoice_receipts.create({
       data: {
         invoice_id: invoiceId,
-        file_url: fileUrl,
+        file_url: s3Key, // Store the S3 Key in the DB, not the expiring signed URL
         file_name: file.name,
         uploaded_by: BigInt(userId),
         remarks: remarks || null,

@@ -47,6 +47,8 @@ export async function GET() {
         va: interview.job_applications?.va_profiles?.users?.full_name || "Unknown VA",
         job: interview.job_applications?.job_posts?.job_title || "Unknown Job",
         date: dateStr,
+        raw_scheduled_at: interview.scheduled_at ? interview.scheduled_at.toISOString() : null,
+        meeting_link: interview.meeting_link,
         status: interview.status || "Scheduled",
         result: interview.result || "Pending"
       };

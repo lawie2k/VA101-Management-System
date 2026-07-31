@@ -69,9 +69,19 @@ export default function TrainingPage() {
     setCurrentPage(1);
   }, [debouncedSearch]);
 
-  const totalPages = Math.ceil(courses.length / itemsPerPage);
+  const [activeTab, setActiveTab] = useState<"pending" | "approved">("pending");
+
+  // Filter courses based on active tab
+  const filteredCourses = courses.filter(course => {
+    if (activeTab === "pending") {
+      return course.rawStatus === "pending_review" || course.rawStatus === "draft" || course.rawStatus === "revision_requested";
+    }
+    return course.rawStatus === "active" || course.rawStatus === "disabled";
+  });
+
+  const totalPages = Math.ceil(filteredCourses.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentTraining = courses.slice(startIndex, startIndex + itemsPerPage);
+  const currentTraining = filteredCourses.slice(startIndex, startIndex + itemsPerPage);
 
   if (currentPage > totalPages && totalPages > 0) {
     setCurrentPage(totalPages);
@@ -106,21 +116,37 @@ export default function TrainingPage() {
       <Toast toast={toast} />
       
       {/* Header Section */}
-      <div className="mb-6 flex-shrink-0 flex flex-col items-start gap-4 mb-6">
+      <div className="mb-4 flex-shrink-0 flex flex-col items-start gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">Training material review</h1>
         </div>
-        <div className="relative w-full sm:w-72">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <SearchIcon className="h-4 w-4 text-slate-400" />
+        <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex bg-slate-100 p-1 rounded-xl w-max">
+            <button
+              onClick={() => setActiveTab("pending")}
+              className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === "pending" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+            >
+              Pending Review
+            </button>
+            <button
+              onClick={() => setActiveTab("approved")}
+              className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === "approved" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+            >
+              Approved Materials
+            </button>
           </div>
-          <input
-            type="text"
-            className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm shadow-sm transition-all"
-            placeholder="Search material or instructor..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+          <div className="relative w-full sm:w-72">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <SearchIcon className="h-4 w-4 text-slate-400" />
+            </div>
+            <input
+              type="text"
+              className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#E84E29] focus:border-[#E84E29] sm:text-sm shadow-sm transition-all"
+              placeholder="Search material or instructor..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
         </div>
       </div>
 
@@ -129,7 +155,7 @@ export default function TrainingPage() {
         <div className="flex-1 space-y-4 relative">
           {loading && courses.length === 0 ? (
             <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-10 min-h-[200px]">
-              <div className="w-6 h-6 border-2 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
+              <div className="w-6 h-6 border-2 border-slate-200 border-t-[#E84E29] rounded-full animate-spin"></div>
             </div>
           ) : currentTraining.length === 0 ? (
             <div className="py-10 text-center text-slate-500 font-medium">No training materials found.</div>
@@ -161,20 +187,34 @@ export default function TrainingPage() {
                     <>
                       <button 
                         onClick={() => handleUpdateStatus(course.rawId, "active")}
-                        className="px-4 py-1.5 bg-[#22c55e] hover:bg-[#16a34a] text-white text-xs font-bold rounded-lg transition-colors">
+                        className="px-4 py-1.5 bg-[#22c55e] hover:bg-[#16a34a] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer">
                         Approve
                       </button>
                       <button 
                         onClick={() => handleUpdateStatus(course.rawId, "revision_requested")}
-                        className="px-4 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg transition-colors">
+                        className="px-4 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg transition-colors cursor-pointer">
                         Request revision
                       </button>
                       <button 
                         onClick={() => handleUpdateStatus(course.rawId, "rejected")}
-                        className="px-4 py-1.5 bg-transparent hover:bg-slate-100 text-slate-600 text-xs font-bold rounded-lg transition-colors">
+                        className="px-4 py-1.5 bg-transparent hover:bg-slate-100 text-slate-600 text-xs font-bold rounded-lg transition-colors cursor-pointer">
                         Reject
                       </button>
                     </>
+                  )}
+                  {course.rawStatus === "active" && (
+                    <button 
+                      onClick={() => handleUpdateStatus(course.rawId, "disabled")}
+                      className="px-4 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold rounded-lg transition-colors cursor-pointer">
+                      Disable Material
+                    </button>
+                  )}
+                  {course.rawStatus === "disabled" && (
+                    <button 
+                      onClick={() => handleUpdateStatus(course.rawId, "active")}
+                      className="px-4 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 text-xs font-bold rounded-lg transition-colors cursor-pointer">
+                      Enable Material
+                    </button>
                   )}
                 </div>
               </div>

@@ -31,23 +31,8 @@ export default function AdminHeader({ role, fullName, setSidebarOpen }: { role: 
         </button>
       </div>
       
-      {/* Right Side: Search & Actions */}
+      {/* Right Side: Actions */}
       <div className="flex items-center gap-6">
-        {/* Search */}
-        <div className="relative hidden md:block">
-          <span className="absolute left-3 top-2.5 text-slate-400">
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-          </span>
-          <input 
-            type="text" 
-            placeholder="Search..." 
-            className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-full text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200 w-64 transition-all"
-          />
-        </div>
-
         {/* Notifications */}
         <GlobalNotices theme="light" />
 

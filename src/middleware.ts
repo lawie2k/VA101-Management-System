@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { checkRateLimit, RATE_LIMIT_PROFILES } from "./lib/rate-limit";
 
 const COOKIE_NAME = "va101_session";
 const JWT_SECRET = new TextEncoder().encode(
@@ -10,6 +11,26 @@ const JWT_SECRET = new TextEncoder().encode(
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get(COOKIE_NAME)?.value;
   const { pathname } = request.nextUrl;
+
+  // 0. Apply General Rate Limiting to all API routes
+  if (pathname.startsWith("/api/")) {
+    const ip = request.ip || request.headers.get("x-forwarded-for") || "unknown-ip";
+    const rateLimit = checkRateLimit(`api_${ip}`, RATE_LIMIT_PROFILES.API);
+    
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        { error: "Too Many Requests" },
+        { 
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": rateLimit.limit.toString(),
+            "X-RateLimit-Remaining": rateLimit.remaining.toString(),
+            "X-RateLimit-Reset": rateLimit.reset.toString()
+          }
+        }
+      );
+    }
+  }
 
   // 1. Redirect authenticated users trying to access login/register back to their dashboard
   if (pathname === "/login" || pathname === "/register") {
@@ -95,6 +116,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    "/api/:path*",
     "/va/:path*",
     "/client/:path*",
     "/admin/:path*",

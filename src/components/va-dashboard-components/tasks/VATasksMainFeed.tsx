@@ -33,6 +33,7 @@ const IconLink = ({ className = "w-4 h-4" }) => (
 
 export default function VATasksMainFeed() {
   const [tasks, setTasks] = useState<any[]>([]);
+  const [assignments, setAssignments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
   // State for submission modal
@@ -49,6 +50,9 @@ export default function VATasksMainFeed() {
         const data = await res.json();
         if (data.success) {
           setTasks(data.data);
+          if (data.assignments) {
+            setAssignments(data.assignments);
+          }
         }
       }
     } catch (e) {
@@ -164,6 +168,55 @@ export default function VATasksMainFeed() {
           Manage your daily work assigned by your clients.
         </p>
       </div>
+
+      {assignments.length > 0 && (
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs">
+          <h2 className="text-sm font-black text-slate-800 mb-4 tracking-tight">My Active Clients</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {assignments.map(assignment => {
+              const clientName = assignment.client_profiles?.users?.full_name || "Unknown Client";
+              const clientAvatar = assignment.client_profiles?.users?.profile_photo_url;
+              
+              let avatarSrc = "";
+              if (clientAvatar) {
+                if (clientAvatar.startsWith("{")) {
+                  try {
+                    const parsed = JSON.parse(clientAvatar);
+                    avatarSrc = parsed.avatar || "";
+                  } catch {
+                    avatarSrc = clientAvatar;
+                  }
+                } else {
+                  avatarSrc = clientAvatar;
+                }
+              }
+
+              const initials = clientName.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase();
+
+              return (
+                <div key={assignment.id} className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-150 rounded-2xl transition-colors hover:bg-slate-100">
+                  <div className="w-10 h-10 rounded-full border border-slate-200 overflow-hidden flex items-center justify-center shrink-0 bg-white">
+                    {avatarSrc ? (
+                      <img src={avatarSrc} alt={clientName} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-[10px] font-black text-slate-400 bg-slate-200 h-full w-full grid place-items-center">
+                        {initials}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-900">{clientName}</h3>
+                    <p className="text-[10px] text-slate-500 font-semibold">{assignment.client_profiles?.company_name}</p>
+                    <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded bg-[#E84E29]/10 text-[#E84E29] text-[9px] font-black uppercase">
+                      {assignment.job_posts?.job_title}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* TO DO COLUMN */}

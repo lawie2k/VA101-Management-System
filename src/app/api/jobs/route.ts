@@ -20,11 +20,32 @@ function serializeBigInt(obj: any): any {
   return obj;
 }
 
+import { getSession } from "../../../lib/auth";
+
 export async function GET() {
   try {
+    const session = await getSession();
+    const isVa = session?.user?.roles?.includes("va") || session?.user?.roles?.includes("VA");
+    
+    let hiredJobIds: bigint[] = [];
+
+    if (isVa && session && session.user) {
+      const vaProfile = await db.va_profiles.findUnique({
+        where: { user_id: BigInt(session.user.id) }
+      });
+      if (vaProfile) {
+        const hiredApps = await db.job_applications.findMany({
+          where: { va_profile_id: vaProfile.id, status: "hired" },
+          select: { job_post_id: true }
+        });
+        hiredJobIds = hiredApps.map(app => app.job_post_id);
+      }
+    }
+
     const dbJobs = await db.job_posts.findMany({
       where: {
-        status: "active"
+        status: "active",
+        ...(hiredJobIds.length > 0 ? { id: { notIn: hiredJobIds } } : {})
       },
       include: {
         client_profiles: true,

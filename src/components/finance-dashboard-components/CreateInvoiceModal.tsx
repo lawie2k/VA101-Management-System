@@ -71,7 +71,7 @@ export default function CreateInvoiceModal({ isOpen, onClose, onSuccess }: Creat
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">Select Client</label>
             <select
               required
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all appearance-none"
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#E84E29]/20 focus:border-[#E84E29] transition-all appearance-none"
               value={formData.client_profile_id}
               onChange={e => setFormData({...formData, client_profile_id: e.target.value})}
             >
@@ -92,7 +92,7 @@ export default function CreateInvoiceModal({ isOpen, onClose, onSuccess }: Creat
                 step="0.01"
                 min="0"
                 placeholder="0.00"
-                className="w-full pl-8 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                className="w-full pl-8 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#E84E29]/20 focus:border-[#E84E29] transition-all"
                 value={formData.amount}
                 onChange={e => setFormData({...formData, amount: e.target.value})}
               />
@@ -105,7 +105,7 @@ export default function CreateInvoiceModal({ isOpen, onClose, onSuccess }: Creat
               <input
                 required
                 type="date"
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#E84E29]/20 focus:border-[#E84E29] transition-all"
                 value={formData.due_date}
                 onChange={e => setFormData({...formData, due_date: e.target.value})}
               />
@@ -114,7 +114,7 @@ export default function CreateInvoiceModal({ isOpen, onClose, onSuccess }: Creat
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">Billing Cycle</label>
               <select
                 required
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all appearance-none"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#E84E29]/20 focus:border-[#E84E29] transition-all appearance-none"
                 value={formData.billing_cycle}
                 onChange={e => setFormData({...formData, billing_cycle: e.target.value})}
               >
@@ -137,7 +137,7 @@ export default function CreateInvoiceModal({ isOpen, onClose, onSuccess }: Creat
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition-colors shadow-sm disabled:opacity-70 flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-3 bg-[#DA431E] hover:bg-[#DA431E] text-white text-sm font-bold rounded-xl transition-colors shadow-sm disabled:opacity-70 flex items-center justify-center gap-2"
             >
               {loading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
               Create Invoice

@@ -12,8 +12,24 @@ type Interview = {
   va: string;
   job: string;
   date: string;
+  raw_scheduled_at: string | null;
+  meeting_link: string | null;
   status: string;
   result: string;
+};
+
+const isMeetingTime = (scheduledIsoStr: string | null) => {
+  if (!scheduledIsoStr) return false;
+  try {
+    const meetingDate = new Date(scheduledIsoStr);
+    const now = new Date();
+    const diffInMinutes = (meetingDate.getTime() - now.getTime()) / 60000;
+    
+    // Allow joining up to 10 minutes early
+    return diffInMinutes <= 10;
+  } catch (e) {
+    return false;
+  }
 };
 
 export default function InitialInterviewsPage() {
@@ -108,7 +124,7 @@ export default function InitialInterviewsPage() {
                   <tr>
                     <td colSpan={6}>
                       <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-10 min-h-[200px]">
-                        <div className="w-6 h-6 border-2 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
+                        <div className="w-6 h-6 border-2 border-slate-200 border-t-[#DA431E] rounded-full animate-spin"></div>
                       </div>
                     </td>
                   </tr>
@@ -130,6 +146,26 @@ export default function InitialInterviewsPage() {
                     <td className="px-6 py-3 text-right">
                       {interview.result === "Pending" ? (
                         <div className="flex items-center justify-end gap-2">
+                          {interview.status === "Scheduled" && (
+                            <a 
+                              href={isMeetingTime(interview.raw_scheduled_at) ? interview.meeting_link || "#" : "#"}
+                              target={isMeetingTime(interview.raw_scheduled_at) ? "_blank" : undefined}
+                              rel="noreferrer"
+                              className={`px-3 py-1.5 text-white text-xs font-bold rounded-lg transition-colors whitespace-nowrap shadow-sm ${
+                                isMeetingTime(interview.raw_scheduled_at) 
+                                  ? "bg-blue-500 hover:bg-blue-600" 
+                                  : "bg-slate-300 cursor-not-allowed"
+                              }`}
+                              onClick={(e) => {
+                                if (!isMeetingTime(interview.raw_scheduled_at)) {
+                                  e.preventDefault();
+                                  showToast("It's not time for this meeting yet!", "error");
+                                }
+                              }}
+                            >
+                              Join Meeting
+                            </a>
+                          )}
                           <button 
                             onClick={() => handleUpdateResult(interview.id, "Passed")}
                             className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg transition-colors whitespace-nowrap shadow-sm">

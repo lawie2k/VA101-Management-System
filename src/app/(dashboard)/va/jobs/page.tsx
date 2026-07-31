@@ -102,7 +102,7 @@ export default function BrowseJobsPage() {
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedType, setSelectedType] = useState<"All" | "Full-time" | "Part-time" | "Contract">("All");
+  const [selectedType, setSelectedType] = useState<"All" | "Full-time" | "Part-time" | "Contractual">("All");
 
   // Application Modal state
   const [activeApplyJob, setActiveApplyJob] = useState<any | null>(null);

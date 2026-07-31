@@ -116,7 +116,6 @@ export async function POST(req: Request) {
             industry: industry || null,
             company_size: companySize || null,
             company_website: companyWebsite || null,
-            billing_phone: phone || null,
             status: "active",
           },
         });
@@ -156,87 +155,9 @@ export async function POST(req: Request) {
         },
       });
 
-      if (existingUser) {
-        if (existingUser.client_profiles) {
-          clientProfileId = existingUser.client_profiles.id;
-        } else {
-          // User exists but has no client profile (e.g. signed up with a different role, or profile creation failed)
-          const newProfile = await db.client_profiles.create({
-            data: {
-              user_id: existingUser.id,
-              company_name: companyName,
-              industry: industry || null,
-              company_size: companySize || null,
-              company_website: companyWebsite || null,
-              billing_phone: phone || null,
-              status: "active",
-            },
-          });
-          clientProfileId = newProfile.id;
-        }
-      } else {
-        // Create user, client role, and client profile in a transaction
-        const guestClient = await db.$transaction(async (tx) => {
-          // Generate a hashed random placeholder password (so they have a secure account they can claim later)
-          const tempPassword = Math.random().toString(36).substring(2, 10) + "TempPass1!";
-          const passwordHash = await bcrypt.hash(tempPassword, 12);
-
-          const newUser = await tx.users.create({
-            data: {
-              full_name: fullName.trim(),
-              email: email.toLowerCase().trim(),
-              password_hash: passwordHash,
-              phone: phone || null,
-              account_status: "active",
-            },
-          });
-
-          // Fetch or create the client role dynamically
-          let clientRole = await tx.roles.findUnique({
-            where: { name: "client" },
-          });
-          if (!clientRole) {
-            clientRole = await tx.roles.create({
-              data: {
-                name: "client",
-                description: "Role for platform client users",
-              },
-            });
-          }
-
-          // Link to user_roles
-          await tx.user_roles.create({
-            data: {
-              user_id: newUser.id,
-              role_id: clientRole.id,
-            },
-          });
-
-          // Create client profile
-          const profile = await tx.client_profiles.create({
-            data: {
-              user_id: newUser.id,
-              company_name: companyName.trim(),
-              industry: industry || null,
-              company_size: companySize || null,
-              company_website: companyWebsite || null,
-              billing_phone: phone || null,
-              status: "active",
-            },
-          });
-
-          return profile;
-        });
-
-        clientProfileId = guestClient.id;
+      if (existingUser && existingUser.client_profiles) {
+        clientProfileId = existingUser.client_profiles.id;
       }
-    }
-
-    if (!clientProfileId) {
-      return NextResponse.json(
-        { error: "Failed to establish a client profile for booking." },
-        { status: 500 }
-      );
     }
 
     // Create the discovery call booking
@@ -246,7 +167,10 @@ export async function POST(req: Request) {
 
     const discoveryCall = await db.discovery_calls.create({
       data: {
-        client_profile_id: clientProfileId,
+        client_profile_id: clientProfileId || null,
+        guest_name: clientProfileId ? null : fullName?.trim(),
+        guest_email: clientProfileId ? null : email?.toLowerCase().trim(),
+        guest_company: clientProfileId ? null : companyName?.trim(),
         requested_date: parsedDate,
         requested_time: parsedTime,
         status: "requested",
