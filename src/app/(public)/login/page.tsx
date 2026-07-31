@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import FormHeader from "../../../components/layout/FormHeader";
 import { getDashboardRoute } from "../../../lib/roles";
-import ForgotPasswordModal from "./ForgotPasswordModal";
 
 export default function Page() {
   const router = useRouter();
@@ -18,7 +17,6 @@ export default function Page() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
 
   useEffect(() => {
     async function checkSession() {
@@ -176,13 +174,12 @@ export default function Page() {
               </label>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setIsForgotPasswordOpen(true)}
+            <Link
+              href="/forgot-password"
               className="font-bold text-[#E84E29] hover:text-[#DA431E] hover:underline"
             >
               Forgot password?
-            </button>
+            </Link>
           </div>
 
           {/* Submit Button */}
@@ -209,11 +206,6 @@ export default function Page() {
         </p>
 
       </div>
-
-      <ForgotPasswordModal 
-        isOpen={isForgotPasswordOpen} 
-        onClose={() => setIsForgotPasswordOpen(false)} 
-      />
 
       {/* Spacer helper to push footer down cleanly */}
       <div className="h-4" />
