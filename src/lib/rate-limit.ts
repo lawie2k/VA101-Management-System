@@ -38,7 +38,7 @@ export interface RateLimitOptions {
  */
 export const RATE_LIMIT_PROFILES = {
   // General API endpoints (Database protection) - 60 requests per minute
-  API: { limit: 60, windowMs: 60 * 1000 },
+  API: { limit: 300, windowMs: 60 * 1000 },
   
   // File Storage (AWS S3) - 10 uploads per minute to prevent bucket spam
   STORAGE: { limit: 10, windowMs: 60 * 1000 },

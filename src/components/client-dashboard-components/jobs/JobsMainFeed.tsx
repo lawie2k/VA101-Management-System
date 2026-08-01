@@ -155,7 +155,7 @@ export default function JobsMainFeed() {
 
         {/* Filter Tabs */}
         <div className="flex gap-2.5 mt-5 border-t border-slate-100 pt-4">
-          {(["all", "active", "pending", "declined"] as const).map((tab) => {
+          {(["all", "active", "pending", "archived", "declined"] as const).map((tab) => {
             const count = tab === "all" ? jobs.length : jobs.filter(j => j.status.toLowerCase() === tab).length;
             return (
               <button
@@ -243,19 +243,24 @@ export default function JobsMainFeed() {
                 <div>
                   {job.status.toLowerCase() === "active" && (
                     <button
-                      onClick={() => handleToggleStatus(job.id, "closed")}
-                      className="px-3.5 py-1.5 rounded-full text-[10px] font-bold text-red-600 hover:bg-red-50 transition-all cursor-pointer"
+                      onClick={() => handleToggleStatus(job.id, "archived")}
+                      className="px-3.5 py-1.5 rounded-full text-[10px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all cursor-pointer"
                     >
-                      Decline Job
+                      Mark as Hired (Archive)
                     </button>
                   )}
-                  {job.status.toLowerCase() === "declined" && (
+                  {job.status.toLowerCase() === "archived" && (
                     <button
                       onClick={() => handleToggleStatus(job.id, "active")}
                       className="px-3.5 py-1.5 rounded-full text-[10px] font-bold text-emerald-600 hover:bg-emerald-50 transition-all cursor-pointer"
                     >
                       Reopen Job
                     </button>
+                  )}
+                  {job.status.toLowerCase() === "declined" && (
+                    <span className="px-3.5 py-1.5 rounded-full text-[10px] font-bold text-red-600 bg-red-50">
+                      Rejected by Admin
+                    </span>
                   )}
                 </div>
               </div>

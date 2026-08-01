@@ -29,7 +29,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
 
     const { status } = await req.json();
 
-    if (!["active", "pending_review", "closed"].includes(status)) {
+    if (!["active", "pending_review", "closed", "archived"].includes(status)) {
        return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 

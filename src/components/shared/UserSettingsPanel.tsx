@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { useToast, Toast } from "../../shared/useToast";
+import { useToast, Toast } from "./useToast";
 const IconSettings = ({ className = "w-4 h-4" }) => (<svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>);
 
 const IconMail = () => (
@@ -132,7 +132,7 @@ export function DeleteModal({ onClose, onConfirm }: { onClose: () => void; onCon
   );
 }
 
-export function SettingsPanel() {
+export function UserSettingsPanel({ role, showPayouts }: { role: string; showPayouts: boolean }) {
   const searchParams = useSearchParams();
   const initialTab = searchParams.get("tab") === "payouts" ? "payouts" : "account";
   const [activeTab, setActiveTab] = useState<"account" | "security" | "payouts">(initialTab);
@@ -159,7 +159,8 @@ export function SettingsPanel() {
   useEffect(() => {
     const fetchPayout = async () => {
       try {
-        const res = await fetch("/api/va/settings/payout");
+        if (!showPayouts) return;
+        const res = await fetch(`/api/${role}/settings/payout`);
         const json = await res.json();
         if (json.success && json.data) {
           setHasSavedPayout(true);
@@ -180,7 +181,7 @@ export function SettingsPanel() {
     e.preventDefault();
     setPayoutLoading(true);
     try {
-      const res = await fetch("/api/va/settings/payout", {
+      const res = await fetch(`/api/${role}/settings/payout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -212,7 +213,7 @@ export function SettingsPanel() {
     }
     setEmailLoading(true);
     try {
-      const res = await fetch("/api/va/settings", {
+      const res = await fetch(`/api/${role}/settings`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "update_email", newEmail, currentPassword: currentPasswordForEmail }),
@@ -240,7 +241,7 @@ export function SettingsPanel() {
     }
     setPasswordLoading(true);
     try {
-      const res = await fetch("/api/va/settings", {
+      const res = await fetch(`/api/${role}/settings`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "update_password", currentPassword, newPassword }),
@@ -263,7 +264,7 @@ export function SettingsPanel() {
 
   const handleDeleteAccount = async () => {
     try {
-      const res = await fetch("/api/va/settings", { method: "DELETE" });
+      const res = await fetch(`/api/${role}/settings`, { method: "DELETE" });
       if (res.ok) {
         window.location.href = "/login";
       } else {
@@ -308,12 +309,14 @@ export function SettingsPanel() {
           >
             Security
           </button>
-          <button 
-            onClick={() => setActiveTab("payouts")}
-            className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${activeTab === "payouts" ? "border-[#E84E29] text-[#E84E29]" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
-          >
-            Payout Methods
-          </button>
+          {showPayouts && (
+            <button 
+              onClick={() => setActiveTab("payouts")}
+              className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${activeTab === "payouts" ? "border-[#E84E29] text-[#E84E29]" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
+            >
+              Payout Methods
+            </button>
+          )}
         </div>
       </div>
 

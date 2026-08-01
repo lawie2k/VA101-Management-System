@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import { SettingsPanel } from "../../../../components/shared/SettingsPanel";
+import { UserSettingsPanel } from "../../../../components/shared/UserSettingsPanel";
 
 export default function ClientSettingsPage() {
   return (
@@ -11,7 +11,7 @@ export default function ClientSettingsPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#E84E29]"></div>
         </div>
       }>
-        <SettingsPanel role="client" />
+        <UserSettingsPanel role="client" showPayouts={false} />
       </Suspense>
     </div>
   );

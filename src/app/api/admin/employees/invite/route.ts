@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db as prisma } from "@/src/lib/db";
 import { requireRole } from "@/src/lib/auth";
+import { sendEmail } from "@/src/lib/email";
 import crypto from "crypto";
 
 // Basic email regex
@@ -64,12 +65,30 @@ export async function POST(req: Request) {
       }
     });
 
-    // In a real app, you would send an email here with `tempPassword`.
+    // Send an email to the invited employee
+    const htmlBody = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+        <h2 style="color: #E84E29;">Welcome to VA101, ${name}!</h2>
+        <p>You have been invited to join the VA101 Internal Dashboard as a <strong>${role.name}</strong>.</p>
+        <p>Your temporary password to log in is:</p>
+        <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; font-size: 20px; font-weight: bold; text-align: center; letter-spacing: 2px; margin: 20px 0;">
+          ${tempPassword}
+        </div>
+        <p>Please log in and change your password immediately.</p>
+        <p>Best regards,<br>The VA101 Team</p>
+      </div>
+    `;
+
+    await sendEmail({
+      toAddress: email,
+      subject: "You're Invited to VA101 Internal Staff",
+      htmlBody: htmlBody
+    });
 
     return NextResponse.json({ 
       success: true, 
-      tempPassword, 
-      message: "Employee successfully invited." 
+      tempPassword, // Kept here just in case the admin wants to see it on the UI for fallback, but it's now emailed!
+      message: "Employee successfully invited and emailed." 
     });
 
   } catch (error) {

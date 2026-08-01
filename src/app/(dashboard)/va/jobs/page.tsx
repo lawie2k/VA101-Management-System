@@ -107,7 +107,7 @@ export default function BrowseJobsPage() {
   // Application Modal state
   const [activeApplyJob, setActiveApplyJob] = useState<any | null>(null);
   const [coverNote, setCoverNote] = useState("");
-  const [expectedRate, setExpectedRate] = useState<number>(12);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
@@ -152,9 +152,7 @@ export default function BrowseJobsPage() {
             return Math.min(score, 100);
           })()
         }));
-        if (data.expectedRate) {
-          setExpectedRate(data.expectedRate);
-        }
+
       } catch (e) {
         console.error("Failed to parse saved profile:", e);
       }
@@ -356,19 +354,7 @@ export default function BrowseJobsPage() {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Proposed Hourly Rate ($/hr)</label>
-                    <input 
-                      type="number" 
-                      required
-                      min={5}
-                      max={100}
-                      value={expectedRate} 
-                      onChange={e => setExpectedRate(parseFloat(e.target.value) || 0)}
-                      className="w-full rounded-xl border border-slate-200 p-3 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-semibold"
-                    />
-                    <p className="text-[10px] text-slate-450 font-bold mt-1">Client budget rate: ${activeApplyJob.rate.toFixed(2)}/hr</p>
-                  </div>
+
 
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Brief Cover Note / Pitch</label>

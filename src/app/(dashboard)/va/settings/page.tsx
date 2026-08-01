@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import { SettingsPanel } from "../../../../components/va-dashboard-components/settings/SettingsPanel";
+import { UserSettingsPanel } from "../../../../components/shared/UserSettingsPanel";
 
 export default function VASettingsPage() {
   return (
@@ -11,7 +11,7 @@ export default function VASettingsPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#E84E29]"></div>
         </div>
       }>
-        <SettingsPanel />
+        <UserSettingsPanel role="va" showPayouts={true} />
       </Suspense>
     </div>
   );

@@ -259,7 +259,7 @@ export function SettingsPanel({ role }: { role: string }) {
       <div className="mb-8">
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">Settings</h1>
         <p className="text-sm font-semibold text-slate-500 mt-1">
-          Manage your Super Admin account preferences and security.
+          Manage your {role === "admin" ? "Super Admin" : role === "va" ? "VA" : role.charAt(0).toUpperCase() + role.slice(1)} account preferences and security.
         </p>
       </div>
 
@@ -356,7 +356,7 @@ export function SettingsPanel({ role }: { role: string }) {
                         type="text" 
                         value={userData.fullName || ""} 
                         onChange={(e) => setUserData({ ...userData, fullName: e.target.value })}
-                        placeholder="Admin Operator" 
+                        placeholder="John Doe" 
                         className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200" 
                       />
                     </div>
@@ -366,7 +366,7 @@ export function SettingsPanel({ role }: { role: string }) {
                         type="text" 
                         value={userData.fullName?.split(' ')[0] || ""} 
                         readOnly
-                        placeholder="Admin" 
+                        placeholder="John" 
                         className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200" 
                       />
                     </div>
@@ -379,7 +379,7 @@ export function SettingsPanel({ role }: { role: string }) {
                           type="email" 
                           value={userData.email || ""} 
                           onChange={(e) => setUserData({ ...userData, email: e.target.value })}
-                          placeholder="admin@va101.example" 
+                          placeholder="you@example.com" 
                           className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200" 
                         />
                       </div>

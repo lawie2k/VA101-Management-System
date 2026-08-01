@@ -12,6 +12,8 @@ type Employee = {
   role: string;
   joined: string;
   status: string;
+  hourlyRate: number;
+  workSchedule: string;
 };
 
 const ROLES = [
@@ -24,6 +26,8 @@ export default function EmployeeManagementPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  const [editingRowId, setEditingRowId] = useState<string | null>(null);
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -79,6 +83,38 @@ export default function EmployeeManagementPage() {
         alert("Failed to update role. Please try again.");
         fetchEmployees(); // Revert on failure
       }
+    } catch (err) {
+      console.error(err);
+      fetchEmployees();
+    }
+  };
+
+  const handleRateChange = async (userId: string, newRate: number) => {
+    setEmployees(prev => prev.map(user => 
+      user.id === userId ? { ...user, hourlyRate: newRate } : user
+    ));
+    try {
+      await fetch("/api/admin/employees", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, hourlyRate: newRate })
+      });
+    } catch (err) {
+      console.error(err);
+      fetchEmployees();
+    }
+  };
+
+  const handleScheduleChange = async (userId: string, newSchedule: string) => {
+    setEmployees(prev => prev.map(user => 
+      user.id === userId ? { ...user, workSchedule: newSchedule } : user
+    ));
+    try {
+      await fetch("/api/admin/employees", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, workSchedule: newSchedule })
+      });
     } catch (err) {
       console.error(err);
       fetchEmployees();
@@ -141,11 +177,12 @@ export default function EmployeeManagementPage() {
             <table className="w-full text-left border-collapse mobile-card-table">
               <thead className="sticky top-0 z-10 bg-white">
                 <tr className="border-b border-slate-200">
-                  <th className="px-6 py-4 font-bold text-slate-600 w-1/4">Name</th>
-                  <th className="px-6 py-4 font-bold text-slate-600 w-1/4">Email</th>
-                  <th className="px-6 py-4 font-bold text-slate-600 w-1/6">Internal Role</th>
-                  <th className="px-6 py-4 font-bold text-slate-600 w-1/6">Joined</th>
-                  <th className="px-6 py-4 font-bold text-slate-600 w-1/6 text-right">Status</th>
+                  <th className="px-4 py-4 font-bold text-slate-600 w-1/5">Name</th>
+                  <th className="px-4 py-4 font-bold text-slate-600 w-1/5">Email</th>
+                  <th className="px-4 py-4 font-bold text-slate-600 w-1/6">Internal Role</th>
+                  <th className="px-4 py-4 font-bold text-slate-600 w-1/6">Schedule</th>
+                  <th className="px-4 py-4 font-bold text-slate-600 w-1/5">Rate ($/hr)</th>
+                  <th className="px-4 py-4 font-bold text-slate-600 w-1/6 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -154,27 +191,80 @@ export default function EmployeeManagementPage() {
                     <td colSpan={5} className="px-6 py-8 text-center text-slate-500">No employees found.</td>
                   </tr>
                 )}
-                {currentTeam.map((user) => (
-                  <tr key={user.id} className="hover:bg-slate-50/50 transition-colors bg-white h-[53px]">
-                    <td className="px-6 py-3 font-bold text-slate-900">{user.name}</td>
-                    <td className="px-6 py-3 font-medium text-slate-600">{user.email}</td>
-                    <td className="px-6 py-3">
-                      <select 
-                        value={user.role} 
-                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                        className="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-lg focus:ring-[#E84E29] focus:border-[#E84E29] block w-full p-2 outline-none cursor-pointer"
-                      >
-                        {ROLES.map(role => (
-                          <option key={role.value} value={role.value}>{role.label}</option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="px-6 py-3 font-medium text-slate-600">{user.joined}</td>
-                    <td className="px-6 py-3 text-right">
-                      <StatusBadge status={user.status} />
-                    </td>
-                  </tr>
-                ))}
+                {currentTeam.map((user) => {
+                  const isEditing = editingRowId === user.id;
+                  return (
+                    <tr key={user.id} className="hover:bg-slate-50/50 transition-colors bg-white h-[53px]">
+                      <td className="px-4 py-3 font-bold text-slate-900 flex items-center gap-2">
+                        {user.name}
+                        <StatusBadge status={user.status} />
+                      </td>
+                      <td className="px-4 py-3 font-medium text-slate-600">{user.email}</td>
+                      <td className="px-4 py-3">
+                        {isEditing ? (
+                          <select 
+                            value={user.role} 
+                            onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                            className="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-lg focus:ring-[#E84E29] focus:border-[#E84E29] block w-full p-2 outline-none cursor-pointer"
+                          >
+                            {ROLES.map(role => (
+                              <option key={role.value} value={role.value}>{role.label}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span className="text-slate-800 font-medium">
+                            {ROLES.find(r => r.value === user.role)?.label || user.role}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {isEditing ? (
+                          <select 
+                            value={user.workSchedule || "Full-Time"} 
+                            onChange={(e) => handleScheduleChange(user.id, e.target.value)}
+                            className="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-lg focus:ring-[#E84E29] focus:border-[#E84E29] block w-full p-2 outline-none cursor-pointer"
+                          >
+                            <option value="Full-Time">Full-Time (80hrs)</option>
+                            <option value="Part-Time">Part-Time (40hrs)</option>
+                          </select>
+                        ) : (
+                          <span className="text-slate-800 font-medium">{user.workSchedule || "Full-Time"}</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {isEditing ? (
+                          <input 
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={user.hourlyRate || 0}
+                            onChange={(e) => handleRateChange(user.id, parseFloat(e.target.value) || 0)}
+                            className="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-lg focus:ring-[#E84E29] focus:border-[#E84E29] block w-full p-2 outline-none"
+                          />
+                        ) : (
+                          <span className="text-slate-800 font-bold">${user.hourlyRate || 0}/hr</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {isEditing ? (
+                          <button 
+                            onClick={() => setEditingRowId(null)}
+                            className="px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-bold rounded-lg transition-colors border border-emerald-200"
+                          >
+                            Save
+                          </button>
+                        ) : (
+                          <button 
+                            onClick={() => setEditingRowId(user.id)}
+                            className="px-3 py-1.5 bg-slate-50 text-slate-600 hover:bg-slate-100 text-xs font-bold rounded-lg transition-colors border border-slate-200"
+                          >
+                            Edit
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

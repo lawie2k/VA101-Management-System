@@ -44,6 +44,7 @@ export default function ShortlistedCandidatesMainFeed({ initialCandidates }: { i
   const [loading, setLoading] = useState(!initialCandidates);
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
   const [openInScheduleMode, setOpenInScheduleMode] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<string>("All Jobs");
 
   useEffect(() => {
     async function loadShortlists() {
@@ -64,20 +65,53 @@ export default function ShortlistedCandidatesMainFeed({ initialCandidates }: { i
     }
   }, [initialCandidates]);
 
+  // Extract unique roles for filtering
+  const uniqueRoles = ["All Jobs", ...Array.from(new Set(candidates.map(c => c.role)))].filter(Boolean);
+
+  const filteredCandidates = selectedRole === "All Jobs" 
+    ? candidates 
+    : candidates.filter(c => c.role === selectedRole);
+
   return (
     <main className="lg:col-span-6 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-none space-y-5 pb-12">
       {/* Header */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs bg-gradient-to-br from-indigo-50/50 to-white">
-        <h1 className="text-xl font-black text-slate-900 tracking-tight">Shortlisted Candidates</h1>
-        <p className="text-xs text-slate-500 font-medium mt-1">
-          Review the top talent matched to your job posts.
-        </p>
+      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs bg-gradient-to-br from-indigo-50/50 to-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-black text-slate-900 tracking-tight">Shortlisted Candidates</h1>
+          <p className="text-xs text-slate-500 font-medium mt-1">
+            Review the top talent matched to your job posts.
+          </p>
+        </div>
+        
+        {/* Job Filter Dropdown */}
+        {uniqueRoles.length > 1 && (
+          <div className="shrink-0">
+            <select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              className="px-4 py-2 bg-white border border-slate-200 text-sm font-bold text-slate-700 rounded-xl focus:outline-none focus:border-[#E84E29] focus:ring-1 focus:ring-[#E84E29] transition-all cursor-pointer shadow-sm appearance-none pr-10"
+              style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundPosition: 'right 12px center', backgroundRepeat: 'no-repeat', backgroundSize: '16px' }}
+            >
+              {uniqueRoles.map(role => (
+                <option key={role} value={role}>{role}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Candidate List */}
       <div className="space-y-4">
-        {candidates.map(candidate => (
-          <div key={candidate.id} className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs hover:shadow-sm transition-all group">
+        {filteredCandidates.length === 0 ? (
+          <div className="bg-white border border-slate-200 rounded-3xl p-10 shadow-xs text-center">
+            <h4 className="text-sm font-bold text-slate-700">No candidates found</h4>
+            <p className="text-xs text-slate-400 font-medium mt-1">
+              There are no candidates matching your current filter.
+            </p>
+          </div>
+        ) : (
+          filteredCandidates.map(candidate => (
+            <div key={candidate.id} className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs hover:shadow-sm transition-all group">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
                 {candidate.avatar ? (
@@ -132,7 +166,8 @@ export default function ShortlistedCandidatesMainFeed({ initialCandidates }: { i
               </div>
             </div>
           </div>
-        ))}
+        ))
+      )}
       </div>
 
       {/* View Candidate Profile Modal */}

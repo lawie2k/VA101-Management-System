@@ -216,7 +216,28 @@ export default function DashboardLeftSidebar({ hideOnMobile = false }: { hideOnM
       )}
 
       {/* Quick Links */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-4 shadow-xs">
+      <div className="bg-white border border-slate-200 rounded-3xl p-4 shadow-xs space-y-2">
+        <Link 
+          href="/va/leaves" 
+          className="w-full flex items-center justify-between p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-100 group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
+            <div className="text-left">
+              <p className="text-xs font-bold text-slate-800">Leave Requests</p>
+              <p className="text-[10px] font-semibold text-slate-400">Manage time off</p>
+            </div>
+          </div>
+          <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </Link>
+
         <Link 
           href="/va/settings?tab=payouts" 
           className="w-full flex items-center justify-between p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-100 group"

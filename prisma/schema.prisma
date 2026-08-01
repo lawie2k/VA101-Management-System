@@ -302,7 +302,10 @@ model users {
   training_purchases                                   training_purchases[]
   user_roles                                           user_roles[]
   va_profiles                                          va_profiles?
+  internal_staff_profiles                              internal_staff_profiles?
   va_feedback_va_feedback_reviewer_user_idTousers      va_feedback[]        @relation("va_feedback_reviewer_user_idTousers")
+  leave_requests_leave_requests_user_idTousers         leave_requests[]     @relation("leave_requests_user_idTousers")
+  leave_requests_leave_requests_reviewed_byTousers     leave_requests[]     @relation("leave_requests_reviewed_byTousers")
 
   @@index([email], map: "idx_users_email")
 }
@@ -525,6 +528,7 @@ model payments {
   verified_at                         DateTime?            @db.Timestamp(0)
   created_at                          DateTime?            @default(now()) @db.Timestamp(0)
   updated_at                          DateTime?            @default(now()) @db.Timestamp(0)
+  trainer_payout_id                   BigInt?              @db.UnsignedBigInt
   commissions                         commissions[]
   invoice_receipts                    invoice_receipts[]
   logs                                logs[]
@@ -534,6 +538,7 @@ model payments {
   training_materials                  training_materials?  @relation(fields: [related_training_material_id], references: [id], onUpdate: NoAction, map: "payments_ibfk_3")
   discovery_calls                     discovery_calls?     @relation(fields: [related_discovery_call_id], references: [id], onUpdate: NoAction, map: "payments_ibfk_4")
   users_payments_verified_byTousers   users?               @relation("payments_verified_byTousers", fields: [verified_by], references: [id], onUpdate: NoAction, map: "payments_ibfk_5")
+  payouts                             payouts?             @relation("payments_trainer_payout_idTopayouts", fields: [trainer_payout_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "payments_trainer_payout_id_fk")
   training_purchases                  training_purchases[]
 
   @@index([status], map: "idx_payments_status")
@@ -583,6 +588,7 @@ model payouts {
   users_payouts_recipient_user_idTousers users           @relation("payouts_recipient_user_idTousers", fields: [recipient_user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payouts_ibfk_2")
   payout_methods                         payout_methods? @relation(fields: [payout_method_id], references: [id], onUpdate: NoAction, map: "payouts_ibfk_3")
   users_payouts_processed_byTousers      users?          @relation("payouts_processed_byTousers", fields: [processed_by], references: [id], onUpdate: NoAction, map: "payouts_ibfk_4")
+  payments_trainer_payout                        payments[]      @relation("payments_trainer_payout_idTopayouts")
 
   @@index([commission_id], map: "commission_id")
   @@index([status], map: "idx_payouts_status")
@@ -781,4 +787,36 @@ model tasks {
 
   va_profiles       va_profiles     @relation(fields: [va_profile_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   client_profiles   client_profiles? @relation(fields: [client_profile_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model internal_staff_profiles {
+  id                 BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id            BigInt    @unique(map: "internal_staff_user_id") @db.UnsignedBigInt
+  hourly_rate        Decimal?  @db.Decimal(10, 2)
+  work_schedule      String?   @db.VarChar(50)
+  created_at         DateTime? @default(now()) @db.Timestamp(0)
+  updated_at         DateTime? @default(now()) @db.Timestamp(0)
+  users              users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "internal_staff_profiles_ibfk_1")
+}
+
+model leave_requests {
+  id            BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id       BigInt    @db.UnsignedBigInt
+  leave_type    String    @db.VarChar(50)
+  start_date    DateTime  @db.Date
+  end_date      DateTime  @db.Date
+  reason        String    @db.Text
+  status        String?   @default("pending") @db.VarChar(50)
+  admin_remarks String?   @db.Text
+  reviewed_by   BigInt?   @db.UnsignedBigInt
+  reviewed_at   DateTime? @db.Timestamp(0)
+  created_at    DateTime? @default(now()) @db.Timestamp(0)
+  updated_at    DateTime? @default(now()) @db.Timestamp(0)
+
+  users         users     @relation("leave_requests_user_idTousers", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "leave_requests_ibfk_1")
+  reviewer      users?    @relation("leave_requests_reviewed_byTousers", fields: [reviewed_by], references: [id], onUpdate: NoAction, map: "leave_requests_ibfk_2")
+
+  @@index([user_id], map: "idx_leave_requests_user_id")
+  @@index([reviewed_by], map: "idx_leave_requests_reviewed_by")
+  @@index([status], map: "idx_leave_requests_status")
 }

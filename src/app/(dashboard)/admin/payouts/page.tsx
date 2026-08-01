@@ -14,7 +14,7 @@ export default function FinancePayoutsPage() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [processPayoutId, setProcessPayoutId] = useState<string | null>(null);
+  const [processPayout, setProcessPayout] = useState<any | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemsPerPage = useDynamicPagination(containerRef, 130, 20, 6);
 
@@ -103,7 +103,7 @@ export default function FinancePayoutsPage() {
                 <button onClick={() => pay.payslipUrl ? window.open(pay.payslipUrl, "_blank") : showToast("No receipt uploaded.", "error")} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors border border-slate-200">
                   View Payslip details
                 </button>
-                <button onClick={() => setProcessPayoutId(pay.id)} className="px-4 py-2 bg-[#DA431E] hover:bg-[#DA431E] text-white text-xs font-bold rounded-lg transition-colors shadow-sm flex items-center gap-2">
+                <button onClick={() => setProcessPayout(pay)} className="px-4 py-2 bg-[#DA431E] hover:bg-[#DA431E] text-white text-xs font-bold rounded-lg transition-colors shadow-sm flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                   Upload Receipt & Mark Paid
                 </button>
@@ -126,7 +126,7 @@ export default function FinancePayoutsPage() {
         />
       </div>
       <Toast toast={toast} />
-      <ProcessPayoutModal isOpen={!!processPayoutId} payoutId={processPayoutId} onClose={() => setProcessPayoutId(null)} onSuccess={() => window.location.reload()} />
+      <ProcessPayoutModal isOpen={!!processPayout} payout={processPayout} onClose={() => setProcessPayout(null)} onSuccess={() => window.location.reload()} />
     </div>
   );
 }

@@ -34,3 +34,17 @@ export function calculateTrainerCourseRates(coursePrice: number | string) {
     trainerTakeHome: amount * 0.7
   };
 }
+
+// Calculate bi-monthly payout based on work schedule and va hourly rate
+export function calculateBiMonthlyPayout(vaHourlyRate: number | string, workSchedule: string | null): number {
+  const rate = Number(vaHourlyRate) || 0;
+  
+  // Default to Full-Time (80 hours per bi-monthly cycle)
+  // If explicitly part-time, use 40 hours
+  let hours = 80;
+  if (workSchedule && workSchedule.toLowerCase().includes("part-time")) {
+    hours = 40;
+  }
+  
+  return rate * hours;
+}

@@ -18,7 +18,16 @@ export async function GET(req: Request) {
       where: whereClause,
       include: {
         users_payouts_recipient_user_idTousers: {
-          select: { full_name: true, email: true, user_roles: { include: { roles: true } } }
+          select: { 
+            full_name: true, 
+            email: true, 
+            user_roles: { include: { roles: true } },
+            payout_methods: {
+              where: { status: "active" },
+              take: 1,
+              orderBy: { updated_at: 'desc' }
+            }
+          }
         }
       },
       orderBy: { created_at: 'desc' }
@@ -32,7 +41,8 @@ export async function GET(req: Request) {
       payPeriod: p.pay_period || "Monthly",
       date: p.created_at?.toISOString() || null,
       payslipUrl: p.payslip_url || null,
-      roles: p.users_payouts_recipient_user_idTousers?.user_roles?.map((ur: any) => ur.roles.name) || []
+      roles: p.users_payouts_recipient_user_idTousers?.user_roles?.map((ur: any) => ur.roles.name) || [],
+      payoutMethod: p.users_payouts_recipient_user_idTousers?.payout_methods?.[0] || null
     }));
 
     return NextResponse.json(formatted);

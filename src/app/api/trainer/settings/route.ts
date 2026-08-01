@@ -5,7 +5,7 @@ import { requireRole } from "../../../../lib/auth";
 
 export async function PATCH(req: Request) {
   try {
-    const currentUser = await requireRole("client");
+    const currentUser = await requireRole("trainer");
     const userId = currentUser.id;
 
     const body = await req.json();
@@ -69,14 +69,14 @@ export async function PATCH(req: Request) {
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error) {
-    console.error("Failed to update client settings:", error);
+    console.error("Failed to update trainer settings:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
 export async function DELETE(req: Request) {
   try {
-    const currentUser = await requireRole("client");
+    const currentUser = await requireRole("trainer");
     const userId = currentUser.id;
 
     // Delete user (cascade handles student_profiles)

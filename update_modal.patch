@@ -1,0 +1,38 @@
+--- src/components/finance-dashboard-components/ProcessPayoutModal.tsx
++++ src/components/finance-dashboard-components/ProcessPayoutModal.tsx
+@@ -14,4 +14,5 @@
+   const [uploading, setUploading] = useState(false);
+   const [payslipUrl, setPayslipUrl] = useState("");
++  const [inputMode, setInputMode] = useState<"file" | "link">("file");
+   const [fileName, setFileName] = useState("");
+ 
+@@ -118,7 +119,25 @@
+             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">Upload Transfer Receipt <span className="text-red-500">*</span></label>
+             
++            <div className="flex bg-slate-100 p-1 rounded-lg mb-4 w-max">
++              <button type="button" onClick={() => setInputMode("file")} className={`px-4 py-1.5 text-xs font-bold rounded-md transition-colors ${inputMode === "file" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
++                Upload File
++              </button>
++              <button type="button" onClick={() => setInputMode("link")} className={`px-4 py-1.5 text-xs font-bold rounded-md transition-colors ${inputMode === "link" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
++                Paste Link
++              </button>
++            </div>
++
+             {!payslipUrl ? (
+-              <label htmlFor="receipt-upload" className={`w-full flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${uploading ? 'bg-slate-50 border-slate-300' : 'bg-slate-50 border-slate-300 hover:border-[#E84E29] hover:bg-orange-50/50'}`}>
++              inputMode === "link" ? (
++                <div className="flex gap-2">
++                  <input type="url" placeholder="Paste Google Drive link here..." onChange={(e) => setPayslipUrl(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#E84E29] focus:ring-1 focus:ring-[#E84E29] transition-all" />
++                </div>
++              ) : (
++                <label htmlFor="receipt-upload" className={`w-full flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${uploading ? 'bg-slate-50 border-slate-300' : 'bg-slate-50 border-slate-300 hover:border-[#E84E29] hover:bg-orange-50/50'}`}>
+                 {uploading ? (
+                   <div className="flex flex-col items-center">
+                     <div className="w-6 h-6 border-2 border-[#E84E29]/30 border-t-[#E84E29] rounded-full animate-spin mb-2"></div>
+@@ -134,5 +153,6 @@
+                 )}
+                 <input id="receipt-upload" type="file" className="sr-only" onChange={handleFileUpload} disabled={uploading} accept="image/*,application/pdf" />
+               </label>
++              )
+             ) : (
+               <div className="w-full flex items-center justify-between p-4 bg-emerald-50 border border-emerald-200 rounded-xl">

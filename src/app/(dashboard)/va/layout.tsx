@@ -59,7 +59,7 @@ export default function VaLayout({ children }: { children: React.ReactNode }) {
       }
     }
     checkAuth();
-  }, [pathname, router]);
+  }, [router]);
 
   const isSetupPage = pathname === "/va/profile/setup-profile-form";
 
