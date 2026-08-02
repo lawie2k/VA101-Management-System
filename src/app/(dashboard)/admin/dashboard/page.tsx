@@ -187,21 +187,21 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
             <div className="flex justify-between items-start">
-              <span className="text-sm font-bold text-slate-600">Total Revenue (YTD)</span>
+              <span className="text-sm font-bold text-slate-600">Total Revenue (Unpaid Invoices)</span>
             </div>
-            <p className="text-3xl font-black text-emerald-600 mt-4">$142,500.00</p>
+            <p className="text-3xl font-black text-emerald-600 mt-4">${financeData?.metrics?.totalReceivables?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "0.00"}</p>
           </div>
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
             <div className="flex justify-between items-start">
-              <span className="text-sm font-bold text-slate-600">Pending Payouts (Staff)</span>
+              <span className="text-sm font-bold text-slate-600">Pending Payables</span>
             </div>
-            <p className="text-3xl font-black text-slate-900 mt-4">24</p>
+            <p className="text-3xl font-black text-slate-900 mt-4">${financeData?.metrics?.totalPayables?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "0.00"}</p>
           </div>
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
             <div className="flex justify-between items-start">
               <span className="text-sm font-bold text-slate-600">Outstanding Invoices</span>
             </div>
-            <p className="text-3xl font-black text-slate-900 mt-4">12</p>
+            <p className="text-3xl font-black text-slate-900 mt-4">{financeData?.queues?.recentInvoices?.length || 0}</p>
           </div>
           <div className="bg-white border border-rose-200 rounded-2xl p-5 shadow-sm bg-rose-50/30">
             <div className="flex justify-between items-start">
@@ -220,11 +220,9 @@ export default function AdminDashboardPage() {
               </Link>
             </div>
             <div className="space-y-3">
-              {paginate([
-                { name: "John Doe (VA)", amount: "$850.00", date: "Due Today" },
-                { name: "Sarah Smith (Trainer)", amount: "$1,200.00", date: "Due Tomorrow" },
-                { name: "Alex Johnson (Employee)", amount: "$2,500.00", date: "Due in 2 days" }
-              ], pageFinancePayouts).map((payout, i) => (
+              {financeData?.queues?.recentPayouts?.length === 0 ? (
+                <p className="text-xs text-slate-500 font-medium italic">No pending payouts.</p>
+              ) : paginate(financeData?.queues?.recentPayouts || [], pageFinancePayouts).map((payout: any, i: number) => (
                 <div key={i} className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-xl transition-colors border border-transparent hover:border-slate-100">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-sm">
@@ -237,17 +235,13 @@ export default function AdminDashboardPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-black text-slate-900">{payout.amount}</p>
-                    <button className="text-[10px] font-bold text-emerald-600 hover:underline mt-1">Process payout</button>
+                    <Link href="/admin/payouts" className="text-[10px] font-bold text-emerald-600 hover:underline mt-1 block">Process payout</Link>
                   </div>
                 </div>
               ))}
             </div>
   <div className="mt-4 border-t border-slate-100 pt-4">
-    <Pagination currentPage={pageFinancePayouts} totalPages={totalPages([
-                { name: "John Doe (VA)", amount: "$850.00", date: "Due Today" },
-                { name: "Sarah Smith (Trainer)", amount: "$1,200.00", date: "Due Tomorrow" },
-                { name: "Alex Johnson (Employee)", amount: "$2,500.00", date: "Due in 2 days" }
-              ])} onPageChange={setPageFinancePayouts} />
+    <Pagination currentPage={pageFinancePayouts} totalPages={totalPages(financeData?.queues?.recentPayouts || [])} onPageChange={setPageFinancePayouts} />
   </div>
 </div>
 <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col">
@@ -258,11 +252,9 @@ export default function AdminDashboardPage() {
               </Link>
             </div>
             <div className="space-y-3">
-              {paginate([
-                { client: "Acme Corp", amount: "$3,400.00", status: "Awaiting Receipt" },
-                { client: "TechFlow Inc", amount: "$1,800.00", status: "Receipt Uploaded" },
-                { client: "Global Solutions", amount: "$5,200.00", status: "Overdue" }
-              ], pageFinanceInvoices).map((invoice, i) => (
+              {financeData?.queues?.recentInvoices?.length === 0 ? (
+                <p className="text-xs text-slate-500 font-medium italic">No pending invoices.</p>
+              ) : paginate(financeData?.queues?.recentInvoices || [], pageFinanceInvoices).map((invoice: any, i: number) => (
                 <div key={i} className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-xl transition-colors border border-transparent hover:border-slate-100">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-sm border border-indigo-100">
@@ -270,14 +262,14 @@ export default function AdminDashboardPage() {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-slate-900">{invoice.client}</p>
-                      <p className="text-xs font-medium text-slate-500">Invoice #INV-202{i}</p>
+                      <p className="text-xs font-medium text-slate-500">{invoice.invoiceNumber}</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-black text-slate-900">{invoice.amount}</p>
                     <span className={`inline-block mt-1 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${
-                      invoice.status === "Receipt Uploaded" ? "bg-amber-100 text-amber-700" :
-                      invoice.status === "Overdue" ? "bg-rose-100 text-rose-700" :
+                      invoice.status === "receipt_uploaded" ? "bg-amber-100 text-amber-700" :
+                      invoice.status === "overdue" ? "bg-rose-100 text-rose-700" :
                       "bg-slate-100 text-slate-600"
                     }`}>
                       {invoice.status}
@@ -287,14 +279,7 @@ export default function AdminDashboardPage() {
               ))}
             </div>
   <div className="mt-4 border-t border-slate-100 pt-4">
-    <Pagination currentPage={pageFinanceInvoices} totalPages={totalPages([
-                { client: "Acme Corp", amount: "$3,400.00", status: "Awaiting Receipt" },
-                { client: "TechFlow Inc", amount: "$1,800.00", status: "Receipt Uploaded" },
-                { client: "Global Solutions", amount: "$5,200.00", status: "Overdue" }
-              ])} onPageChange={setPageFinanceInvoices} />
-  </div>
-  <div className="mt-4 border-t border-slate-100 pt-4">
-    <Pagination currentPage={pageAdminCalls} totalPages={totalPages(queues.recentDiscoveryCalls)} onPageChange={setPageAdminCalls} />
+    <Pagination currentPage={pageFinanceInvoices} totalPages={totalPages(financeData?.queues?.recentInvoices || [])} onPageChange={setPageFinanceInvoices} />
   </div>
 </div>
 </div>

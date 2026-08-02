@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 
 const IconInfo = ({ className = "w-4 h-4" }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -29,6 +29,16 @@ export default function ApplicationsMainFeed({
   getStepNumber,
   onWithdrawApplication,
 }: ApplicationsMainFeedProps) {
+  const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
+  const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
+
+  const confirmWithdraw = () => {
+    if (selectedAppId) {
+      onWithdrawApplication(selectedAppId);
+      setWithdrawModalOpen(false);
+      setSelectedAppId(null);
+    }
+  };
   return (
     <main 
       onScroll={(e) => {
@@ -110,9 +120,8 @@ export default function ApplicationsMainFeed({
                       <span className="flex items-center gap-1"><IconInfo className="w-3.5 h-3.5" /> Client will respond within 3 working days.</span>
                       <button 
                         onClick={() => {
-                          if (confirm("Are you sure you want to withdraw this application? This action cannot be undone.")) {
-                            onWithdrawApplication(app.id);
-                          }
+                          setSelectedAppId(app.id);
+                          setWithdrawModalOpen(true);
                         }}
                         className="text-[#E84E29] hover:underline hover:text-[#DA431E] cursor-pointer"
                       >
@@ -133,6 +142,36 @@ export default function ApplicationsMainFeed({
           </div>
         )}
       </div>
+
+      {/* Custom Withdraw Confirmation Modal */}
+      {withdrawModalOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-xl border border-slate-200 max-w-sm w-full p-6 animate-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-black text-slate-900 tracking-tight text-center">Withdraw Application</h3>
+            <p className="text-sm font-semibold text-slate-500 text-center mt-2">
+              Are you sure you want to withdraw this application? This action cannot be undone.
+            </p>
+            
+            <div className="flex items-center gap-3 mt-6">
+              <button 
+                onClick={() => {
+                  setWithdrawModalOpen(false);
+                  setSelectedAppId(null);
+                }}
+                className="flex-1 px-4 py-2.5 rounded-full text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmWithdraw}
+                className="flex-1 px-4 py-2.5 rounded-full text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors shadow-sm"
+              >
+                Yes, Withdraw
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

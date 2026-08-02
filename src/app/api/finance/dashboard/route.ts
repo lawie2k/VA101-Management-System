@@ -31,12 +31,59 @@ export async function GET(req: Request) {
     const pendingReceipts = await prisma.invoice_receipts.count({ where: { verification_status: "pending_review" } });
     const totalActionItems = pendingPayments + pendingReceipts;
 
+    // Recent Payouts (Top 10 Pending)
+    const rawPayouts = await prisma.payouts.findMany({
+      where: { status: "pending" },
+      orderBy: { created_at: "desc" },
+      take: 10
+    });
+    
+    // Fetch users for the payouts
+    const userIds = rawPayouts.map(p => p.recipient_user_id);
+    const users = await prisma.users.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, full_name: true }
+    });
+    const userMap = new Map(users.map(u => [u.id.toString(), u.full_name]));
+
+    const recentPayouts = rawPayouts.map(p => ({
+      id: p.id.toString(),
+      name: userMap.get(p.recipient_user_id.toString()) || "Unknown User",
+      amount: `$${Number(p.amount).toFixed(2)}`,
+      date: p.pay_period || "Pending",
+      status: p.status
+    }));
+
+    // Recent Invoices (Top 10 Unpaid/Overdue)
+    const rawInvoices = await prisma.invoices.findMany({
+      where: { status: { not: "paid" } },
+      orderBy: { due_date: "asc" },
+      take: 10,
+      include: {
+        client_profiles: {
+          select: { company_name: true }
+        }
+      }
+    });
+
+    const recentInvoices = rawInvoices.map(inv => ({
+      id: inv.id.toString(),
+      client: inv.client_profiles?.company_name || "Unknown Client",
+      invoiceNumber: inv.invoice_number,
+      amount: `$${Number(inv.amount).toFixed(2)}`,
+      status: inv.status
+    }));
+
     return NextResponse.json({
       metrics: {
         totalReceivables,
         totalPayables,
         totalCommissions,
         actionItems: totalActionItems
+      },
+      queues: {
+        recentPayouts,
+        recentInvoices
       }
     });
   } catch (err: any) {

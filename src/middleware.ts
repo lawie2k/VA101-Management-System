@@ -14,7 +14,7 @@ export async function middleware(request: NextRequest) {
 
   // 0. Apply General Rate Limiting to all API routes
   if (pathname.startsWith("/api/")) {
-    const ip = request.ip || request.headers.get("x-forwarded-for") || "unknown-ip";
+    const ip = request.headers.get("x-forwarded-for") || "unknown-ip";
     const rateLimit = checkRateLimit(`api_${ip}`, RATE_LIMIT_PROFILES.API);
     
     if (!rateLimit.success) {
@@ -111,7 +111,17 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  // Allow the request to proceed, but prevent browser caching for protected routes 
+  // so the Back button doesn't reveal unauthorized or stale data via BFCache.
+  const response = NextResponse.next();
+  
+  if (isProtected) {
+    response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    response.headers.set("Pragma", "no-cache");
+    response.headers.set("Expires", "0");
+  }
+  
+  return response;
 }
 
 export const config = {

@@ -4,7 +4,8 @@ import { requireRole } from "@/src/lib/auth";
 
 export async function GET(req: Request) {
   try {
-    await requireRole("admin");
+    const sessionUser = await requireRole("admin");
+    const isSuperAdmin = sessionUser.roles.includes("admin");
 
     // Fetch users who have external profiles
     const externalUsersRaw = await prisma.users.findMany({
@@ -53,7 +54,7 @@ export async function GET(req: Request) {
       };
     });
 
-    return NextResponse.json({ users: formattedUsers });
+    return NextResponse.json({ users: formattedUsers, isSuperAdmin });
 
   } catch (error) {
     console.error("Failed to fetch external users:", error);

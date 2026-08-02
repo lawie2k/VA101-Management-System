@@ -66,11 +66,12 @@ function JobStatusBadge({ status }: { status: string }) {
     active: "text-emerald-700 bg-emerald-500/10 border-emerald-500/25",
     draft:  "text-amber-700 bg-amber-500/10 border-amber-500/25",
     pending: "text-amber-700 bg-amber-500/10 border-amber-500/25",
+    "needs revision": "text-rose-700 bg-rose-500/10 border-rose-500/25",
     declined: "text-slate-500 bg-slate-200/60 border-slate-300/50",
   };
   return (
     <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border capitalize ${styles[statusLower] || styles.pending}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${statusLower === "active" ? "bg-emerald-500 animate-pulse" : (statusLower === "draft" || statusLower === "pending") ? "bg-amber-500" : "bg-slate-400"}`} />
+      <span className={`w-1.5 h-1.5 rounded-full ${statusLower === "active" ? "bg-emerald-500 animate-pulse" : (statusLower === "draft" || statusLower === "pending") ? "bg-amber-500" : statusLower === "needs revision" ? "bg-rose-500 animate-pulse" : "bg-slate-400"}`} />
       {status}
     </span>
   );
@@ -82,7 +83,7 @@ function JobStatusBadge({ status }: { status: string }) {
 
 export default function JobsMainFeed() {
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [activeTab, setActiveTab] = useState<"all" | "active" | "pending" | "declined">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "active" | "pending" | "declined" | "needs revision" | "archived">("all");
   const [isLoaded, setIsLoaded] = useState(false);
   const [editingJobId, setEditingJobId] = useState<string | null>(null);
 
@@ -104,7 +105,7 @@ export default function JobsMainFeed() {
     loadJobs();
   }, []);
 
-  const handleToggleStatus = async (id: string, next: "active" | "closed") => {
+  const handleToggleStatus = async (id: string, next: "active" | "closed" | "archived") => {
     try {
       const res = await fetch(`/api/client/jobs/${id}/status`, {
         method: "PATCH",
@@ -154,8 +155,8 @@ export default function JobsMainFeed() {
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex gap-2.5 mt-5 border-t border-slate-100 pt-4">
-          {(["all", "active", "pending", "archived", "declined"] as const).map((tab) => {
+        <div className="flex gap-2.5 mt-5 border-t border-slate-100 pt-4 overflow-x-auto scrollbar-none">
+          {(["all", "active", "pending", "needs revision", "archived", "declined"] as const).map((tab) => {
             const count = tab === "all" ? jobs.length : jobs.filter(j => j.status.toLowerCase() === tab).length;
             return (
               <button

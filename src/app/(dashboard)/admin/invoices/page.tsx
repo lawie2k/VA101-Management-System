@@ -13,7 +13,10 @@ export default function FinanceInvoicesPage() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState<"unpaid" | "paid" | "all">("unpaid");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [reviewInvoice, setReviewInvoice] = useState<any | null>(null);
+  const [isReceiptVerified, setIsReceiptVerified] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Estimate height: row is ~100px. Offset ~160px for header/pagination.
@@ -73,9 +76,38 @@ export default function FinanceInvoicesPage() {
         </button>
       </div>
 
+      <div className="flex items-center gap-2 mb-6 border-b border-slate-200 shrink-0">
+        <button 
+          onClick={() => { setActiveTab("unpaid"); setCurrentPage(1); }}
+          className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === "unpaid" ? "border-emerald-600 text-emerald-700" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
+        >
+          Unpaid / Pending
+        </button>
+        <button 
+          onClick={() => { setActiveTab("paid"); setCurrentPage(1); }}
+          className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === "paid" ? "border-emerald-600 text-emerald-700" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
+        >
+          Paid
+        </button>
+        <button 
+          onClick={() => { setActiveTab("all"); setCurrentPage(1); }}
+          className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === "all" ? "border-emerald-600 text-emerald-700" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
+        >
+          All Invoices
+        </button>
+      </div>
+
       <div ref={containerRef} className="flex-1 overflow-y-auto scrollbar-none space-y-4 pb-4">
-        {data.length === 0 ? <p className="text-sm text-slate-500 p-5">No invoices found.</p> : 
-          data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((inv: any) => (
+        {(() => {
+          const filteredData = data.filter((inv: any) => {
+            if (activeTab === "all") return true;
+            if (activeTab === "paid") return inv.status === "paid";
+            return inv.status !== "paid";
+          });
+
+          if (filteredData.length === 0) return <p className="text-sm text-slate-500 p-5">No invoices found for this category.</p>;
+
+          return filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((inv: any) => (
           <div key={inv.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 mb-2">
@@ -93,27 +125,104 @@ export default function FinanceInvoicesPage() {
               </div>
               
               <div className="flex items-center gap-2">
-                <button onClick={() => inv.receipts?.length > 0 ? window.open(inv.receipts[0].fileUrl, "_blank") : showToast("No receipt uploaded by client yet.", "error")} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors border border-slate-200">
-                  View Uploaded Receipt
-                </button>
-                <button onClick={() => handleApprove(inv.id)} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm">
-                  Verify & Approve
-                </button>
+                {inv.status === "paid" ? (
+                  <button disabled className="px-4 py-2 bg-slate-100 text-slate-400 text-xs font-bold rounded-lg cursor-not-allowed border border-slate-200">
+                    Paid
+                  </button>
+                ) : (
+                  <button onClick={() => {
+                    setIsReceiptVerified(false);
+                    setReviewInvoice(inv);
+                  }} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm">
+                    Review & Pay
+                  </button>
+                )}
               </div>
             </div>
           </div>
-        ))}
+        ))})()}
       </div>
 
       <div className="shrink-0 pt-4">
         <Pagination 
           currentPage={currentPage}
-          totalPages={Math.ceil(data.length / itemsPerPage) || 1}
+          totalPages={Math.ceil(
+            data.filter((inv: any) => {
+              if (activeTab === "all") return true;
+              if (activeTab === "paid") return inv.status === "paid";
+              return inv.status !== "paid";
+            }).length / itemsPerPage
+          ) || 1}
           onPageChange={setCurrentPage}
         />
       </div>
       <Toast toast={toast} />
       <CreateInvoiceModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSuccess={() => window.location.reload()} />
+      
+      {reviewInvoice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+              <div>
+                <h3 className="text-lg font-black text-slate-900 tracking-tight">Review Payment Receipt</h3>
+                <p className="text-xs font-semibold text-slate-500 mt-0.5">{reviewInvoice.clientName} - {reviewInvoice.invoiceNumber}</p>
+              </div>
+              <button onClick={() => setReviewInvoice(null)} className="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-200 transition-colors">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto bg-slate-100/50 flex-1 flex items-center justify-center min-h-[500px]">
+              {reviewInvoice.receipts?.length > 0 ? (
+                <iframe 
+                  src={reviewInvoice.receipts[0].fileUrl} 
+                  className="w-full h-[65vh] max-h-[700px] border-0 rounded-xl bg-white shadow-sm"
+                  title="Payment Receipt"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center text-slate-400 gap-4">
+                  <svg className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                  <p className="text-sm font-bold">No receipt uploaded for this invoice.</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="px-6 py-4 border-t border-slate-100 bg-white flex flex-col md:flex-row justify-between items-center gap-4 shrink-0">
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <div className="relative flex items-center justify-center">
+                  <input 
+                    type="checkbox" 
+                    className="peer appearance-none w-5 h-5 border-2 border-slate-300 rounded-md checked:bg-emerald-600 checked:border-emerald-600 transition-colors cursor-pointer"
+                    checked={isReceiptVerified}
+                    onChange={(e) => setIsReceiptVerified(e.target.checked)}
+                  />
+                  <svg className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                </div>
+                <span className="text-sm font-bold text-slate-700 group-hover:text-slate-900 transition-colors">I confirm that this payment has been received in full</span>
+              </label>
+
+              <div className="flex gap-3 w-full md:w-auto">
+                <button onClick={() => setReviewInvoice(null)} className="flex-1 md:flex-none px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+                  Cancel
+                </button>
+                <button 
+                  disabled={!isReceiptVerified}
+                  onClick={() => {
+                    handleApprove(reviewInvoice.id);
+                    setReviewInvoice(null);
+                  }} 
+                  className={`flex-1 md:flex-none px-5 py-2.5 text-white text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+                    isReceiptVerified ? "bg-emerald-600 hover:bg-emerald-700 shadow-sm shadow-emerald-200" : "bg-slate-300 cursor-not-allowed"
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                  Mark as Paid
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useDynamicPagination } from "../../../../hooks/useDynamicPagination";
 import Pagination from "../../../../components/shared/Pagination";
 import { StatusBadge } from "../../../../components/shared/StatusBadge";
+import { TerminateUserModal } from "../../../../components/admin-dashboard-components/TerminateUserModal";
 
 type User = {
   id: string;
@@ -23,20 +24,27 @@ export default function UsersAndRolesPage() {
   // Approximate height of one table row is 53px
   const itemsPerPage = useDynamicPagination(containerRef, 53, 160, 6);
   
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await fetch("/api/admin/users");
-        if (res.ok) {
-          const json = await res.json();
-          setUsers(json.users || []);
-        }
-      } catch (err) {
-        console.error("Failed to fetch users:", err);
-      } finally {
-        setLoading(false);
+  const [isTerminateModalOpen, setIsTerminateModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<{id: string, name: string} | null>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/admin/users");
+      if (res.ok) {
+        const json = await res.json();
+        setUsers(json.users || []);
+        setIsSuperAdmin(json.isSuperAdmin || false);
       }
-    };
+    } catch (err) {
+      console.error("Failed to fetch users:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchUsers();
   }, []);
 
@@ -73,6 +81,7 @@ export default function UsersAndRolesPage() {
                   <th className="px-6 py-4 font-bold text-slate-600 w-1/6">Role</th>
                   <th className="px-6 py-4 font-bold text-slate-600 w-1/6">Joined</th>
                   <th className="px-6 py-4 font-bold text-slate-600 w-1/6">Status</th>
+                  <th className="px-6 py-4 font-bold text-slate-600 w-1/6 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -89,6 +98,19 @@ export default function UsersAndRolesPage() {
                     <td className="px-6 py-3 font-medium text-slate-600">{user.joined}</td>
                     <td className="px-6 py-3">
                       <StatusBadge status={user.status} />
+                    </td>
+                    <td className="px-6 py-3 text-right">
+                      {isSuperAdmin && user.status.toLowerCase() !== "terminated" && user.role.toLowerCase() !== "admin" && (
+                        <button
+                          onClick={() => {
+                            setSelectedUser({ id: user.id, name: user.name });
+                            setIsTerminateModalOpen(true);
+                          }}
+                          className="text-xs font-bold text-rose-500 hover:text-rose-700 hover:underline transition-colors"
+                        >
+                          Terminate
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -107,6 +129,18 @@ export default function UsersAndRolesPage() {
         </div>
       </div>
       
+      <TerminateUserModal 
+        isOpen={isTerminateModalOpen}
+        onClose={() => {
+          setIsTerminateModalOpen(false);
+          setSelectedUser(null);
+        }}
+        userId={selectedUser?.id || ""}
+        userName={selectedUser?.name || ""}
+        onSuccess={() => {
+          fetchUsers();
+        }}
+      />
     </div>
   );
 }

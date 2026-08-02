@@ -12,6 +12,7 @@ export default function StudentCoursePaymentsPage() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState<"pending" | "paid" | "all">("pending");
   const containerRef = useRef<HTMLDivElement>(null);
   const itemsPerPage = useDynamicPagination(containerRef, 130, 20, 6);
 
@@ -62,6 +63,27 @@ export default function StudentCoursePaymentsPage() {
         </div>
       </div>
 
+      <div className="flex items-center gap-2 mb-6 border-b border-slate-200 shrink-0 pb-2">
+        <button 
+          onClick={() => { setStatusFilter("pending"); setCurrentPage(1); }}
+          className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${statusFilter === "pending" ? "border-emerald-600 text-emerald-700" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
+        >
+          Unpaid / Pending
+        </button>
+        <button 
+          onClick={() => { setStatusFilter("paid"); setCurrentPage(1); }}
+          className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${statusFilter === "paid" ? "border-emerald-600 text-emerald-700" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
+        >
+          Paid
+        </button>
+        <button 
+          onClick={() => { setStatusFilter("all"); setCurrentPage(1); }}
+          className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${statusFilter === "all" ? "border-emerald-600 text-emerald-700" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
+        >
+          All Payments
+        </button>
+      </div>
+
       <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex-1 overflow-y-auto">
         {data.length === 0 ? (
           <div className="p-8 text-center">
@@ -78,31 +100,49 @@ export default function StudentCoursePaymentsPage() {
               </tr>
             </thead>
             <tbody>
-              {data.map((pay: any) => (
-                <tr key={pay.id} className="border-b border-slate-100 hover:bg-slate-50/50">
-                  <td className="p-4 font-medium text-slate-900">#{pay.id}</td>
-                  <td className="p-4 font-bold text-emerald-600">${Number(pay.amount).toFixed(2)}</td>
-                  <td className="p-4">
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700">
-                      {pay.status || "Pending"}
-                    </span>
-                  </td>
-                  <td className="p-4 text-right flex items-center justify-end gap-2">
-                    <button 
-                      onClick={() => pay.proofs?.length > 0 ? window.open(pay.proofs[0].fileUrl, "_blank") : showToast("No receipt uploaded by client yet.", "error")}
-                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors border border-slate-200"
-                    >
-                      View Receipt
-                    </button>
-                    <button 
-                      onClick={() => handleApprove(pay.id)}
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm"
-                    >
-                      Approve & Mark Paid
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {(() => {
+                const filteredData = data.filter((pay: any) => {
+                  if (statusFilter === "all") return true;
+                  if (statusFilter === "paid") return pay.status === "paid";
+                  return pay.status !== "paid";
+                });
+                
+                if (filteredData.length === 0) return <tr><td colSpan={4} className="p-8 text-center text-sm font-bold text-slate-500">No payments found for this category.</td></tr>;
+
+                return filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((pay: any) => (
+                  <tr key={pay.id} className="border-b border-slate-100 hover:bg-slate-50/50">
+                    <td className="p-4 font-medium text-slate-900">#{pay.id}</td>
+                    <td className="p-4 font-bold text-emerald-600">${Number(pay.amount).toFixed(2)}</td>
+                    <td className="p-4">
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${pay.status === "paid" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                        {pay.status || "Pending"}
+                      </span>
+                    </td>
+                    <td className="p-4 text-right flex items-center justify-end gap-2">
+                      {pay.status === "paid" ? (
+                        <button disabled className="px-4 py-2 bg-slate-100 text-slate-400 text-xs font-bold rounded-lg cursor-not-allowed border border-slate-200">
+                          Paid
+                        </button>
+                      ) : (
+                        <>
+                          <button 
+                            onClick={() => pay.proofs?.length > 0 ? window.open(pay.proofs[0].fileUrl, "_blank") : showToast("No receipt uploaded by client yet.", "error")}
+                            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors border border-slate-200"
+                          >
+                            View Receipt
+                          </button>
+                          <button 
+                            onClick={() => handleApprove(pay.id)}
+                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm"
+                          >
+                            Approve & Mark Paid
+                          </button>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                ));
+              })()}
             </tbody>
           </table>
         )}
@@ -110,7 +150,11 @@ export default function StudentCoursePaymentsPage() {
       <div className="shrink-0 pt-4">
         <Pagination 
           currentPage={currentPage}
-          totalPages={Math.ceil(data.length / itemsPerPage) || 1}
+          totalPages={Math.ceil((data.filter((pay: any) => {
+            if (statusFilter === "all") return true;
+            if (statusFilter === "paid") return pay.status === "paid";
+            return pay.status !== "paid";
+          }).length) / itemsPerPage) || 1}
           onPageChange={setCurrentPage}
         />
       </div>

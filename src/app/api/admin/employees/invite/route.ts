@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db as prisma } from "@/src/lib/db";
-import { requireRole } from "@/src/lib/auth";
+import { requireRole, hashPassword } from "@/src/lib/auth";
 import { sendEmail } from "@/src/lib/email";
 import crypto from "crypto";
 
@@ -41,11 +41,8 @@ export async function POST(req: Request) {
     // Generate a temporary random password (8 chars)
     const tempPassword = crypto.randomBytes(4).toString('hex');
     
-    // In a real app, hash this properly with bcrypt!
-    // We'll just store it raw or lightly encoded for demonstration 
-    // since this is a prototype, or use a dummy hash.
-    // If you have a real hashing util, import it. For now we use the raw string.
-    const passwordHash = `TEMP_HASH_${tempPassword}`;
+    // Hash the password securely so the user can log in
+    const passwordHash = await hashPassword(tempPassword);
 
     // Create the user
     const newUser = await prisma.users.create({
@@ -87,7 +84,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ 
       success: true, 
-      tempPassword, // Kept here just in case the admin wants to see it on the UI for fallback, but it's now emailed!
+      tempPassword: process.env.NODE_ENV === "development" ? tempPassword : undefined,
       message: "Employee successfully invited and emailed." 
     });
 

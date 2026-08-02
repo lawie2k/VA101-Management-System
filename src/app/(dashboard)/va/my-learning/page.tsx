@@ -267,24 +267,28 @@ export default function VAMyLearningPage() {
                 </button>
               </div>
 
-              {/* Player Screen */}
-              <div className="aspect-video bg-slate-950 border border-slate-800 rounded-2xl flex flex-col items-center justify-center text-center p-6 text-slate-400 relative">
-                <span className="w-12 h-12 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-[#E84E29] animate-pulse mb-3">
-                  <IconPlay className="w-5 h-5" />
+              {/* Open Secure Viewer Action */}
+              <div className="aspect-video bg-slate-50 border border-slate-200 rounded-2xl flex flex-col items-center justify-center text-center p-6 text-slate-600 relative overflow-hidden">
+                <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 19px, #000 20px)' }}></div>
+                <span className="w-16 h-16 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-[#E84E29] shadow-sm mb-4 relative z-10">
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                 </span>
-                <span className="text-xs font-bold text-slate-200">Playing: Lesson {activeLessonIndex + 1}</span>
-                <h4 className="text-sm font-black text-white mt-1 max-w-[320px]">{getCourseInfo(activeCourseId)?.lessons[activeLessonIndex]}</h4>
-                <span className="text-[9px] font-extrabold text-slate-500 tracking-wider absolute bottom-4">VirtualAssistant101 Media Server</span>
+                <h4 className="text-base font-black text-slate-900 mt-1 max-w-[320px] relative z-10">{getCourseInfo(activeCourseId)?.title}</h4>
+                <p className="text-xs text-slate-500 mt-2 max-w-[280px] relative z-10">Click below to open the secure document reader in a new tab.</p>
+                <a 
+                  href={`/secure-viewer?url=${encodeURIComponent((getCourseInfo(activeCourseId) as any)?.materialUrl || "data:application/pdf;base64,JVBERi0xLjQKMSAwIG9iago8PAovVGl0bGUgKER1bW15IFBERikKLUNyZWF0b3IgKER1bW15KQo+PgplbmRvYmoKMiAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMyAwIFIKPj4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9Db3VudCAxCi9LaWRzIFs0IDAgUl0KPj4KZW5kb2JqCjQgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAzIDAgUgovUmVzb3VyY2VzIDw8Ci9Gb250IDw8Ci9GMCA1IDAgUgo+Pgo+PgovTWVkaWFCb3ggWzAgMCA1OTUuMjc2IDg0MS44OV0KL0NvbnRlbnRzIDYgMCBSCj4+CmVuZG9iago1IDAgb2JqCjw8Ci9UeXBlIC9Gb250Ci9TdWJ0eXBlIC9UeXBlMQovQmFzZUZvbnQgL0hlbHZldGljYQo+PgplbmRvYmoKNiAwIG9iago8PAovTGVuZ3RoIDQzCj4+CnN0cmVhbQpCVAovRjAgMjQgVGYKMTAwIDcwMCBUZAooU2FtcGxlIFBERiBDb3VudGVudCkgVGoKRVQKZW5kc3RyZWFtCmVuZG9iagp4cmVmCjAgNwowMDAwMDAwMDAwIDY1NTM1IGYKMDAwMDAwMDAwOSAwMDAwMCBuCjAwMDAwMDAwNzQgMDAwMDAgbgowMDAwMDAwMTIzIDAwMDAwIG4KMDAwMDAwMDE3OSAwMDAwMCBuCjAwMDAwMDAyOTYgMDAwMDAgbgowMDAwMDAwMzg0IDAwMDAwIG4KdHJhaWxlcgo8PAovU2l6ZSA3Ci9Sb290IDIgMCBSCj4+CnN0YXJ0eHJlZgo0NzcKJSVFT0YK")}`}
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="mt-5 px-6 py-3 bg-[#E84E29] border border-transparent rounded-full text-xs font-bold tracking-widest uppercase text-white hover:bg-[#d03d1c] hover:shadow-lg transition-all shadow-md relative z-10 flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                  Open in New Tab
+                </a>
               </div>
 
-              {/* Lesson playlist navigation info */}
-              <div className="mt-5 space-y-3">
-                <div className="flex items-center justify-between text-xs font-bold">
-                  <span className="text-slate-400">Lesson {activeLessonIndex + 1} of {getCourseInfo(activeCourseId)?.lessons.length}</span>
-                  <span className="text-emerald-600 font-extrabold">Auto-streaming HD</span>
-                </div>
+              <div className="mt-5">
                 <p className="text-xs text-slate-500 leading-relaxed font-semibold">
-                  Review the video lecture carefully. Upon completion, click Mark Lesson Complete to update your progress index.
+                  Read the document carefully. Upon completion, click Mark Complete to update your progress index.
                 </p>
               </div>
 
@@ -294,7 +298,7 @@ export default function VAMyLearningPage() {
                   onClick={handleLessonComplete}
                   className="px-6 py-2.5 rounded-full text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 transition-all cursor-pointer"
                 >
-                  Mark Lesson Complete
+                  Mark Complete
                 </button>
               </div>
 

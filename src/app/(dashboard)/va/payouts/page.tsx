@@ -5,12 +5,16 @@ import VALeftSidebar from "../../../../components/va-dashboard-components/VALeft
 import { useDynamicPagination } from "../../../../hooks/useDynamicPagination";
 import Pagination from "../../../../components/shared/Pagination";
 import { calculateVAPayoutBreakdown } from "../../../../lib/finance/calculations";
+import { useToast, Toast } from "../../../../components/shared/useToast";
+import { PayslipModal } from "../../../../components/va-dashboard-components/PayslipModal";
 
 export default function VAPayoutsPage() {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { toast, showToast } = useToast();
 
   const itemsPerPage = useDynamicPagination(containerRef, 130, 20, 6);
 
@@ -40,14 +44,23 @@ export default function VAPayoutsPage() {
   const nextPayout = data.find((p: any) => p.status === "pending" || p.status === "processing") || data[0] || null;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 animate-fade-in h-[calc(100vh-100px)] flex flex-col">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
+    <>
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 animate-fade-in h-[calc(100vh-100px)] flex flex-col">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
         <VALeftSidebar />
 
         <div className="lg:col-span-9 space-y-6 h-full flex flex-col">
           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
             <div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">My Payslips</h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-black text-slate-900 tracking-tight">My Payslips</h1>
+                <button 
+                  onClick={() => setIsPreviewOpen(true)}
+                  className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 text-[10px] font-bold uppercase tracking-wider rounded-md transition-colors"
+                >
+                  View Template
+                </button>
+              </div>
               <p className="text-sm text-slate-500 font-medium mt-1">Review upcoming payouts and historical payment proofs.</p>
             </div>
             
@@ -115,21 +128,60 @@ export default function VAPayoutsPage() {
                     </div>
 
                     <div className="flex flex-row md:flex-col items-center md:items-end justify-between border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6 shrink-0 gap-3">
-                      <button 
-                        onClick={() => {
-                          if (pay.payslipUrl) window.open(pay.payslipUrl, "_blank");
-                          else alert("Payslip document is not available yet.");
-                        }}
-                        className="px-5 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl transition-colors border border-slate-200 shadow-sm w-full md:w-auto text-center"
-                      >
-                        Download Slip
-                      </button>
-                      {!isUpcoming && (
-                        <button className="px-5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-xl transition-colors border border-indigo-200 shadow-sm w-full md:w-auto text-center flex items-center justify-center gap-2">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                          View Receipt
-                        </button>
-                      )}
+                      {(() => {
+                        const today = new Date();
+                        const payoutDate = new Date(pay.date || pay.processedAt || pay.createdAt || Date.now());
+                        payoutDate.setDate(payoutDate.getDate() + 1);
+                        const isPayslipAvailable = today >= payoutDate;
+
+                        return (
+                          <>
+                            <button 
+                              key="payslip-btn"
+                              onClick={() => {
+                                if (!isPayslipAvailable) {
+                                  showToast(`For transparency, your payslip will be available to view the day after payout: ${payoutDate.toLocaleDateString()}`, "error");
+                                  return;
+                                }
+                                if (pay.payslipUrl) window.open(pay.payslipUrl, "_blank");
+                                else showToast("Payslip document is not available yet.", "error");
+                              }}
+                              className={`px-5 py-2.5 text-xs font-bold rounded-xl transition-colors border shadow-sm w-full md:w-auto text-center ${
+                                !isPayslipAvailable 
+                                  ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" 
+                                  : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
+                              }`}
+                              title={!isPayslipAvailable ? `Available on ${payoutDate.toLocaleDateString()}` : "Download Slip"}
+                            >
+                              {!isPayslipAvailable ? "Slip Available Post-Payout" : "Download Slip"}
+                            </button>
+                            
+                            {/* Dev/Testing Preview Button */}
+                            {!isPayslipAvailable && (
+                              <button 
+                                onClick={() => setIsPreviewOpen(true)}
+                                className="px-5 py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-bold rounded-xl transition-colors border border-amber-200 shadow-sm w-full md:w-auto text-center flex items-center justify-center gap-2"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                Preview Format
+                              </button>
+                            )}
+                            {!isUpcoming && isPayslipAvailable && (
+                              <button 
+                                key="receipt-btn"
+                                onClick={() => {
+                                  if (pay.receiptUrl) window.open(pay.receiptUrl, "_blank");
+                                  else showToast("Receipt is not available yet.", "error");
+                                }}
+                                className="px-5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-xl transition-colors border border-indigo-200 shadow-sm w-full md:w-auto text-center flex items-center justify-center gap-2"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                View Receipt
+                              </button>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 );
@@ -142,8 +194,11 @@ export default function VAPayoutsPage() {
             totalPages={totalPages(data)}
             onPageChange={setCurrentPage}
           />
+          </div>
         </div>
       </div>
-    </div>
+      <PayslipModal isOpen={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} payout={data[0]} />
+      <Toast toast={toast} />
+    </>
   );
 }

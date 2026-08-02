@@ -10,6 +10,7 @@ import ProcessPayoutModal from "../../../../components/finance-dashboard-compone
 export default function FinancePayoutsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"vas" | "employees" | "trainers">("vas");
+  const [statusFilter, setStatusFilter] = useState<"pending" | "paid" | "all">("pending");
   const { toast, showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any[]>([]);
@@ -68,14 +69,37 @@ export default function FinancePayoutsPage() {
         </button>
       </div>
 
+      <div className="flex justify-end mb-4 shrink-0">
+        <div className="relative">
+          <select
+            value={statusFilter}
+            onChange={(e) => { setStatusFilter(e.target.value as any); setCurrentPage(1); }}
+            className="appearance-none bg-white border border-slate-200 text-slate-700 font-bold text-sm rounded-xl px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#E84E29] focus:border-transparent cursor-pointer shadow-sm"
+          >
+            <option value="pending">Show: Pending Payouts</option>
+            <option value="paid">Show: Paid Payouts</option>
+            <option value="all">Show: All Payouts</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+          </div>
+        </div>
+      </div>
+
       {/* List */}
       <div ref={containerRef} className="flex-1 overflow-y-auto scrollbar-none space-y-4 pb-4">
         {(() => {
           const filteredData = data.filter((pay: any) => {
-            if (activeTab === "vas") return pay.roles?.includes("va");
-            if (activeTab === "employees") return pay.roles?.includes("admin") || pay.roles?.includes("finance") || pay.roles?.includes("super_admin");
-            if (activeTab === "trainers") return pay.roles?.includes("trainer");
-            return false;
+            let matchesRole = false;
+            if (activeTab === "vas") matchesRole = pay.roles?.includes("va");
+            else if (activeTab === "employees") matchesRole = pay.roles?.includes("admin") || pay.roles?.includes("finance") || pay.roles?.includes("super_admin");
+            else if (activeTab === "trainers") matchesRole = pay.roles?.includes("trainer");
+            
+            if (!matchesRole) return false;
+
+            if (statusFilter === "all") return true;
+            if (statusFilter === "paid") return pay.status === "paid";
+            return pay.status !== "paid";
           });
 
           if (filteredData.length === 0) return <p className="text-sm text-slate-500 p-5">No payouts found for this category.</p>;
@@ -103,10 +127,16 @@ export default function FinancePayoutsPage() {
                 <button onClick={() => pay.payslipUrl ? window.open(pay.payslipUrl, "_blank") : showToast("No receipt uploaded.", "error")} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors border border-slate-200">
                   View Payslip details
                 </button>
-                <button onClick={() => setProcessPayout(pay)} className="px-4 py-2 bg-[#DA431E] hover:bg-[#DA431E] text-white text-xs font-bold rounded-lg transition-colors shadow-sm flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                  Upload Receipt & Mark Paid
-                </button>
+                {pay.status === "paid" ? (
+                  <button disabled className="px-4 py-2 bg-slate-100 text-slate-400 text-xs font-bold rounded-lg cursor-not-allowed border border-slate-200">
+                    Paid
+                  </button>
+                ) : (
+                  <button onClick={() => setProcessPayout(pay)} className="px-4 py-2 bg-[#DA431E] hover:bg-[#DA431E] text-white text-xs font-bold rounded-lg transition-colors shadow-sm flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    Upload Receipt & Pay
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -116,11 +146,17 @@ export default function FinancePayoutsPage() {
       <div className="shrink-0 pt-4">
         <Pagination 
           currentPage={currentPage}
-          totalPages={Math.ceil((data.filter(pay => {
-            if (activeTab === "vas") return pay.roles?.includes("va");
-            if (activeTab === "employees") return pay.roles?.includes("admin") || pay.roles?.includes("finance") || pay.roles?.includes("super_admin");
-            if (activeTab === "trainers") return pay.roles?.includes("trainer");
-            return false;
+          totalPages={Math.ceil((data.filter((pay: any) => {
+            let matchesRole = false;
+            if (activeTab === "vas") matchesRole = pay.roles?.includes("va");
+            else if (activeTab === "employees") matchesRole = pay.roles?.includes("admin") || pay.roles?.includes("finance") || pay.roles?.includes("super_admin");
+            else if (activeTab === "trainers") matchesRole = pay.roles?.includes("trainer");
+            
+            if (!matchesRole) return false;
+
+            if (statusFilter === "all") return true;
+            if (statusFilter === "paid") return pay.status === "paid";
+            return pay.status !== "paid";
           }).length) / itemsPerPage) || 1}
           onPageChange={setCurrentPage}
         />

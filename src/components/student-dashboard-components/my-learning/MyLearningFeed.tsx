@@ -84,10 +84,15 @@ export function MyLearningFeed() {
                     <span className="text-[10px] font-bold text-slate-700">{course.progress || 0}%</span>
                   </div>
                 </div>
-                <button className="w-full flex items-center justify-center gap-2 bg-[#E84E29] hover:bg-[#DA431E] border border-transparent text-white text-xs font-bold py-2 rounded-xl transition-colors cursor-pointer shadow-sm">
-                  <IconPlayerPlay className="w-4 h-4" fill="currentColor" />
-                  Continue Course
-                </button>
+                <a 
+                  href={`/secure-viewer?url=${encodeURIComponent(course.materialUrl || "data:application/pdf;base64,JVBERi0xLjQKMSAwIG9iago8PAovVGl0bGUgKER1bW15IFBERikKLUNyZWF0b3IgKER1bW15KQo+PgplbmRvYmoKMiAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMyAwIFIKPj4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9Db3VudCAxCi9LaWRzIFs0IDAgUl0KPj4KZW5kb2JqCjQgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAzIDAgUgovUmVzb3VyY2VzIDw8Ci9Gb250IDw8Ci9GMCA1IDAgUgo+Pgo+PgovTWVkaWFCb3ggWzAgMCA1OTUuMjc2IDg0MS44OV0KL0NvbnRlbnRzIDYgMCBSCj4+CmVuZG9iago1IDAgb2JqCjw8Ci9UeXBlIC9Gb250Ci9TdWJ0eXBlIC9UeXBlMQovQmFzZUZvbnQgL0hlbHZldGljYQo+PgplbmRvYmoKNiAwIG9iago8PAovTGVuZ3RoIDQzCj4+CnN0cmVhbQpCVAovRjAgMjQgVGYKMTAwIDcwMCBUZAooU2FtcGxlIFBERiBDb3VudGVudCkgVGoKRVQKZW5kc3RyZWFtCmVuZG9iagp4cmVmCjAgNwowMDAwMDAwMDAwIDY1NTM1IGYKMDAwMDAwMDAwOSAwMDAwMCBuCjAwMDAwMDAwNzQgMDAwMDAgbgowMDAwMDAwMTIzIDAwMDAwIG4KMDAwMDAwMDE3OSAwMDAwMCBuCjAwMDAwMDAyOTYgMDAwMDAgbgowMDAwMDAwMzg0IDAwMDAwIG4KdHJhaWxlcgo8PAovU2l6ZSA3Ci9Sb290IDIgMCBSCj4+CnN0YXJ0eHJlZgo0NzcKJSVFT0YK")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-2 bg-[#E84E29] hover:bg-[#DA431E] border border-transparent text-white text-xs font-bold py-2 rounded-xl transition-colors cursor-pointer shadow-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                  Read Course Material
+                </a>
               </div>
             </div>
           ))

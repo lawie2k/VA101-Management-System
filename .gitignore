@@ -43,3 +43,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 create_accounts.ts
+
+# Local Test Scripts
+test_scripts/

@@ -4,7 +4,8 @@ import { requireRole } from "@/src/lib/auth";
 
 export async function GET(req: Request) {
   try {
-    await requireRole("admin");
+    const sessionUser = await requireRole("admin");
+    const isSuperAdmin = sessionUser.roles.includes("admin");
 
     // Fetch users who have internal roles (admin, finance, employee)
     const internalRoles = await prisma.roles.findMany({
@@ -49,7 +50,7 @@ export async function GET(req: Request) {
       };
     });
 
-    return NextResponse.json({ employees: formattedEmployees });
+    return NextResponse.json({ employees: formattedEmployees, isSuperAdmin });
 
   } catch (error) {
     console.error("Failed to fetch employees:", error);

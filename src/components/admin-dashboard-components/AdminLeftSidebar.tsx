@@ -40,7 +40,7 @@ export default function AdminLeftSidebar({ role, isOpen, setIsOpen }: { role: st
     switch (role) {
       case "finance":
         return ALL_LINKS.filter((l) =>
-          ["Dashboard", "My Leaves", "VA Leave Approvals", "Staff Leave Approvals", "Client Invoices", "VA Course Purchases", "Student Course Purchases", "Staff Payouts", "Commissions", "Audit Ledger", "Reports"].includes(l.label)
+          ["Dashboard", "My Leaves", "Client Invoices", "VA Course Purchases", "Student Course Purchases", "Staff Payouts", "Commissions", "Audit Ledger", "Reports"].includes(l.label)
         );
       case "employee":
         return ALL_LINKS.filter((l) =>

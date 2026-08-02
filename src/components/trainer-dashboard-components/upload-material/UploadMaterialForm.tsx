@@ -192,16 +192,16 @@ export default function UploadMaterialForm() {
             {/* File Upload */}
             <div className="flex flex-col">
               <label className="block text-xs font-bold text-slate-900 mb-1.5 uppercase tracking-wider">
-                Course File (PDF, MP4) <span className="text-[#E84E29]">*</span>
+                Course File (PDF ONLY) <span className="text-[#E84E29]">*</span>
               </label>
               <label htmlFor="file-upload" className="mt-2 flex-1 flex flex-col justify-center items-center rounded-2xl border-2 border-dashed border-slate-300 px-6 py-6 hover:border-[#E84E29] hover:bg-orange-50/50 transition-colors cursor-pointer group w-full">
                 <div className="text-center">
                   <UploadIcon className="mx-auto h-10 w-10 text-slate-400 group-hover:text-[#E84E29] transition-colors" />
                   <div className="mt-4 flex justify-center text-sm leading-6 text-slate-600">
-                    <span className="font-semibold text-[#E84E29] hover:text-orange-500">Upload a file</span>
-                    <input id="file-upload" name="file-upload" type="file" className="sr-only" required />
+                    <span className="font-semibold text-[#E84E29] hover:text-orange-500">Upload a PDF file</span>
+                    <input id="file-upload" name="file-upload" type="file" className="sr-only" accept="application/pdf" required />
                   </div>
-                  <p className="text-xs text-slate-500 mt-2">MP4, PDF, ZIP up to 500MB</p>
+                  <p className="text-xs text-slate-500 mt-2">PDF up to 500MB</p>
                 </div>
               </label>
             </div>

@@ -36,7 +36,8 @@ export async function GET(req: Request) {
       rate: job.client_hourly_rate ? parseFloat(job.client_hourly_rate.toString()) : 0,
       status: job.status === "active" ? "Active" : 
               (job.status === "pending_review" ? "Pending" : 
-              (job.status === "archived" ? "Archived" : "Declined")),
+              (job.status === "needs_revision" ? "Needs Revision" : 
+              (job.status === "archived" ? "Archived" : "Declined"))),
       applicants: job._count.job_applications,
       postedDate: job.created_at ? job.created_at.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Recently",
     }));

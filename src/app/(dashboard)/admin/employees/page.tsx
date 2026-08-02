@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useDynamicPagination } from "../../../../hooks/useDynamicPagination";
 import Pagination from "../../../../components/shared/Pagination";
 import { StatusBadge } from "../../../../components/shared/StatusBadge";
+import { TerminateUserModal } from "../../../../components/admin-dashboard-components/TerminateUserModal";
 
 type Employee = {
   id: string;
@@ -35,6 +36,10 @@ export default function EmployeeManagementPage() {
   const [inviteError, setInviteError] = useState("");
   const [inviteSuccess, setInviteSuccess] = useState("");
 
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [isTerminateModalOpen, setIsTerminateModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<{id: string, name: string} | null>(null);
+
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Approximate height of one table row is 53px
@@ -47,6 +52,7 @@ export default function EmployeeManagementPage() {
       if (res.ok) {
         const json = await res.json();
         setEmployees(json.employees || []);
+        setIsSuperAdmin(json.isSuperAdmin || false);
       }
     } catch (err) {
       console.error("Failed to fetch employees:", err);
@@ -137,7 +143,11 @@ export default function EmployeeManagementPage() {
       if (!res.ok) {
         setInviteError(data.error || "Failed to invite employee.");
       } else {
-        setInviteSuccess(`Success! The temporary password is: ${data.tempPassword}`);
+        if (data.tempPassword) {
+          setInviteSuccess(`Success! The temporary password is: ${data.tempPassword}`);
+        } else {
+          setInviteSuccess("Success! An email has been sent with their temporary password.");
+        }
         setInviteForm({ name: "", email: "", roleName: "employee" });
         fetchEmployees(); // Refresh list
       }
@@ -245,22 +255,35 @@ export default function EmployeeManagementPage() {
                           <span className="text-slate-800 font-bold">${user.hourlyRate || 0}/hr</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        {isEditing ? (
-                          <button 
-                            onClick={() => setEditingRowId(null)}
-                            className="px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-bold rounded-lg transition-colors border border-emerald-200"
-                          >
-                            Save
-                          </button>
-                        ) : (
-                          <button 
-                            onClick={() => setEditingRowId(user.id)}
-                            className="px-3 py-1.5 bg-slate-50 text-slate-600 hover:bg-slate-100 text-xs font-bold rounded-lg transition-colors border border-slate-200"
-                          >
-                            Edit
-                          </button>
-                        )}
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-2">
+                          {isEditing ? (
+                            <button 
+                              onClick={() => setEditingRowId(null)}
+                              className="px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-bold rounded-lg transition-colors border border-emerald-200 whitespace-nowrap"
+                            >
+                              Save
+                            </button>
+                          ) : (
+                            <button 
+                              onClick={() => setEditingRowId(user.id)}
+                              className="px-3 py-1.5 bg-slate-50 text-slate-600 hover:bg-slate-100 text-xs font-bold rounded-lg transition-colors border border-slate-200 whitespace-nowrap"
+                            >
+                              Edit
+                            </button>
+                          )}
+                          {isSuperAdmin && user.status.toLowerCase() !== "terminated" && user.role.toLowerCase() !== "admin" && (
+                            <button
+                              onClick={() => {
+                                setSelectedUser({ id: user.id, name: user.name });
+                                setIsTerminateModalOpen(true);
+                              }}
+                              className="px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold rounded-lg transition-colors border border-rose-200 whitespace-nowrap"
+                            >
+                              Terminate
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -280,6 +303,19 @@ export default function EmployeeManagementPage() {
         </div>
       </div>
       
+      <TerminateUserModal 
+        isOpen={isTerminateModalOpen}
+        onClose={() => {
+          setIsTerminateModalOpen(false);
+          setSelectedUser(null);
+        }}
+        userId={selectedUser?.id || ""}
+        userName={selectedUser?.name || ""}
+        onSuccess={() => {
+          fetchEmployees();
+        }}
+      />
+
       {/* Invite Modal Overlay */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
